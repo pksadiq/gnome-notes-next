@@ -456,3 +456,28 @@ gn_provider_get_notes (GnProvider *self)
 
   GN_RETURN (notes);
 }
+
+/**
+ * gn_provider_get_trash_notes:
+ * @self: a #GnProvider
+ *
+ * Get the list of trashed notes loaded by the provider. This
+ * should be called only after gn_provider_load_items()
+ * or gn_provider_load_items_async() is called.
+ *
+ * Returns: (transfer none) (nullable): A #GList of
+ * #GnProviderItem or %NULL if empty.
+ */
+GList *
+gn_provider_get_trash_notes (GnProvider *self)
+{
+  GList *notes;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), NULL);
+
+  notes = GN_PROVIDER_GET_CLASS (self)->get_trash_notes (self);
+
+  GN_RETURN (notes);
+}
