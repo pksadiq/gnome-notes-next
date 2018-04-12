@@ -1,0 +1,21 @@
+.transparent {
+  background-color: transparent;
+  box-shadow: none;
+  color: inherit;
+}
+
+list row.transparent:hover {
+  background-color: @theme_bg_color;
+}
+
+label.dark {
+  color: #000000;
+}
+
+label.light {
+  color :#ffffff;
+}
+
+.pad {
+  padding: 3px;
+}

@@ -1,0 +1,74 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+"http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd" [
+]>
+<refentry id="gnome-notes">
+
+<refentryinfo>
+  <title>gnome-notes</title>
+  <productname>GNOME Notes</productname>
+  <authorgroup>
+    <author>
+      <contrib>Developer</contrib>
+      <firstname>Mohammed</firstname>
+      <surname>Sadiq</surname>
+    </author>
+  </authorgroup>
+</refentryinfo>
+
+<refmeta>
+  <refentrytitle>gnome-notes</refentrytitle>
+  <manvolnum>1</manvolnum>
+  <refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+  <refname>gnome-notes</refname>
+  <refpurpose>Gtk+ Template Application</refpurpose>
+</refnamediv>
+
+<refsynopsisdiv>
+  <cmdsynopsis>
+    <command>gnome-notes</command>
+    <arg choice="opt">--help</arg>
+    <arg choice="opt">--version</arg>
+  </cmdsynopsis>
+</refsynopsisdiv>
+
+<refsect1>
+  <title>Description</title>
+  <para>
+    <command>gnome-notes</command> is a simple Gtk+ application
+    for writing notes.
+  </para>
+</refsect1>
+
+<refsect1>
+  <title>Options</title>
+  <para>The following options are understood:</para>
+  <variablelist>
+
+    <varlistentry>
+      <term>
+        <option>-h</option>, <option>--help</option>
+      </term>
+      <listitem>
+        <para>Show help options</para>
+      </listitem>
+    </varlistentry>
+
+    <varlistentry>
+      <term>
+        <option>--version</option>
+      </term>
+      <listitem>
+        <para>
+          Show version information and exit
+        </para>
+      </listitem>
+    </varlistentry>
+
+  </variablelist>
+</refsect1>
+
+</refentry>

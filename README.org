@@ -1,0 +1,27 @@
+* GNOME Notes
+
+  GNOME Notes is a simple Gtk+ Application for joting notes.
+
+  *Note:* This is an experimentation on rewriting Bijiben (ie, GNOME notes).
+  Thus this code shall (hopefully) be merged back to Bijiben as a whole,
+  or this will stay as a new project if other maintainers disagree.
+
+  The code is now in pre-alpha stage. And so, merge requests and
+  bug reports are currently not accepted.
+
+  Code repo: https://gitlab.com/sadiq/gnome-notes
+
+* How to compile
+
+  meson build system is used for building ~gnome-notes~. Also,
+  a compatibility script is provided so that you can simply do
+  =./configure && make && sudo make install= from the source
+  root directory to compile and install.
+
+* How to test
+
+  - Create the data dir for gnome-notes: =mkdir -p ~/.local/share/gnome-notes/=
+  - Add some notes in the created directory with your favorite editor.
+    - The notes should have ~.txt~ extention. The first line is interpreted
+      as title, and the rest as content.
+  - Now open GNOME Notes and see how it works.

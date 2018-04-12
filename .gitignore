@@ -1,0 +1,17 @@
+*~
+\#*#
+.#*
+
+*.tar.gz
+*.tar.xz
+
+po/*.template
+*.pot
+
+Makefile
+/_build
+
+GTAGS
+GRTAGS
+GPATH
+CTAGS

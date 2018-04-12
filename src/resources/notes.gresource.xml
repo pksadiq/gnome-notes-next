@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/sadiqpk/notes">
+    <file>css/style.css</file>
+    <file preprocess="xml-stripblanks">icons/note-symbolic.svg</file>
+    <file preprocess="xml-stripblanks">gtk/menus.ui</file>
+    <file preprocess="xml-stripblanks">ui/gn-window.ui</file>
+    <file preprocess="xml-stripblanks">ui/gn-main-view.ui</file>
+    <file preprocess="xml-stripblanks">ui/gn-grid-view-item.ui</file>
+    <file preprocess="xml-stripblanks">ui/gn-list-view-item.ui</file>
+    <file preprocess="xml-stripblanks">ui/gn-item-thumbnail.ui</file>
+  </gresource>
+</gresources>
+

@@ -1,0 +1,3 @@
+option('man', type: 'boolean', value: true, description: 'enable generating man pages')
+option('bash_completion', type: 'boolean', value: true, description: 'enable bash completion')
+option('tracing', type: 'boolean', value: false, description: 'Enable tracing for troubleshooting')

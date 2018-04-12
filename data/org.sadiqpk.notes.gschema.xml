@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist gettext-domain="gnome-notes">
+  <schema id="org.sadiqpk.notes" path="/org/sadiqpk/notes/">
+
+    <key type="s" name="color">
+      <default>'rgb(239,242,209)'</default>
+      <summary>Default note color.</summary>
+      <description>
+        The default note color will be used for every new note created.
+      </description>
+    </key>
+
+    <key name="window-maximized" type="b">
+      <default>false</default>
+      <summary>Window maximized</summary>
+      <description>Window maximized state</description>
+    </key>
+
+    <key name="window-size" type="(ii)">
+      <default>(800, 600)</default>
+      <summary>Window size</summary>
+      <description>Window size (width, height).</description>
+    </key>
+
+    <key name="window-position" type="(ii)">
+      <default>(-1, -1)</default>
+      <summary>Window position</summary>
+      <description>Window position (x, y).</description>
+    </key>
+
+  </schema>
+</schemalist>

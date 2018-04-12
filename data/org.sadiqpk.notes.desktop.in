@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=Notes
+Comment=A Simple Note Taking Application
+Exec=gnome-notes
+# Translators: Do NOT translate. This is icon name.
+Icon=org.sadiqpk.notes
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=GNOME;GTK;Office;
+# Translators: Do NOT translate the semicolon. keywords should
+# also end with a semicolon
+keywords=notes;

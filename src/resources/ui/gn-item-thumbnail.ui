@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk 3.12 -->
+  <template class="GnItemThumbnail" parent="GtkLabel">
+    <property name="visible">1</property>
+    <property name="use-markup">1</property>
+    <property name="wrap">1</property>
+    <property name="xalign">0</property>
+    <property name="yalign">0</property>
+  </template>
+</interface>

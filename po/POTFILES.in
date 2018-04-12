@@ -1,0 +1,6 @@
+# List of source files containing translatable strings.
+# Please keep this file sorted alphabetically.
+data/org.sadiqpk.notes.desktop.in
+src/gn-application.c
+src/resources/gtk/menus.ui
+src/resources/ui/gn-window.ui
