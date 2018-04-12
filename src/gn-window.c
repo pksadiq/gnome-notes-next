@@ -53,6 +53,7 @@ struct _GnWindow
   GtkWidget *main_stack;
   GtkWidget *notes_stack;
   GtkWidget *notes_view;
+  GtkWidget *notebook_stack;
   GtkWidget *trash_stack;
   GtkWidget *trash_view;
 
@@ -132,6 +133,32 @@ gn_window_show_previous_view (GnWindow  *self,
 
   last_view = GPOINTER_TO_INT (g_queue_pop_head (self->view_stack));
   gn_window_set_view (self, last_view, GN_VIEW_MODE_NORMAL);
+}
+
+static void
+gn_window_main_view_changed (GnWindow   *self,
+                             GParamSpec *pspec,
+                             GtkStack   *main_stack)
+{
+  GnView view;
+  GtkWidget *child;
+
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_STACK (main_stack));
+
+  child = gtk_stack_get_visible_child (main_stack);
+
+  if (child == self->notes_stack)
+    view = GN_VIEW_NOTES;
+  else if (child == self->notebook_stack)
+    view = GN_VIEW_NOTEBOOKS;
+  else
+    return;
+
+  /* If the current view is notes/notebook, reset navigation history */
+  g_queue_clear (self->view_stack);
+  g_queue_push_head (self->view_stack, GINT_TO_POINTER (view));
+  self->current_view = view;
 }
 
 static GtkWidget *
@@ -258,6 +285,12 @@ gn_window_update_main_view (GnWindow *self,
       gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
                                    self->notes_stack);
       break;
+
+    case GN_VIEW_NOTEBOOKS:
+      gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
+                                   self->notebook_stack);
+      break;
+
     default:
       break;
     }
@@ -387,6 +420,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, notebook_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_view);
 
@@ -407,6 +441,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_view_button_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_selection_mode_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);
 }
 
 static void

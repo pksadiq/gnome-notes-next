@@ -189,6 +189,7 @@
             <child>
               <object class="GtkStack" id="main_stack">
                 <property name="visible">1</property>
+                <signal name="notify::visible-child" handler="gn_window_main_view_changed" swapped="1"/>
                 <child>
                   <object class="GtkStack" id="notes_stack">
                     <property name="visible">1</property>
