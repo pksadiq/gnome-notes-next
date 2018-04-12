@@ -213,6 +213,16 @@ gn_local_provider_get_notes (GnProvider *provider)
   GN_RETURN (GN_LOCAL_PROVIDER (provider)->notes);
 }
 
+static GList *
+gn_local_provider_get_trash_notes (GnProvider *provider)
+{
+  GN_ENTRY;
+
+  g_assert (GN_IS_PROVIDER (provider));
+
+  GN_RETURN (GN_LOCAL_PROVIDER (provider)->trash_notes);
+}
+
 static void
 gn_local_provider_class_init (GnLocalProviderClass *klass)
 {
@@ -228,6 +238,7 @@ gn_local_provider_class_init (GnLocalProviderClass *klass)
   provider_class->get_domain = gn_local_provider_get_domain;
   provider_class->get_user_name = gn_local_provider_get_user_name;
   provider_class->get_notes = gn_local_provider_get_notes;
+  provider_class->get_trash_notes = gn_local_provider_get_trash_notes;
 
   provider_class->load_items = gn_local_provider_load_items;
 }
