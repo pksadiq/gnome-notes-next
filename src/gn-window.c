@@ -84,6 +84,7 @@ gn_window_provider_added_cb (GnWindow   *self,
 
   gn_main_view_set_view (GN_MAIN_VIEW (self->notes_view),
                          GN_VIEW_TYPE_LIST);
+
   gn_main_view_set_model (GN_MAIN_VIEW (self->notes_view),
                           G_LIST_MODEL (store));
 
@@ -133,27 +134,64 @@ gn_window_show_previous_view (GnWindow  *self,
   gn_window_set_view (self, last_view, GN_VIEW_MODE_NORMAL);
 }
 
-static void
-gn_window_view_button_toggled (GnWindow  *self,
-                               GtkWidget *widget)
+static GtkWidget *
+gn_window_get_widget_for_view (GnWindow *self,
+                               GnView    view)
 {
   g_assert (GN_IS_WINDOW (self));
-  g_assert (GTK_IS_WIDGET (widget));
 
-  if (widget == self->grid_button)
+  switch (view)
     {
-      gn_main_view_set_view (GN_MAIN_VIEW (self->notes_view),
-                             GN_VIEW_TYPE_GRID);
+    case GN_VIEW_NOTES:
+      return self->notes_view;
+
+    case GN_VIEW_TRASH:
+      return self->trash_view;
+
+    default:
+      return self->notes_view;
+    }
+}
+
+static void
+gn_window_set_view_type (GnWindow   *self,
+                         GnViewType  type)
+{
+  GtkWidget *view;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  view = gn_window_get_widget_for_view (self, self->current_view);
+
+  if (type == GN_VIEW_TYPE_GRID)
+    {
+      gn_main_view_set_view (GN_MAIN_VIEW (view), GN_VIEW_TYPE_GRID);
       gtk_stack_set_visible_child (GTK_STACK (self->view_button_stack),
                                    self->list_button);
     }
   else
     {
-      gn_main_view_set_view (GN_MAIN_VIEW (self->notes_view),
-                             GN_VIEW_TYPE_LIST);
+      gn_main_view_set_view (GN_MAIN_VIEW (view), GN_VIEW_TYPE_LIST);
       gtk_stack_set_visible_child (GTK_STACK (self->view_button_stack),
                                    self->grid_button);
     }
+}
+
+static void
+gn_window_view_button_toggled (GnWindow  *self,
+                               GtkWidget *widget)
+{
+  GnViewType type;
+
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  if (widget == self->grid_button)
+    type = GN_VIEW_TYPE_GRID;
+  else
+    type = GN_VIEW_TYPE_LIST;
+
+  gn_window_set_view_type (self, type);
 }
 
 static void
@@ -256,8 +294,19 @@ static void
 gn_window_show_view (GnWindow *self,
                      GnView    view)
 {
+  GtkWidget *button;
+  GnViewType type;
+
   gn_window_update_main_view (self, view);
   gn_window_update_header_bar (self, view);
+
+  button = gtk_stack_get_visible_child (GTK_STACK (self->view_button_stack));
+  if (button == self->grid_button)
+    type = GN_VIEW_TYPE_LIST;
+  else
+    type = GN_VIEW_TYPE_GRID;
+
+  gn_window_set_view_type (self, type);
 }
 
 static void
