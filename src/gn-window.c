@@ -42,6 +42,9 @@ struct _GnWindow
   GtkWidget *view_button_stack;
   GtkWidget *grid_button;
   GtkWidget *list_button;
+  GtkWidget *navigate_button_stack;
+  GtkWidget *new_button;
+  GtkWidget *back_button;
 
   GtkWidget *select_button_stack;
   GtkWidget *select_button;
@@ -52,6 +55,7 @@ struct _GnWindow
   GtkWidget *notes_view;
   GtkWidget *trash_stack;
 
+  GQueue    *view_stack;
   GnView     current_view;
   GnViewMode current_view_mode;
 
@@ -102,6 +106,19 @@ gn_window_load_more_items (GnWindow          *self,
 
   if (self->current_view == GN_VIEW_NOTES)
     gn_manager_load_more_notes (gn_manager_get_default ());
+}
+
+static void
+gn_window_show_previous_view (GnWindow  *self,
+                              GtkWidget *widget)
+{
+  GnView last_view;
+
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  last_view = GPOINTER_TO_INT (g_queue_pop_head (self->view_stack));
+  gn_window_set_view (self, last_view, GN_VIEW_MODE_NORMAL);
 }
 
 static void
@@ -185,6 +202,8 @@ gn_window_show_view (GnWindow *self,
     case GN_VIEW_TRASH:
       gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
                                    self->trash_stack);
+      gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
+                                   self->back_button);
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
                                         "title");
       break;
@@ -192,6 +211,8 @@ gn_window_show_view (GnWindow *self,
     case GN_VIEW_NOTES:
       gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
                                    self->notes_stack);
+      gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
+                                   self->new_button);
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
                                         "main");
     }
@@ -280,6 +301,9 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, grid_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, list_button);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, navigate_button_stack);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, new_button);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, back_button);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button);
@@ -287,6 +311,7 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_callback (widget_class, gn_window_destroy_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_size_allocate_cb);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_show_previous_view);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_view_button_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_selection_mode_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
@@ -297,6 +322,7 @@ gn_window_init (GnWindow *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
+  self->view_stack = g_queue_new ();
   g_signal_connect_object (gn_manager_get_default (),
                            "provider-added",
                            G_CALLBACK (gn_window_provider_added_cb),
@@ -331,6 +357,13 @@ gn_window_set_view (GnWindow   *self,
 
   if (view != self->current_view)
     {
+      g_queue_push_head (self->view_stack,
+                         GINT_TO_POINTER (self->current_view));
+
+      if (view == GN_VIEW_NOTES ||
+          view == GN_VIEW_NOTEBOOKS)
+        g_queue_clear (self->view_stack);
+
       self->current_view = view;
       gn_window_show_view (self, view);
     }
