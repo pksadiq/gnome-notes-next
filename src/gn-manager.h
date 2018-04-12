@@ -34,6 +34,9 @@ GnManager  *gn_manager_get_default            (void);
 GnSettings *gn_manager_get_settings           (GnManager *self);
 
 GListStore *gn_manager_get_notes_store        (GnManager *self);
+GListStore *gn_manager_get_trash_notes_store  (GnManager *self);
+
 void        gn_manager_load_more_notes        (GnManager *self);
+void        gn_manager_load_more_trash_notes  (GnManager *self);
 
 G_END_DECLS

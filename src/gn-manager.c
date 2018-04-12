@@ -297,6 +297,20 @@ gn_manager_get_notes_store (GnManager *self)
 }
 
 /**
+ * gn_manager_get_trash_notes_store:
+ * @self: A #GnManager
+ *
+ * Get a sorted list of trashed notes loaded from providers.
+ *
+ * Returns: (transfer none): a #GListStore
+ */
+GListStore *
+gn_manager_get_trash_notes_store (GnManager *self)
+{
+  return self->trash_notes_store;
+}
+
+/**
  * gn_manager_load_more_notes:
  * @self: A #GnManager
  *
@@ -313,4 +327,23 @@ gn_manager_load_more_notes (GnManager *self)
 
   gn_manager_load_more_items (self, &self->notes_store,
                               &self->notes_queue);
+}
+
+/**
+ * gn_manager_load_more_trash_notes:
+ * @self: A #GnManager
+ *
+ * Load more trash notes to the store from the queue, if any.
+ */
+void
+gn_manager_load_more_trash_notes (GnManager *self)
+{
+  /* FIXME: use a GMutex instead? */
+  g_return_if_fail (GN_IS_MAIN_THREAD ());
+
+  if (g_queue_is_empty (self->trash_notes_queue))
+    return;
+
+  gn_manager_load_more_items (self, &self->trash_notes_store,
+                              &self->trash_notes_queue);
 }
