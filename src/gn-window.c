@@ -194,14 +194,34 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 }
 
 static void
-gn_window_show_view (GnWindow *self,
-                     GnView    view)
+gn_window_update_main_view (GnWindow *self,
+                            GnView    view)
 {
   switch (view)
     {
     case GN_VIEW_TRASH:
       gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
                                    self->trash_stack);
+      break;
+
+    case GN_VIEW_NOTES:
+      gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
+                                   self->notes_stack);
+      break;
+    default:
+      break;
+    }
+}
+
+static void
+gn_window_update_header_bar (GnWindow *self,
+                             GnView    view)
+{
+  switch (view)
+    {
+    case GN_VIEW_TRASH:
+    case GN_VIEW_NOTEBOOK_NOTES:
+    case GN_VIEW_EDITOR:
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->back_button);
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
@@ -209,13 +229,23 @@ gn_window_show_view (GnWindow *self,
       break;
 
     case GN_VIEW_NOTES:
-      gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
-                                   self->notes_stack);
+    case GN_VIEW_NOTEBOOKS:
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->new_button);
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
                                         "main");
+      break;
+    default:
+      break;
     }
+}
+
+static void
+gn_window_show_view (GnWindow *self,
+                     GnView    view)
+{
+  gn_window_update_main_view (self, view);
+  gn_window_update_header_bar (self, view);
 }
 
 static void
