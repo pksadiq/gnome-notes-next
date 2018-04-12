@@ -119,10 +119,20 @@ gn_manager_load_local_providers (GTask        *task,
           g_queue_insert_sorted (self->notes_queue, item->data,
                                  gn_provider_item_compare, NULL);
         }
+
+      provider_items = gn_provider_get_trash_notes (provider);
+
+      for (GList *item = provider_items; item != NULL; item = item->next)
+        {
+          g_queue_insert_sorted (self->trash_notes_queue, item->data,
+                                 gn_provider_item_compare, NULL);
+        }
     }
 
   gn_manager_load_more_items (self, &self->notes_store,
                               &self->notes_queue);
+  gn_manager_load_more_items (self, &self->trash_notes_store,
+                              &self->trash_notes_queue);
 }
 
 static void
@@ -239,6 +249,8 @@ gn_manager_init (GnManager *self)
                                            g_free, NULL);
   self->notes_queue = g_queue_new ();
   self->notes_store = g_list_store_new (GN_TYPE_PROVIDER_ITEM);
+  self->trash_notes_queue = g_queue_new ();
+  self->trash_notes_store = g_list_store_new (GN_TYPE_PROVIDER_ITEM);
   self->provider_cancellable = g_cancellable_new ();
 
   gn_manager_load_providers (self);
