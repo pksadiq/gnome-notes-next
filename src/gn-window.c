@@ -54,6 +54,7 @@ struct _GnWindow
   GtkWidget *notes_stack;
   GtkWidget *notes_view;
   GtkWidget *trash_stack;
+  GtkWidget *trash_view;
 
   GQueue    *view_stack;
   GnView     current_view;
@@ -90,6 +91,15 @@ gn_window_provider_added_cb (GnWindow   *self,
   if (g_list_model_get_item (G_LIST_MODEL (store), 0) != NULL)
     gtk_stack_set_visible_child_name (GTK_STACK (self->notes_stack),
                                       "note-view");
+
+  store = gn_manager_get_trash_notes_store (gn_manager_get_default ());
+
+  gn_main_view_set_model (GN_MAIN_VIEW (self->trash_view),
+                          G_LIST_MODEL (store));
+
+  if (g_list_model_get_item (G_LIST_MODEL (store), 0) != NULL)
+    gtk_stack_set_visible_child_name (GTK_STACK (self->trash_stack),
+                                      "content-view");
 }
 
 static void
@@ -106,6 +116,8 @@ gn_window_load_more_items (GnWindow          *self,
 
   if (self->current_view == GN_VIEW_NOTES)
     gn_manager_load_more_notes (gn_manager_get_default ());
+  else if (self->current_view == GN_VIEW_TRASH)
+    gn_manager_load_more_trash_notes (gn_manager_get_default ());
 }
 
 static void
@@ -327,6 +339,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_stack);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_view);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, grid_button);

@@ -324,6 +324,29 @@
                       </packing>
                     </child>
 
+                    <child>
+                      <object class="GtkScrolledWindow">
+                        <property name="visible">1</property>
+                        <signal name="edge-reached" handler="gn_window_load_more_items" swapped="1"/>
+                        <child>
+                          <object class="GtkFrame">
+                            <property name="visible">1</property>
+                            <style>
+                             <class name="content-view"/>
+                            </style>
+                            <child>
+                              <object class="GnMainView" id="trash_view">
+                                <property name="visible">1</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="name">content-view</property>
+                      </packing>
+                    </child>
+
                   </object> <!-- ./GtkStack trash_stack -->
                 </child>
               </object> <!-- ./GtkStack main_stack -->
