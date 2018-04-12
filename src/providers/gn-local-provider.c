@@ -60,8 +60,10 @@ struct _GnLocalProvider
   gchar *user_name;
 
   GFile *location;
+  GFile *trash_location;
 
   GList *notes;
+  GList *trash_notes;
 };
 
 G_DEFINE_TYPE (GnLocalProvider, gn_local_provider, GN_TYPE_PROVIDER)
@@ -192,6 +194,12 @@ gn_local_provider_load_items (GnProvider    *provider,
   if (*error != NULL)
     GN_RETURN (FALSE);
 
+  gn_local_provider_load_path (self, self->trash_location,
+                               &self->trash_notes,
+                               cancellable, error);
+  if (*error != NULL)
+    GN_RETURN (FALSE);
+
   GN_RETURN (TRUE);
 }
 
@@ -235,6 +243,11 @@ gn_local_provider_init (GnLocalProvider *self)
 
       path = g_build_filename (g_get_user_data_dir (), "gnome-notes", NULL);
       self->location = g_file_new_for_path (path);
+      g_free (path);
+
+      path = g_build_filename (g_get_user_data_dir (), "gnome-notes",
+                               ".Trash", NULL);
+      self->trash_location = g_file_new_for_path (path);
     }
 }
 
