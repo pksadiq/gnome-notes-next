@@ -30,6 +30,7 @@ typedef enum
   GN_VIEW_EDITOR,
   GN_VIEW_NOTEBOOKS,
   GN_VIEW_NOTEBOOK_NOTES, /* Notes view after opening a Notebook */
+  GN_VIEW_TRASH,
   GN_VIEW_SEARCH
 } GnView;
 

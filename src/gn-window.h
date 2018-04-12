@@ -21,6 +21,8 @@
 #pragma once
 
 #include <gtk/gtk.h>
+
+#include "gn-enums.h"
 #include "gn-application.h"
 
 G_BEGIN_DECLS
@@ -30,5 +32,10 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (GnWindow, gn_window, GN, WINDOW, GtkApplicationWindow)
 
 GnWindow *gn_window_new (GnApplication *application);
+
+GnViewMode gn_window_get_mode (GnWindow   *self);
+void       gn_window_set_view (GnWindow   *self,
+                               GnView      view,
+                               GnViewMode  mode);
 
 G_END_DECLS

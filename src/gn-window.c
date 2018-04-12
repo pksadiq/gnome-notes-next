@@ -50,6 +50,7 @@ struct _GnWindow
   GtkWidget *main_stack;
   GtkWidget *notes_stack;
   GtkWidget *notes_view;
+  GtkWidget *trash_stack;
 
   GnView     current_view;
   GnViewMode current_view_mode;
@@ -176,6 +177,27 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 }
 
 static void
+gn_window_show_view (GnWindow *self,
+                     GnView    view)
+{
+  switch (view)
+    {
+    case GN_VIEW_TRASH:
+      gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
+                                   self->trash_stack);
+      gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
+                                        "title");
+      break;
+
+    case GN_VIEW_NOTES:
+      gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
+                                   self->notes_stack);
+      gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
+                                        "main");
+    }
+}
+
+static void
 gn_window_size_allocate_cb (GnWindow *self)
 {
   GtkWindow *window = GTK_WINDOW (self);
@@ -253,6 +275,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_stack);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, grid_button);
@@ -289,4 +312,26 @@ gn_window_new (GnApplication *application)
   return g_object_new (GN_TYPE_WINDOW,
                        "application", application,
                        NULL);
+}
+
+GnViewMode
+gn_window_get_mode (GnWindow *self)
+{
+  g_return_val_if_fail (GN_IS_WINDOW (self), 0);
+
+  return self->current_view_mode;
+}
+
+void
+gn_window_set_view (GnWindow   *self,
+                    GnView      view,
+                    GnViewMode  mode)
+{
+  g_return_if_fail (GN_IS_WINDOW (self));
+
+  if (view != self->current_view)
+    {
+      self->current_view = view;
+      gn_window_show_view (self, view);
+    }
 }

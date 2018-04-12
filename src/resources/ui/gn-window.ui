@@ -255,6 +255,12 @@
                     <property name="title" translatable="1">Notebooks</property>
                   </packing>
                 </child>
+
+                <child>
+                  <object class="GtkStack" id="trash_stack">
+                    <property name="visible">1</property>
+                  </object> <!-- ./GtkStack trash_stack -->
+                </child>
               </object> <!-- ./GtkStack main_stack -->
             </child>
 

@@ -63,6 +63,30 @@ static GOptionEntry cmd_options[] = {
 };
 
 static void
+gn_application_show_trash (GSimpleAction *action,
+                           GVariant      *parameter,
+                           gpointer       user_data)
+{
+  GList *windows;
+  GnWindow *window = NULL;
+
+  windows = gtk_application_get_windows (user_data);
+
+  for (GList *node = windows; node != NULL; node = node->next)
+    {
+      window = GN_WINDOW (node->data);
+
+      if (gn_window_get_mode (window) != GN_VIEW_MODE_DETACHED)
+          break;
+    }
+
+  g_return_if_fail (window != NULL);
+
+  gn_window_set_view (window, GN_VIEW_TRASH, GN_VIEW_MODE_NORMAL);
+  gtk_window_present (GTK_WINDOW (window));
+}
+
+static void
 gn_application_show_about (GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       user_data)
@@ -101,6 +125,7 @@ gn_application_quit (GSimpleAction *action,
 }
 
 static const GActionEntry application_entries[] = {
+  { "trash", gn_application_show_trash },
   { "about", gn_application_show_about },
   { "quit",  gn_application_quit       },
 };
