@@ -247,6 +247,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 
   if (selection_mode)
     {
+      gtk_widget_hide (self->navigate_button_stack);
       gtk_style_context_add_class (style_context, "selection-mode");
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
                                         "title");
@@ -256,6 +257,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   else
     {
       gtk_style_context_remove_class (style_context, "selection-mode");
+      gtk_widget_show (self->navigate_button_stack);
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
                                         "main");
     }
