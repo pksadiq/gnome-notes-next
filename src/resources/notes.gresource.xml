@@ -6,6 +6,7 @@
     <file preprocess="xml-stripblanks">gtk/menus.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-window.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-main-view.ui</file>
+    <file preprocess="xml-stripblanks">ui/gn-action-bar.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-grid-view-item.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-list-view-item.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-item-thumbnail.ui</file>

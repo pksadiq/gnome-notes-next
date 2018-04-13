@@ -23,6 +23,7 @@ src += [
   'gn-manager.c',
   'gn-utils.c',
   'gn-window.c',
+  'gn-action-bar.c',
   'notes/gn-item.c',
   'notes/gn-note.c',
   'notes/gn-plain-note.c',

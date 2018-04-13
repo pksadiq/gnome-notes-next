@@ -30,6 +30,7 @@
 #include "gn-provider-item.h"
 #include "gn-settings.h"
 #include "gn-main-view.h"
+#include "gn-action-bar.h"
 #include "gn-window.h"
 #include "gn-trace.h"
 
@@ -49,6 +50,7 @@ struct _GnWindow
   GtkWidget *select_button_stack;
   GtkWidget *select_button;
   GtkWidget *cancel_button;
+  GtkWidget *main_action_bar;
 
   GtkWidget *main_stack;
   GtkWidget *notes_stack;
@@ -247,6 +249,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   if (selection_mode)
     {
       gtk_widget_hide (self->navigate_button_stack);
+      gtk_widget_show (self->main_action_bar);
       gtk_style_context_add_class (style_context, "selection-mode");
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
                                         "title");
@@ -257,6 +260,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
     {
       gtk_style_context_remove_class (style_context, "selection-mode");
       gtk_widget_show (self->navigate_button_stack);
+      gtk_widget_hide (self->main_action_bar);
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
                                         "main");
     }
@@ -410,6 +414,7 @@ gn_window_class_init (GnWindowClass *klass)
   object_class->constructed = gn_window_constructed;
 
   g_type_ensure (GN_TYPE_MAIN_VIEW);
+  g_type_ensure (GN_TYPE_ACTION_BAR);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/org/sadiqpk/notes/"
@@ -435,6 +440,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, cancel_button);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, main_action_bar);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_window_destroy_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_size_allocate_cb);

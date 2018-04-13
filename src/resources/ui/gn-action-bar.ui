@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk 3.12 -->
+  <template class="GnActionBar" parent="GtkActionBar">
+    <property name="visible">1</property>
+    <child>
+      <object class="GtkStack" id="actions_stack">
+        <property name="visible">1</property>
+        <child>
+          <object class="GtkBox" id="main_actions">
+            <property name="visible">1</property>
+            <property name="hexpand">1</property>
+            <property name="spacing">6</property>
+          </object> <!-- ./GtkBox main_actions -->
+        </child>
+      </object> <!-- ./GtkStack actions_stack -->
+    </child>
+  </template>
+</interface>
