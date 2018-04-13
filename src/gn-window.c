@@ -226,6 +226,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
                                   GtkWidget *widget)
 {
   GtkStyleContext *style_context;
+  GtkWidget *current_view;
   gboolean selection_mode;
 
   g_assert (GN_IS_WINDOW (self));
@@ -239,11 +240,9 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   selection_mode = self->current_view_mode == GN_VIEW_MODE_SELECTION;
   style_context = gtk_widget_get_style_context (self->header_bar);
 
-  if (self->current_view == GN_VIEW_NOTES)
-    {
-      gn_main_view_set_selection_mode (GN_MAIN_VIEW (self->notes_view),
-                                       selection_mode);
-    }
+  current_view = gn_window_get_widget_for_view (self, self->current_view);
+  gn_main_view_set_selection_mode (GN_MAIN_VIEW (current_view),
+                                   selection_mode);
 
   if (selection_mode)
     {
