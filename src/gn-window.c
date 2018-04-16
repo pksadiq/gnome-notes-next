@@ -346,11 +346,17 @@ static void
 gn_window_update_header_bar (GnWindow *self,
                              GnView    view)
 {
+  gtk_widget_show (self->select_button_stack);
+  gtk_widget_show (self->view_button_stack);
+
   switch (view)
     {
+    case GN_VIEW_EDITOR:
+      gtk_widget_hide (self->select_button_stack);
+      gtk_widget_hide (self->view_button_stack);
+      /* fallthrough */
     case GN_VIEW_TRASH:
     case GN_VIEW_NOTEBOOK_NOTES:
-    case GN_VIEW_EDITOR:
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->back_button);
       gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
