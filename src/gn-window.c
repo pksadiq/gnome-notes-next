@@ -29,6 +29,7 @@
 #include "gn-note.h"
 #include "gn-provider-item.h"
 #include "gn-settings.h"
+#include "gn-editor.h"
 #include "gn-main-view.h"
 #include "gn-action-bar.h"
 #include "gn-window.h"
@@ -56,6 +57,7 @@ struct _GnWindow
   GtkWidget *notes_stack;
   GtkWidget *notes_view;
   GtkWidget *notebook_stack;
+  GtkWidget *editor_stack;
   GtkWidget *trash_stack;
   GtkWidget *trash_view;
 
@@ -161,6 +163,41 @@ gn_window_main_view_changed (GnWindow   *self,
   g_queue_clear (self->view_stack);
   g_queue_push_head (self->view_stack, GINT_TO_POINTER (view));
   self->current_view = view;
+}
+
+static void
+gn_window_item_activated (GnWindow       *self,
+                          GnProviderItem *provider_item,
+                          GnMainView     *main_view)
+{
+  GtkTextBuffer *buffer = NULL;
+  GtkWidget *editor;
+  GtkWidget *scrolled_window;
+  GtkWidget *grid;
+  GnProvider *provider;
+  GnItem *item;
+
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (GN_IS_MAIN_VIEW (main_view));
+
+  provider = gn_provider_item_get_provider (provider_item);
+  item = gn_provider_item_get_item (provider_item);
+
+  if (GN_IS_NOTE (item))
+    {
+      GtkWidget *child;
+
+      editor = gn_editor_new ();
+      gn_editor_set_item (GN_EDITOR (editor), provider_item);
+
+      child = gtk_bin_get_child (GTK_BIN (self->editor_stack));
+      if (child != NULL)
+        gtk_container_remove (GTK_CONTAINER (self->editor_stack), child);
+
+      gtk_container_add (GTK_CONTAINER (self->editor_stack), editor);
+      gn_window_set_view (self, GN_VIEW_EDITOR, GN_VIEW_MODE_NORMAL);
+    }
 }
 
 static GtkWidget *
@@ -296,6 +333,10 @@ gn_window_update_main_view (GnWindow *self,
                                    self->notebook_stack);
       break;
 
+    case GN_VIEW_EDITOR:
+      gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
+                                   self->editor_stack);
+
     default:
       break;
     }
@@ -427,6 +468,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notebook_stack);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_view);
 
@@ -449,6 +491,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_selection_mode_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_item_activated);
 }
 
 static void

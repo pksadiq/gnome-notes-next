@@ -265,6 +265,7 @@
                             <child>
                               <object class="GnMainView" id="notes_view">
                                 <property name="visible">1</property>
+                                <signal name="item-activated" handler="gn_window_item_activated" swapped="1"/>
                               </object>
                             </child>
                           </object>
@@ -349,6 +350,13 @@
                     </child>
 
                   </object> <!-- ./GtkStack trash_stack -->
+                </child>
+
+                <child>
+                  <object class="GtkFrame" id="editor_stack">
+                    <property name="visible">1</property>
+                    <property name="shadow-type">none</property>
+                  </object>
                 </child>
               </object> <!-- ./GtkStack main_stack -->
             </child>
