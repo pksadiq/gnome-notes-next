@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include "gn-note.h"
+#include "gn-note-buffer.h"
 #include "gn-trace.h"
 
 /**
@@ -76,23 +77,18 @@ gn_note_real_get_buffer (GnNote *self)
   GtkTextBuffer *buffer;
   const gchar *title;
   g_autofree gchar *raw_content = NULL;
-  GtkTextIter iter;
+  g_autofree gchar *full_content = NULL;
 
   g_assert (GN_IS_NOTE (self));
 
   title = gn_item_get_title (GN_ITEM (self));
   raw_content = gn_note_get_raw_content (self);
-  buffer = gtk_text_buffer_new (NULL);
+  full_content = g_strconcat (title, "\n",
+                             raw_content, NULL);
 
-  gtk_text_buffer_create_tag (buffer, "bold",
-                              "weight", PANGO_WEIGHT_BOLD, NULL);
-
-  gtk_text_buffer_get_start_iter (buffer, &iter);
-  gtk_text_buffer_insert_with_tags_by_name (buffer, &iter,
-                                            title, -1,
-                                            "bold", NULL);
-  gtk_text_buffer_insert (buffer, &iter, "\n", -1);
-  gtk_text_buffer_insert (buffer, &iter, raw_content, -1);
+  buffer = GTK_TEXT_BUFFER (gn_note_buffer_new ());
+  gtk_text_buffer_set_text (buffer, full_content, -1);
+  gtk_text_buffer_set_modified (buffer, FALSE);
 
   return buffer;
 }
