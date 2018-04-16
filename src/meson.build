@@ -26,6 +26,7 @@ src += [
   'gn-action-bar.c',
   'notes/gn-item.c',
   'notes/gn-note.c',
+  'notes/gn-note-buffer.c',
   'notes/gn-plain-note.c',
   'providers/gn-provider.c',
   'providers/gn-provider-item.c',
