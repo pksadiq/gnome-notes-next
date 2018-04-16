@@ -339,6 +339,7 @@
                             <child>
                               <object class="GnMainView" id="trash_view">
                                 <property name="visible">1</property>
+                                <signal name="item-activated" handler="gn_window_item_activated" swapped="1"/>
                               </object>
                             </child>
                           </object>
