@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <!-- interface-requires gtk 3.10 -->
+  <template class="GnEditor" parent="GtkGrid">
+    <property name="visible">1</property>
+    <property name="orientation">vertical</property>
+
+    <child>
+      <object class="GtkScrolledWindow">
+        <property name="visible">1</property>
+        <property name="expand">1</property>
+        <property name="hscrollbar-policy">never</property>
+        <child>
+          <object class="GtkTextView" id="editor_view">
+            <property name="visible">1</property>
+            <property name="has-focus">1</property>
+            <property name="wrap-mode">word</property>
+          </object>
+        </child>
+      </object>
+    </child>
+
+    <child>
+      <object class="GtkActionBar" id="action_bar">
+        <property name="visible">1</property>
+        <style>
+         <class name="osd"/>
+        </style>
+
+        <child>
+          <object class="GtkButtonBox">
+            <property name="visible">1</property>
+            <property name="layout-style">expand</property>
+            <child>
+              <object class="GtkButton" id="cut_button">
+                <property name="label" translatable="1">Cut</property>
+                <property name="visible">1</property>
+                <property name="can-focus">0</property>
+                <signal name="clicked" handler="gn_editor_copy_or_cut" swapped="1" />
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="copy_button">
+                <property name="label" translatable="1">Copy</property>
+                <property name="visible">1</property>
+                <property name="can-focus">0</property>
+                <property name="sensitive" bind-source="cut_button" bind-property="sensitive"/>
+                <signal name="clicked" handler="gn_editor_copy_or_cut" swapped="1" />
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="paste_button">
+                <property name="label" translatable="1">Paste</property>
+                <property name="visible">1</property>
+                <property name="can-focus">0</property>
+                <property name="sensitive" bind-source="editor_view"
+                          bind-property="editable" bind-flags="default|sync-create"/>
+                <signal name="clicked" handler="gn_editor_paste" swapped="1" />
+              </object>
+            </child>
+          </object> <!-- ./GtkButtonBox -->
+        </child>
+
+      </object> <!-- ./GtkActionBar action_bar -->
+    </child>
+  </template>
+</interface>

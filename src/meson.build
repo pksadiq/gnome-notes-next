@@ -31,6 +31,7 @@ src += [
   'providers/gn-provider.c',
   'providers/gn-provider-item.c',
   'providers/gn-local-provider.c',
+  'views/gn-editor.c',
   'views/gn-grid-view.c',
   'views/gn-list-view.c',
   'views/gn-main-view.c',
