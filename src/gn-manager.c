@@ -347,3 +347,21 @@ gn_manager_load_more_trash_notes (GnManager *self)
   gn_manager_load_more_items (self, &self->trash_notes_store,
                               &self->trash_notes_queue);
 }
+
+void
+gn_manager_save_item (GnManager      *self,
+                      GnProviderItem *provider_item)
+{
+  GnProvider *provider;
+  GnItem *item;
+
+  g_return_if_fail (GN_IS_MANAGER (self));
+  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+
+  provider = gn_provider_item_get_provider (provider_item);
+  item = gn_provider_item_get_item (provider_item);
+
+  gn_provider_save_item_async (provider, provider_item,
+                               self->provider_cancellable,
+                               NULL, NULL);
+}
