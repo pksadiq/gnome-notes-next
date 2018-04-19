@@ -173,6 +173,8 @@ gn_local_provider_load_path (GnLocalProvider  *self,
 
       note = gn_plain_note_new_from_data (contents);
       provider_item = gn_provider_item_new (GN_PROVIDER (self), GN_ITEM (note));
+      g_object_set_data_full (G_OBJECT (provider_item), "file", g_steal_pointer (&file),
+                              g_object_unref);
       *items = g_list_prepend (*items, provider_item);
     }
 }
@@ -201,6 +203,91 @@ gn_local_provider_load_items (GnProvider    *provider,
     GN_RETURN (FALSE);
 
   GN_RETURN (TRUE);
+}
+
+static void
+gn_local_provider_save_note (GnLocalProvider *self,
+                             GnProviderItem  *provider_item,
+                             GTask           *task,
+                             GCancellable    *cancellable)
+{
+  GFile *file;
+  GnItem *item;
+  const gchar *title;
+  g_autofree gchar *content = NULL;
+  g_autofree gchar *full_content = NULL;
+
+  g_assert (GN_IS_LOCAL_PROVIDER (self));
+  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (G_IS_TASK (task));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  file = g_object_get_data (G_OBJECT (provider_item), "file");
+  g_assert (G_IS_FILE (file));
+
+  item = gn_provider_item_get_item (provider_item);
+  title = gn_item_get_title (item);
+  content = gn_note_get_raw_content (GN_NOTE (item));
+  full_content = g_strconcat (title, "\n", content, NULL);
+
+  g_file_replace_contents (file, full_content, -1, NULL, FALSE,
+                           0, NULL, NULL, NULL);
+}
+
+static void
+gn_local_provider_real_save_item (GTask        *task,
+                                  gpointer      source_object,
+                                  gpointer      task_data,
+                                  GCancellable *cancellable)
+{
+  GnLocalProvider *self = source_object;
+  GnProviderItem *provider_item = task_data;
+  GnItem *item;
+
+  GN_ENTRY;
+
+  g_assert (G_IS_TASK (task));
+  g_assert (GN_IS_LOCAL_PROVIDER (self));
+  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  item = gn_provider_item_get_item (provider_item);
+
+  if (GN_IS_NOTE (item))
+    gn_local_provider_save_note (self, provider_item, task, cancellable);
+  GN_EXIT;
+}
+
+static void
+gn_local_provider_save_item_async (GnProvider          *provider,
+                                   GnProviderItem      *provider_item,
+                                   GCancellable        *cancellable,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  GnLocalProvider *self = (GnLocalProvider *)provider;
+  g_autoptr(GTask) task = NULL;
+
+  GN_ENTRY;
+
+  g_assert (GN_IS_LOCAL_PROVIDER (self));
+  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, gn_local_provider_save_item_async);
+  g_task_set_task_data (task, g_object_ref (provider_item), g_object_unref);
+  g_task_run_in_thread (task, gn_local_provider_real_save_item);
+
+  GN_EXIT;
+}
+
+static gboolean
+gn_local_provider_save_item_finish (GnProvider   *self,
+                                    GAsyncResult *result,
+                                    GError       **error)
+{
+  return g_task_propagate_boolean (G_TASK (result), error);
 }
 
 static GList *
@@ -241,6 +328,8 @@ gn_local_provider_class_init (GnLocalProviderClass *klass)
   provider_class->get_trash_notes = gn_local_provider_get_trash_notes;
 
   provider_class->load_items = gn_local_provider_load_items;
+  provider_class->save_item_async = gn_local_provider_save_item_async;
+  provider_class->save_item_finish = gn_local_provider_save_item_finish;
 }
 
 static void
