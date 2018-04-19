@@ -23,6 +23,8 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
+#include "gn-types.h"
+
 G_BEGIN_DECLS
 
 #define GN_TYPE_PROVIDER (gn_provider_get_type ())
@@ -41,6 +43,15 @@ struct _GnProviderClass
                                         GAsyncReadyCallback   callback,
                                         gpointer              user_data);
   gboolean    (*load_items_finish)     (GnProvider           *self,
+                                        GAsyncResult         *result,
+                                        GError              **error);
+
+  void        (*save_item_async)       (GnProvider           *self,
+                                        GnProviderItem       *provider_item,
+                                        GCancellable         *cancellable,
+                                        GAsyncReadyCallback   callback,
+                                        gpointer              user_data);
+  gboolean    (*save_item_finish)      (GnProvider           *self,
                                         GAsyncResult         *result,
                                         GError              **error);
 
@@ -71,6 +82,14 @@ void        gn_provider_load_items_async      (GnProvider           *self,
                                                GAsyncReadyCallback   callback,
                                                gpointer              user_data);
 gboolean    gn_provider_load_items_finish     (GnProvider           *self,
+                                               GAsyncResult         *result,
+                                               GError              **error);
+void        gn_provider_save_item_async       (GnProvider           *self,
+                                               GnProviderItem       *provider_item,
+                                               GCancellable         *cancellable,
+                                               GAsyncReadyCallback   callback,
+                                               gpointer              user_data);
+gboolean    gn_provider_save_item_finish      (GnProvider           *self,
                                                GAsyncResult         *result,
                                                GError              **error);
 

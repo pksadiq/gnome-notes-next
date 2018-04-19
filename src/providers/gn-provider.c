@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include "gn-provider.h"
+#include "gn-provider-item.h"
 #include "gn-trace.h"
 
 /**
@@ -167,6 +168,28 @@ gn_provider_real_load_items_finish (GnProvider    *self,
 }
 
 static void
+gn_provider_real_save_item_async (GnProvider          *self,
+                                  GnProviderItem      *provider_item,
+                                  GCancellable        *cancellable,
+                                  GAsyncReadyCallback  callback,
+                                  gpointer             user_data)
+{
+  g_task_report_new_error (self, callback, user_data,
+                           gn_provider_real_load_items_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Saving item asynchronously not supported");
+}
+
+static gboolean
+gn_provider_real_save_item_finish (GnProvider    *self,
+                                   GAsyncResult  *result,
+                                   GError       **error)
+{
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
 gn_provider_class_init (GnProviderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -181,6 +204,8 @@ gn_provider_class_init (GnProviderClass *klass)
   klass->load_items = gn_provider_real_load_items;
   klass->load_items_async = gn_provider_real_load_items_async;
   klass->load_items_finish = gn_provider_real_load_items_finish;
+  klass->save_item_async = gn_provider_real_save_item_async;
+  klass->save_item_finish = gn_provider_real_save_item_finish;
 
   properties[PROP_UID] =
     g_param_spec_string ("uid",
@@ -428,6 +453,69 @@ gn_provider_load_items_finish (GnProvider    *self,
   g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
 
   ret = GN_PROVIDER_GET_CLASS (self)->load_items_finish (self, result, error);
+
+  GN_RETURN (ret);
+}
+
+/**
+ * gn_provider_save_item_async:
+ * @self: a #GnProvider
+ * @provider_item: a #GnProviderItem
+ * @cancellable: (nullable): a #GCancellable or %NULL
+ * @callback: a #GAsyncReadyCallback, or %NULL
+ * @user_data: closure data for @callback
+ *
+ * Asynchronously save the @provider_item. If the item
+ * isn't saved at all, a new item (ie, a file, or database
+ * entry, or whatever) is created. Else, the old item is
+ * updated with the new data.
+ *
+ * @callback should complete the operation by calling
+ * gn_provider_save_item_finish().
+ */
+void
+gn_provider_save_item_async (GnProvider          *self,
+                             GnProviderItem      *provider_item,
+                             GCancellable        *cancellable,
+                             GAsyncReadyCallback  callback,
+                             gpointer             user_data)
+{
+  GN_ENTRY;
+
+  g_return_if_fail (GN_IS_PROVIDER (self));
+  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  GN_PROVIDER_GET_CLASS (self)->save_item_async (self, provider_item,
+                                                 cancellable, callback,
+                                                 user_data);
+  GN_EXIT;
+}
+
+/**
+ * gn_provider_save_item_finish:
+ * @self: a #GnProvider
+ * @result: a #GAsyncResult provided to callback
+ * @error: a location for a #GError or %NULL
+ *
+ * Completes saving an item initiated with
+ * gn_provider_save_item_async().
+ *
+ * Returns: %TRUE if items was saved successfully. %FALSE otherwise.
+ */
+gboolean
+gn_provider_save_item_finish (GnProvider    *self,
+                              GAsyncResult  *result,
+                              GError       **error)
+{
+  gboolean ret;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
+  g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
+
+  ret = GN_PROVIDER_GET_CLASS (self)->save_item_finish (self, result, error);
 
   GN_RETURN (ret);
 }
