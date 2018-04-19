@@ -36,6 +36,8 @@
  * @include: "gn-editor.h"
  */
 
+#define SAVE_TIMEOUT 2000       /* milliseconds */
+
 struct _GnEditor
 {
   GtkGrid parent_instance;
@@ -79,6 +81,40 @@ gn_editor_paste (GnEditor *self)
                                         GDK_SELECTION_CLIPBOARD);
   gtk_text_buffer_paste_clipboard (self->note_buffer, clipboard,
                                    NULL, TRUE);
+}
+
+static gboolean
+gn_editor_save_note (gpointer user_data)
+{
+  GnEditor *self = (GnEditor *)user_data;
+  GnManager *manager;
+  GnNote *note;
+
+  GN_ENTRY;
+
+  g_assert (GN_IS_EDITOR (self));
+
+  manager = gn_manager_get_default ();
+  note = GN_NOTE (gn_provider_item_get_item (self->provider_item));
+
+  gn_note_set_content_from_buffer (note, self->note_buffer);
+  gtk_text_buffer_set_modified (self->note_buffer, FALSE);
+  gn_manager_save_item (manager, self->provider_item);
+
+  GN_RETURN (G_SOURCE_REMOVE);
+}
+
+static void
+gn_editor_buffer_modified_cb (GnEditor      *self,
+                              GtkTextBuffer *buffer)
+{
+  g_assert (GN_IS_EDITOR (self));
+  g_assert (GTK_IS_TEXT_BUFFER (buffer));
+
+  if (!gtk_text_buffer_get_modified (buffer))
+    return;
+
+  g_timeout_add (SAVE_TIMEOUT, gn_editor_save_note, self);
 }
 
 static void
@@ -137,6 +173,9 @@ gn_editor_set_item (GnEditor       *self,
   g_object_bind_property (buffer, "has-selection",
                           self->cut_button, "sensitive",
                           G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
+  g_signal_connect_object (buffer, "modified-changed",
+                           G_CALLBACK (gn_editor_buffer_modified_cb),
+                           self, G_CONNECT_SWAPPED);
 
   GN_EXIT;
 }
