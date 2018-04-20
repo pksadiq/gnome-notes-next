@@ -175,6 +175,8 @@ gn_main_view_class_init (GnMainViewClass *klass)
                          G_TYPE_LIST_MODEL,
                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
+  g_object_class_install_properties (object_class, N_PROPS, properties);
+
   /**
    * GnMainView::item-activated:
    * @self: a #GnMainView
@@ -193,8 +195,6 @@ gn_main_view_class_init (GnMainViewClass *klass)
   g_signal_set_va_marshaller (signals [ITEM_ACTIVATED],
                               G_TYPE_FROM_CLASS (klass),
                               g_cclosure_marshal_VOID__OBJECTv);
-
-  g_object_class_install_properties (object_class, N_PROPS, properties);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/org/sadiqpk/notes/"
