@@ -223,12 +223,23 @@ gn_local_provider_save_note (GnLocalProvider *self,
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
   file = g_object_get_data (G_OBJECT (provider_item), "file");
-  g_assert (G_IS_FILE (file));
-
   item = gn_provider_item_get_item (provider_item);
   title = gn_item_get_title (item);
   content = gn_note_get_raw_content (GN_NOTE (item));
   full_content = g_strconcat (title, "\n", content, NULL);
+
+  if (file == NULL)
+    {
+      g_autofree gchar *uuid = NULL;
+      g_autofree gchar *file_name = NULL;
+
+      uuid = g_uuid_string_random ();
+      file_name = g_strconcat (uuid, ".txt", NULL);
+      file = g_file_new_build_filename (g_get_user_data_dir (),
+                                        "gnome-notes", file_name, NULL);
+      g_object_set_data_full (G_OBJECT (provider_item), "file", file,
+                              g_object_unref);
+    }
 
   g_file_replace_contents (file, full_content, strlen (full_content),
                            NULL, FALSE, 0, NULL, NULL, NULL);
