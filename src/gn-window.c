@@ -127,6 +127,29 @@ gn_window_load_more_items (GnWindow          *self,
 }
 
 static void
+gn_window_open_new_note (GnWindow *self)
+{
+  GnProviderItem *provider_item;
+  GnManager *manager;
+  GtkWidget *editor, *child;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  manager = gn_manager_get_default ();
+  provider_item = gn_manager_new_note (manager);
+
+  editor = gn_editor_new ();
+  gn_editor_set_item (GN_EDITOR (editor), provider_item);
+
+  child = gtk_bin_get_child (GTK_BIN (self->editor_stack));
+  if (child != NULL)
+    gtk_container_remove (GTK_CONTAINER (self->editor_stack), child);
+
+  gtk_container_add (GTK_CONTAINER (self->editor_stack), editor);
+  gn_window_set_view (self, GN_VIEW_EDITOR, GN_VIEW_MODE_NORMAL);
+}
+
+static void
 gn_window_show_previous_view (GnWindow  *self,
                               GtkWidget *widget)
 {
@@ -492,6 +515,7 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_callback (widget_class, gn_window_destroy_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_size_allocate_cb);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_previous_view);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_view_button_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_selection_mode_toggled);

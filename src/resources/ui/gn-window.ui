@@ -49,6 +49,7 @@
               <object class="GtkButton" id="new_button">
                 <property name="visible">1</property>
                 <property name="label" translatable="1">New</property>
+                <signal name="clicked" handler="gn_window_open_new_note" swapped="1"/>
               </object>
             </child>
             <child>
