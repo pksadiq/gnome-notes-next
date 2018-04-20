@@ -378,6 +378,33 @@ gn_manager_load_more_trash_notes (GnManager *self)
                               &self->trash_notes_queue);
 }
 
+/**
+ * gn_manager_new_note:
+ * @self: A #GnManager
+ *
+ * Create a New empty note for the default provider.
+ * The default provider name can be retried by
+ * gn_settings_get_provider_name().
+ *
+ * The format of the note is decided based on
+ * the default provider.
+ *
+ * Returns: (transfer full): a #GnProviderItem
+ */
+GnProviderItem *
+gn_manager_new_note (GnManager *self)
+{
+  GnProvider *provider;
+  GnNote *note;
+
+  provider = gn_manager_get_default_provider (self);
+
+  /* TODO: set note type based on provider */
+  note = GN_NOTE (gn_plain_note_new_from_data (NULL));
+
+  return gn_provider_item_new (provider, GN_ITEM (note));
+}
+
 void
 gn_manager_save_item (GnManager      *self,
                       GnProviderItem *provider_item)

@@ -41,6 +41,7 @@ GListStore *gn_manager_get_trash_notes_store  (GnManager *self);
 void        gn_manager_load_more_notes        (GnManager *self);
 void        gn_manager_load_more_trash_notes  (GnManager *self);
 
+GnProviderItem *gn_manager_new_note           (GnManager *self);
 void        gn_manager_save_item              (GnManager      *self,
                                                GnProviderItem *item);
 
