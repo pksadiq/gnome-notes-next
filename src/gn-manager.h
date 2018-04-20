@@ -33,6 +33,7 @@ G_DECLARE_FINAL_TYPE (GnManager, gn_manager, GN, MANAGER, GObject)
 
 GnManager  *gn_manager_get_default            (void);
 GnSettings *gn_manager_get_settings           (GnManager *self);
+GnProvider *gn_manager_get_default_provider   (GnManager *self);
 
 GListStore *gn_manager_get_notes_store        (GnManager *self);
 GListStore *gn_manager_get_trash_notes_store  (GnManager *self);

@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include "gn-provider-item.h"
+#include "gn-plain-note.h"
 #include "gn-local-provider.h"
 #include "gn-settings.h"
 #include "gn-utils.h"
@@ -280,6 +281,35 @@ GnSettings *
 gn_manager_get_settings (GnManager *self)
 {
   return self->settings;
+}
+
+/**
+ * gn_manager_get_default_provider:
+ * self: A #GnManager
+ *
+ * Get the default provider to which new notes will
+ * be saved.
+ *
+ * If the default provider is not available, the
+ * local provider is returned.
+ *
+ * Returns: (transfer none): A #GnProvider
+ */
+GnProvider *
+gn_manager_get_default_provider (GnManager *self)
+{
+  GnProvider *provider;
+  const gchar *name;
+
+  g_return_val_if_fail (GN_IS_MANAGER (self), NULL);
+
+  name = gn_settings_get_provider_name (self->settings);
+  provider = g_hash_table_lookup (self->providers, name);
+
+  if (provider == NULL)
+    g_hash_table_lookup (self->providers, "local");
+
+  return provider;
 }
 
 /**
