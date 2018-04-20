@@ -49,5 +49,8 @@ void        gn_settings_get_rgba             (GnSettings    *self,
                                               GdkRGBA       *rgba);
 void        gn_settings_set_rgba             (GnSettings    *self,
                                               const GdkRGBA *rgba);
+const gchar *gn_settings_get_provider_name   (GnSettings    *self);
+gboolean     gn_settings_set_provider_name   (GnSettings    *self,
+                                              const gchar   *name);
 
 G_END_DECLS

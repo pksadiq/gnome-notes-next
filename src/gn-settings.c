@@ -40,6 +40,8 @@ struct _GnSettings
   gchar *color;
   GdkRGBA rgba;
 
+  gchar *provider;
+
   /* Window states */
   gboolean maximized;
   gint x, y;
@@ -51,6 +53,7 @@ G_DEFINE_TYPE (GnSettings, gn_settings, G_TYPE_SETTINGS)
 enum {
   PROP_0,
   PROP_COLOR,
+  PROP_PROVIDER,
   N_PROPS
 };
 
@@ -72,6 +75,10 @@ gn_settings_get_property (GObject    *object,
       g_value_set_boxed (value, &rgba);
       break;
 
+    case PROP_PROVIDER:
+      g_value_set_string (value, self->provider);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -89,6 +96,10 @@ gn_settings_set_property (GObject      *object,
     {
     case PROP_COLOR:
       gn_settings_set_rgba (self, g_value_get_boxed (value));
+      break;
+
+    case PROP_PROVIDER:
+      gn_settings_set_provider_name (self, g_value_get_string (value));
       break;
 
     default:
@@ -111,6 +122,8 @@ gn_settings_constructed (GObject *object)
   self->color = g_settings_get_string (settings, "color");
   if (!gdk_rgba_parse (&self->rgba, self->color))
     g_critical ("Color %s is an invalid color", self->color);
+
+  self->provider = g_settings_get_string (settings, "provider");
 }
 
 static void
@@ -121,6 +134,7 @@ gn_settings_finalize (GObject *object)
   GN_ENTRY;
 
   g_free (self->color);
+  g_free (self->provider);
 
   G_OBJECT_CLASS (gn_settings_parent_class)->finalize (object);
 
@@ -143,6 +157,14 @@ gn_settings_class_init (GnSettingsClass *klass)
                          "The default color of new items",
                          NULL,
                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  properties[PROP_PROVIDER] =
+    g_param_spec_string ("provider",
+                         "Provider",
+                         "The default provider name",
+                         NULL,
+                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+                         G_PARAM_EXPLICIT_NOTIFY);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
 }
@@ -235,4 +257,29 @@ gn_settings_set_rgba (GnSettings    *self,
   self->rgba.green = rgba->green;
   self->rgba.blue  = rgba->blue;
   self->rgba.alpha = rgba->alpha;
+}
+
+const gchar *
+gn_settings_get_provider_name (GnSettings *self)
+{
+  g_return_val_if_fail (GN_IS_SETTINGS (self), NULL);
+
+  return self->provider;
+}
+
+gboolean
+gn_settings_set_provider_name (GnSettings  *self,
+                               const gchar *name)
+{
+  g_return_val_if_fail (GN_IS_SETTINGS (self), FALSE);
+  g_return_val_if_fail (name != NULL, FALSE);
+
+  if (g_strcmp0 (self->provider, name) == 0)
+    return FALSE;
+
+  g_free (self->provider);
+  self->provider = g_strdup (name);
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PROVIDER]);
+
+  return TRUE;
 }

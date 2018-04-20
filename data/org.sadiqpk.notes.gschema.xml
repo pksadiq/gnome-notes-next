@@ -2,6 +2,14 @@
 <schemalist gettext-domain="gnome-notes">
   <schema id="org.sadiqpk.notes" path="/org/sadiqpk/notes/">
 
+    <key type="s" name="provider">
+      <default>'local'</default>
+      <summary>Default provider name.</summary>
+      <description>
+        The default provider to which new notes will be saved
+      </description>
+    </key>
+
     <key type="s" name="color">
       <default>'rgb(239,242,209)'</default>
       <summary>Default note color.</summary>
