@@ -230,8 +230,8 @@ gn_local_provider_save_note (GnLocalProvider *self,
   content = gn_note_get_raw_content (GN_NOTE (item));
   full_content = g_strconcat (title, "\n", content, NULL);
 
-  g_file_replace_contents (file, full_content, -1, NULL, FALSE,
-                           0, NULL, NULL, NULL);
+  g_file_replace_contents (file, full_content, strlen (full_content),
+                           NULL, FALSE, 0, NULL, NULL, NULL);
 }
 
 static void
