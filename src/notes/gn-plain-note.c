@@ -28,27 +28,21 @@ gn_plain_note_set_content_from_buffer (GnNote        *note,
                                        GtkTextBuffer *buffer)
 {
   GnPlainNote *self = GN_PLAIN_NOTE (note);
-  GtkTextIter start, end;
-  g_autofree gchar *title = NULL;
-  g_autofree gchar *content = NULL;
-  gint line_count;
+  g_autofree gchar *full_content = NULL;
+  gchar *title = NULL, *content = NULL;
+  g_auto(GStrv) split_data;
 
-  line_count = gtk_text_buffer_get_line_count (buffer);
+  g_object_get (G_OBJECT (buffer), "text", &full_content, NULL);
 
-  /* If we have at least 1 line set the title */
-  if (line_count > 0)
+  /* We shall have at most 2 parts: title and content */
+  split_data = g_strsplit (full_content, "\n", 2);
+
+  if (split_data[0] != NULL)
     {
-      gtk_text_buffer_get_start_iter (buffer, &start);
-      gtk_text_buffer_get_iter_at_line (buffer, &end, 1);
-      title = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
-    }
+      title = split_data[0];
 
-  /* If we have more than 1 line, set content too */
-  if (line_count > 1)
-    {
-      start = end;
-      gtk_text_buffer_get_end_iter (buffer, &end);
-      content = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+      if (split_data[1] != NULL)
+        content = split_data[1];
     }
 
   g_free (self->content);
