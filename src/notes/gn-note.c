@@ -87,7 +87,9 @@ gn_note_real_get_buffer (GnNote *self)
                              raw_content, NULL);
 
   buffer = GTK_TEXT_BUFFER (gn_note_buffer_new ());
-  gtk_text_buffer_set_text (buffer, full_content, -1);
+
+  if (full_content != NULL)
+    gtk_text_buffer_set_text (buffer, full_content, -1);
   gtk_text_buffer_set_modified (buffer, FALSE);
 
   return buffer;
