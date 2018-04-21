@@ -227,7 +227,11 @@ gn_local_provider_save_note (GnLocalProvider *self,
   item = gn_provider_item_get_item (provider_item);
   title = gn_item_get_title (item);
   content = gn_note_get_raw_content (GN_NOTE (item));
-  full_content = g_strconcat (title, "\n", content, NULL);
+
+  if (title != NULL) /* if title is NULL, content too will be NULL */
+    full_content = g_strconcat (title, "\n", content, NULL);
+  else
+    full_content = g_strdup ("");
 
   if (file == NULL)
     {
