@@ -359,11 +359,13 @@ gn_local_provider_init (GnLocalProvider *self)
       g_autofree gchar *path = NULL;
 
       path = g_build_filename (g_get_user_data_dir (), "gnome-notes", NULL);
+      g_mkdir_with_parents (path, 0755);
       self->location = g_file_new_for_path (path);
       g_free (path);
 
       path = g_build_filename (g_get_user_data_dir (), "gnome-notes",
                                ".Trash", NULL);
+      g_mkdir_with_parents (path, 0755);
       self->trash_location = g_file_new_for_path (path);
     }
 }
