@@ -67,6 +67,22 @@ enum {
 static guint signals[N_SIGNALS];
 
 static void
+gn_manager_item_added_cb (GnManager      *self,
+                          GnProviderItem *provider_item)
+{
+  GnItem *item;
+
+  g_assert (GN_IS_MANAGER (self));
+  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+
+  item = gn_provider_item_get_item (provider_item);
+
+  if (GN_IS_NOTE (item))
+    g_list_store_insert_sorted (self->notes_store, provider_item,
+                                gn_provider_item_compare, NULL);
+}
+
+static void
 gn_manager_save_item_cb (GObject      *object,
                          GAsyncResult *result,
                          gpointer      user_data)
@@ -166,6 +182,9 @@ gn_manager_load_local_providers_cb (GObject      *object,
 
   for (GList *provider = providers; provider != NULL; provider = provider->next)
     {
+      g_signal_connect_object (provider->data, "item-added",
+                               G_CALLBACK (gn_manager_item_added_cb), self,
+                               G_CONNECT_SWAPPED);
       g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider->data);
     }
 }
