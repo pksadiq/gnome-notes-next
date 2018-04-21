@@ -66,6 +66,34 @@ enum {
 
 static guint signals[N_SIGNALS];
 
+static gboolean
+gn_manager_get_item_position (GnManager      *self,
+                              GListModel     *model,
+                              GnProviderItem *provider_item,
+                              guint          *position)
+{
+  gpointer object;
+  guint i = 0;
+
+  g_assert (GN_IS_MANAGER (self));
+  g_assert (G_IS_LIST_MODEL (model));
+  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (position != NULL);
+
+  /* This maybe slow. But, for now let's do. */
+  while ((object = g_list_model_get_item (model, i)))
+    {
+      if (object == (gpointer) provider_item)
+        {
+          *position = i;
+          return TRUE;
+        }
+      i++;
+    }
+
+  return FALSE;
+}
+
 static void
 gn_manager_item_added_cb (GnManager      *self,
                           GnProviderItem *provider_item)
@@ -80,6 +108,34 @@ gn_manager_item_added_cb (GnManager      *self,
   if (GN_IS_NOTE (item))
     g_list_store_insert_sorted (self->notes_store, provider_item,
                                 gn_provider_item_compare, NULL);
+}
+
+static void
+gn_manager_item_updated_cb (GnManager      *self,
+                            GnProviderItem *provider_item)
+{
+  GnItem *item;
+  GListModel *model;
+  guint position;
+
+  g_assert (GN_IS_MANAGER (self));
+  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+
+  item = gn_provider_item_get_item (provider_item);
+
+  /*
+   * FIXME: The item title may have changed. Should we actually
+   * remove the item and insert sorted? What if the note is being
+   * edited in non-main window (where is the user also have a main
+   * window with the note list)?
+   */
+  if (GN_IS_NOTE (item))
+    {
+      model = G_LIST_MODEL (self->notes_store);
+
+      if (gn_manager_get_item_position (self, model, provider_item, &position))
+        g_list_model_items_changed (model, position, 1, 1);
+    }
 }
 
 static void
@@ -184,6 +240,9 @@ gn_manager_load_local_providers_cb (GObject      *object,
     {
       g_signal_connect_object (provider->data, "item-added",
                                G_CALLBACK (gn_manager_item_added_cb), self,
+                               G_CONNECT_SWAPPED);
+      g_signal_connect_object (provider->data, "item-updated",
+                               G_CALLBACK (gn_manager_item_updated_cb), self,
                                G_CONNECT_SWAPPED);
       g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider->data);
     }
