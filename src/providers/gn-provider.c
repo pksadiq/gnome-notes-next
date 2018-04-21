@@ -613,6 +613,8 @@ gn_provider_save_item_finish (GnProvider    *self,
       g_autofree gchar *file_name = NULL;
       gchar *end;
 
+      g_signal_emit (self, signals[ITEM_ADDED], 0, provider_item);
+
       if (GN_IS_NOTE (item))
         {
           file = g_object_get_data (G_OBJECT (provider_item), "file");
@@ -625,6 +627,10 @@ gn_provider_save_item_finish (GnProvider    *self,
 
           gn_item_set_uid (item, file_name);
         }
+    }
+  else
+    {
+      g_signal_emit (self, signals[ITEM_UPDATED], 0, provider_item);
     }
 
   GN_RETURN (ret);
