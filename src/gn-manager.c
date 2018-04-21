@@ -67,6 +67,21 @@ enum {
 static guint signals[N_SIGNALS];
 
 static void
+gn_manager_save_item_cb (GObject      *object,
+                         GAsyncResult *result,
+                         gpointer      user_data)
+{
+  GnProvider *provider = (GnProvider *)object;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (GN_IS_PROVIDER (provider));
+  g_assert (G_IS_ASYNC_RESULT (result));
+
+  if (!gn_provider_save_item_finish (provider, result, &error))
+    g_warning ("Failed to save item: %s", error->message);
+}
+
+static void
 gn_manager_load_more_items (GnManager   *self,
                             GListStore **store,
                             GQueue     **queue)
@@ -420,5 +435,5 @@ gn_manager_save_item (GnManager      *self,
 
   gn_provider_save_item_async (provider, provider_item,
                                self->provider_cancellable,
-                               NULL, NULL);
+                               gn_manager_save_item_cb, NULL);
 }
