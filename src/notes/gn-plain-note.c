@@ -84,7 +84,9 @@ gn_plain_note_get_markup (GnNote *note)
   g_assert (GN_IS_NOTE (note));
 
   title = g_markup_escape_text (gn_item_get_title (GN_ITEM (note)), -1);
-  content = g_markup_escape_text (self->content, -1);
+
+  if (self->content != NULL)
+    content = g_markup_escape_text (self->content, -1);
 
   return g_strconcat ("<b>", title, "</b>\n\n",
                       content, NULL);
