@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include "gn-note.h"
 #include "gn-provider.h"
 #include "gn-provider-item.h"
 #include "gn-trace.h"
@@ -589,6 +590,8 @@ gn_provider_save_item_finish (GnProvider    *self,
                               GAsyncResult  *result,
                               GError       **error)
 {
+  GnProviderItem *provider_item;
+  GnItem *item;
   gboolean ret;
 
   GN_ENTRY;
@@ -597,6 +600,32 @@ gn_provider_save_item_finish (GnProvider    *self,
   g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
 
   ret = GN_PROVIDER_GET_CLASS (self)->save_item_finish (self, result, error);
+
+  if (!ret)
+    GN_RETURN (ret);
+
+  provider_item = g_task_get_task_data (G_TASK (result));
+  item = gn_provider_item_get_item (provider_item);
+
+  if (gn_item_is_new (item))
+    {
+      GFile *file;
+      g_autofree gchar *file_name = NULL;
+      gchar *end;
+
+      if (GN_IS_NOTE (item))
+        {
+          file = g_object_get_data (G_OBJECT (provider_item), "file");
+          file_name = g_file_get_basename (file);
+          end = g_strrstr (file_name, ".");
+
+          /* strip the extension to get the uid */
+          if (end != NULL)
+            *end = '\0';
+
+          gn_item_set_uid (item, file_name);
+        }
+    }
 
   GN_RETURN (ret);
 }
