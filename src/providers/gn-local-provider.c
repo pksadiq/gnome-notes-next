@@ -216,6 +216,7 @@ gn_local_provider_save_note (GnLocalProvider *self,
   const gchar *title;
   g_autofree gchar *content = NULL;
   g_autofree gchar *full_content = NULL;
+  g_autoptr(GError) error = NULL;
 
   g_assert (GN_IS_LOCAL_PROVIDER (self));
   g_assert (GN_IS_PROVIDER_ITEM (provider_item));
@@ -242,7 +243,12 @@ gn_local_provider_save_note (GnLocalProvider *self,
     }
 
   g_file_replace_contents (file, full_content, strlen (full_content),
-                           NULL, FALSE, 0, NULL, NULL, NULL);
+                           NULL, FALSE, 0, NULL, NULL, &error);
+
+  if (error == NULL)
+    g_task_return_boolean (task, TRUE);
+  else
+    g_task_return_error (task, g_steal_pointer (&error));
 }
 
 static void
