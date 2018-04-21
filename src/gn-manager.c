@@ -98,16 +98,21 @@ static void
 gn_manager_item_added_cb (GnManager      *self,
                           GnProviderItem *provider_item)
 {
+  GnProvider *provider;
   GnItem *item;
 
   g_assert (GN_IS_MANAGER (self));
   g_assert (GN_IS_PROVIDER_ITEM (provider_item));
 
   item = gn_provider_item_get_item (provider_item);
+  provider = gn_provider_item_get_provider (provider_item);
 
   if (GN_IS_NOTE (item))
     g_list_store_insert_sorted (self->notes_store, provider_item,
                                 gn_provider_item_compare, NULL);
+
+  /* FIXME: A temporary hack before we settle on the design */
+  g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider);
 }
 
 static void
