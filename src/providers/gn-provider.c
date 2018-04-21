@@ -243,6 +243,87 @@ gn_provider_class_init (GnProviderClass *klass)
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   g_object_class_install_properties (object_class, N_PROPS, properties);
+
+  /**
+   * GnProvider::item-added:
+   * @self: a #GnProvider
+   * @item: a #GnProviderItem
+   *
+   * item-added signal is emitted when a new item is added
+   * to the provider.
+   */
+  signals [ITEM_ADDED] =
+    g_signal_new ("item-added",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL,
+                  g_cclosure_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+
+  /**
+   * GnProvider::item-deleted:
+   * @self: a #GnProvider
+   * @item: a #GnProviderItem
+   *
+   * item-deleted signal is emitted when a new item is deleted
+   * from the provider.
+   */
+  signals [ITEM_DELETED] =
+    g_signal_new ("item-deleted",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL,
+                  g_cclosure_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+
+  /**
+   * GnProvider::item-trashed:
+   * @self: a #GnProvider
+   * @item: a #GnProviderItem
+   *
+   * item-trashed signal is emitted when an item is trashed
+   * in the provider.
+   */
+  signals [ITEM_TRASHED] =
+    g_signal_new ("item-trashed",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL,
+                  g_cclosure_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+
+  /**
+   * GnProvider::item-restored:
+   * @self: a #GnProvider
+   * @item: a #GnProviderItem
+   *
+   * item-restored signal is emitted when an item is restored
+   * from the trash in the provider.
+   */
+  signals [ITEM_RESTORED] =
+    g_signal_new ("item-restored",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL,
+                  g_cclosure_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+
+  /**
+   * GnProvider::item-updated:
+   * @self: a #GnProvider
+   * @item: a #GnProviderItem
+   *
+   * item-updated signal is emitted when an item is updated
+   * in the provider.
+   */
+  signals [ITEM_UPDATED] =
+    g_signal_new ("item-updated",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL,
+                  g_cclosure_marshal_VOID__OBJECT,
+                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+
 }
 
 static void
