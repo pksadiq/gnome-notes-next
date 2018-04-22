@@ -122,8 +122,6 @@ gn_editor_class_init (GnEditorClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  g_type_ensure (GN_TYPE_NOTE_BUFFER);
-
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/org/sadiqpk/notes/"
                                                "ui/gn-editor.ui");
