@@ -655,7 +655,8 @@ gn_provider_save_item_async (GnProvider          *self,
  * Completes saving an item initiated with
  * gn_provider_save_item_async().
  *
- * Returns: %TRUE if items was saved successfully. %FALSE otherwise.
+ * Returns: %TRUE if the item was saved successfully.
+ * %FALSE otherwise.
  */
 gboolean
 gn_provider_save_item_finish (GnProvider    *self,
