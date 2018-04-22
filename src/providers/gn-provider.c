@@ -176,7 +176,7 @@ gn_provider_real_save_item_async (GnProvider          *self,
                                   gpointer             user_data)
 {
   g_task_report_new_error (self, callback, user_data,
-                           gn_provider_real_load_items_async,
+                           gn_provider_real_save_item_async,
                            G_IO_ERROR,
                            G_IO_ERROR_NOT_SUPPORTED,
                            "Saving item asynchronously not supported");
