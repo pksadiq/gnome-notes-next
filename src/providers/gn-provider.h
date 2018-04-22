@@ -55,6 +55,33 @@ struct _GnProviderClass
                                         GAsyncResult         *result,
                                         GError              **error);
 
+  void        (*trash_item_async)      (GnProvider           *self,
+                                        GnProviderItem       *provider_item,
+                                        GCancellable         *cancellable,
+                                        GAsyncReadyCallback   callback,
+                                        gpointer              user_data);
+  gboolean    (*trash_item_finish)     (GnProvider           *self,
+                                        GAsyncResult         *result,
+                                        GError              **error);
+
+  void        (*restore_item_async)    (GnProvider           *self,
+                                        GnProviderItem       *provider_item,
+                                        GCancellable         *cancellable,
+                                        GAsyncReadyCallback   callback,
+                                        gpointer              user_data);
+  gboolean    (*restore_item_finish)   (GnProvider           *self,
+                                        GAsyncResult         *result,
+                                        GError              **error);
+
+  void        (*delete_item_async)     (GnProvider           *self,
+                                        GnProviderItem       *provider_item,
+                                        GCancellable         *cancellable,
+                                        GAsyncReadyCallback   callback,
+                                        gpointer              user_data);
+  gboolean    (*delete_item_finish)    (GnProvider           *self,
+                                        GAsyncResult         *result,
+                                        GError              **error);
+
   GList      *(*get_notes)             (GnProvider           *self);
   GList      *(*get_trash_notes)       (GnProvider           *self);
   GList      *(*get_notebooks)         (GnProvider           *self);
@@ -90,6 +117,33 @@ void        gn_provider_save_item_async       (GnProvider           *self,
                                                GAsyncReadyCallback   callback,
                                                gpointer              user_data);
 gboolean    gn_provider_save_item_finish      (GnProvider           *self,
+                                               GAsyncResult         *result,
+                                               GError              **error);
+
+void        gn_provider_trash_item_async      (GnProvider           *self,
+                                               GnProviderItem       *provider_item,
+                                               GCancellable         *cancellable,
+                                               GAsyncReadyCallback   callback,
+                                               gpointer              user_data);
+gboolean    gn_provider_trash_item_finish     (GnProvider           *self,
+                                               GAsyncResult         *result,
+                                               GError              **error);
+
+void        gn_provider_restore_item_async    (GnProvider           *self,
+                                               GnProviderItem       *provider_item,
+                                               GCancellable         *cancellable,
+                                               GAsyncReadyCallback   callback,
+                                               gpointer              user_data);
+gboolean    gn_provider_restore_item_finish   (GnProvider           *self,
+                                               GAsyncResult         *result,
+                                               GError              **error);
+
+void        gn_provider_delete_item_async     (GnProvider           *self,
+                                               GnProviderItem       *provider_item,
+                                               GCancellable         *cancellable,
+                                               GAsyncReadyCallback   callback,
+                                               gpointer              user_data);
+gboolean    gn_provider_delete_item_finish    (GnProvider           *self,
                                                GAsyncResult         *result,
                                                GError              **error);
 

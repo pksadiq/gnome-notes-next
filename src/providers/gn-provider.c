@@ -191,6 +191,72 @@ gn_provider_real_save_item_finish (GnProvider    *self,
 }
 
 static void
+gn_provider_real_trash_item_async (GnProvider          *self,
+                                   GnProviderItem      *provider_item,
+                                   GCancellable        *cancellable,
+                                   GAsyncReadyCallback  callback,
+                                   gpointer             user_data)
+{
+  g_task_report_new_error (self, callback, user_data,
+                           gn_provider_real_trash_item_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Trashing item asynchronously not supported");
+}
+
+static gboolean
+gn_provider_real_trash_item_finish (GnProvider    *self,
+                                     GAsyncResult  *result,
+                                     GError       **error)
+{
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
+gn_provider_real_restore_item_async (GnProvider          *self,
+                                     GnProviderItem      *provider_item,
+                                     GCancellable        *cancellable,
+                                     GAsyncReadyCallback  callback,
+                                     gpointer             user_data)
+{
+  g_task_report_new_error (self, callback, user_data,
+                           gn_provider_real_restore_item_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Restoring item asynchronously not supported");
+}
+
+static gboolean
+gn_provider_real_restore_item_finish (GnProvider    *self,
+                                     GAsyncResult  *result,
+                                     GError       **error)
+{
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
+gn_provider_real_delete_item_async (GnProvider          *self,
+                                    GnProviderItem      *provider_item,
+                                    GCancellable        *cancellable,
+                                    GAsyncReadyCallback  callback,
+                                    gpointer             user_data)
+{
+  g_task_report_new_error (self, callback, user_data,
+                           gn_provider_real_delete_item_async,
+                           G_IO_ERROR,
+                           G_IO_ERROR_NOT_SUPPORTED,
+                           "Deleting item asynchronously not supported");
+}
+
+static gboolean
+gn_provider_real_delete_item_finish (GnProvider    *self,
+                                     GAsyncResult  *result,
+                                     GError       **error)
+{
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
 gn_provider_class_init (GnProviderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -207,6 +273,12 @@ gn_provider_class_init (GnProviderClass *klass)
   klass->load_items_finish = gn_provider_real_load_items_finish;
   klass->save_item_async = gn_provider_real_save_item_async;
   klass->save_item_finish = gn_provider_real_save_item_finish;
+  klass->trash_item_async = gn_provider_real_trash_item_async;
+  klass->trash_item_finish = gn_provider_real_trash_item_finish;
+  klass->restore_item_async = gn_provider_real_restore_item_async;
+  klass->restore_item_finish = gn_provider_real_restore_item_finish;
+  klass->delete_item_async = gn_provider_real_delete_item_async;
+  klass->delete_item_finish = gn_provider_real_delete_item_finish;
 
   properties[PROP_UID] =
     g_param_spec_string ("uid",
@@ -632,6 +704,192 @@ gn_provider_save_item_finish (GnProvider    *self,
     {
       g_signal_emit (self, signals[ITEM_UPDATED], 0, provider_item);
     }
+
+  GN_RETURN (ret);
+}
+
+/* FIXME: Should we delete item if trash not supported? */
+/**
+ * gn_provider_trash_item_async:
+ * @self: a #GnProvider
+ * @provider_item: a #GnProviderItem
+ * @cancellable: (nullable): a #GCancellable or %NULL
+ * @callback: a #GAsyncReadyCallback, or %NULL
+ * @user_data: closure data for @callback
+ *
+ * Asynchronously trash the @provider_item. If the provider
+ * doesn't support trashing, the item will be deleted.
+ *
+ * @callback should complete the operation by calling
+ * gn_provider_trash_item_finish().
+ */
+void
+gn_provider_trash_item_async (GnProvider          *self,
+                              GnProviderItem      *provider_item,
+                              GCancellable        *cancellable,
+                              GAsyncReadyCallback  callback,
+                              gpointer             user_data)
+{
+  GN_ENTRY;
+
+  g_return_if_fail (GN_IS_PROVIDER (self));
+  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  GN_PROVIDER_GET_CLASS (self)->trash_item_async (self, provider_item,
+                                                  cancellable, callback,
+                                                  user_data);
+  GN_EXIT;
+}
+
+/**
+ * gn_provider_trash_item_finish:
+ * @self: a #GnProvider
+ * @result: a #GAsyncResult provided to callback
+ * @error: a location for a #GError or %NULL
+ *
+ * Completes trashing an item initiated with
+ * gn_provider_trash_item_async(). If the item was trashed,
+ * "item-trashed" signal will be emitted. And if the item
+ * got deleted, "item-deleted" signal will be emitted.
+ *
+ * Returns: %TRUE if the item was trashed/deleted successfully.
+ * %FALSE otherwise.
+ */
+gboolean
+gn_provider_trash_item_finish (GnProvider    *self,
+                               GAsyncResult  *result,
+                               GError       **error)
+{
+  gboolean ret;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
+  g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
+
+  ret = GN_PROVIDER_GET_CLASS (self)->trash_item_finish (self, result, error);
+
+  GN_RETURN (ret);
+}
+
+/**
+ * gn_provider_restore_item_async:
+ * @self: a #GnProvider
+ * @provider_item: a #GnProviderItem
+ * @cancellable: (nullable): a #GCancellable or %NULL
+ * @callback: a #GAsyncReadyCallback, or %NULL
+ * @user_data: closure data for @callback
+ *
+ * Asynchronously restore the @provider_item.
+ *
+ * @callback should complete the operation by calling
+ * gn_provider_restore_item_finish().
+ */
+void
+gn_provider_restore_item_async (GnProvider          *self,
+                                GnProviderItem      *provider_item,
+                                GCancellable        *cancellable,
+                                GAsyncReadyCallback  callback,
+                                gpointer             user_data)
+{
+  GN_ENTRY;
+
+  g_return_if_fail (GN_IS_PROVIDER (self));
+  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  GN_PROVIDER_GET_CLASS (self)->restore_item_async (self, provider_item,
+                                                    cancellable, callback,
+                                                    user_data);
+  GN_EXIT;
+}
+
+/**
+ * gn_provider_restore_item_finish:
+ * @self: a #GnProvider
+ * @result: a #GAsyncResult provided to callback
+ * @error: a location for a #GError or %NULL
+ *
+ * Completes restoring an item initiated with
+ * gn_provider_restore_item_async().
+ *
+ * Returns: %TRUE if the item was restored successfully.
+ * %FALSE otherwise.
+ */
+gboolean
+gn_provider_restore_item_finish (GnProvider   *self,
+                                 GAsyncResult *result,
+                                 GError       **error)
+{
+  gboolean ret;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
+  g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
+
+  ret = GN_PROVIDER_GET_CLASS (self)->restore_item_finish (self, result, error);
+
+  GN_RETURN (ret);
+}
+
+/**
+ * gn_provider_delete_item_async:
+ * @self: a #GnProvider
+ * @provider_item: a #GnProviderItem
+ * @cancellable: (nullable): a #GCancellable or %NULL
+ * @callback: a #GAsyncReadyCallback, or %NULL
+ * @user_data: closure data for @callback
+ *
+ * Asynchronously delete the @provider_item.
+ *
+ * @callback should complete the operation by calling
+ * gn_provider_delete_item_finish().
+ */
+void
+gn_provider_delete_item_async (GnProvider          *self,
+                               GnProviderItem      *provider_item,
+                               GCancellable        *cancellable,
+                               GAsyncReadyCallback  callback,
+                               gpointer             user_data)
+{
+  GN_ENTRY;
+
+  g_return_if_fail (GN_IS_PROVIDER (self));
+  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  GN_PROVIDER_GET_CLASS (self)->delete_item_async (self, provider_item,
+                                                   cancellable, callback,
+                                                   user_data);
+  GN_EXIT;
+}
+
+/**
+ * gn_provider_delete_item_finish:
+ * @self: a #GnProvider
+ * @result: a #GAsyncResult provided to callback
+ * @error: a location for a #GError or %NULL
+ *
+ * Completes deleting an item initiated with
+ * gn_provider_delete_item_async().
+ *
+ * Returns: %TRUE if the item was deleted successfully. %FALSE otherwise.
+ */
+gboolean
+gn_provider_delete_item_finish (GnProvider   *self,
+                                GAsyncResult *result,
+                                GError       **error)
+{
+  gboolean ret;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
+  g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
+
+  ret = GN_PROVIDER_GET_CLASS (self)->delete_item_finish (self, result, error);
 
   GN_RETURN (ret);
 }
