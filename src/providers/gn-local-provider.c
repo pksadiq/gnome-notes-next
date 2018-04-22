@@ -159,20 +159,26 @@ gn_local_provider_load_path (GnLocalProvider  *self,
       g_autoptr(GFileInfo) file_info = file_info_ptr;
       g_autoptr(GFile) file = NULL;
       g_autofree gchar *contents = NULL;
+      g_autofree gchar *file_name = NULL;
       GnProviderItem *provider_item;
       GnPlainNote *note;
       const gchar *name;
+      gchar *end;
 
       name = g_file_info_get_name (file_info);
 
       if (!g_str_has_suffix (name, ".txt"))
         continue;
 
+      file_name = g_strdup (name);
+      end = g_strrstr (file_name, ".");
+      *end = '\0';
       file = g_file_get_child (location, name);
       g_file_load_contents (file, cancellable, &contents, NULL, NULL, NULL);
 
       note = gn_plain_note_new_from_data (contents);
       provider_item = gn_provider_item_new (GN_PROVIDER (self), GN_ITEM (note));
+      gn_item_set_uid (GN_ITEM (note), file_name);
       g_object_set_data_full (G_OBJECT (provider_item), "file", g_steal_pointer (&file),
                               g_object_unref);
       *items = g_list_prepend (*items, provider_item);
