@@ -78,18 +78,24 @@ static gchar *
 gn_plain_note_get_markup (GnNote *note)
 {
   GnPlainNote *self = GN_PLAIN_NOTE (note);
-  g_autofree gchar *title = NULL;
+  const gchar *title = NULL;
+  g_autofree gchar *title_markup = NULL;
   g_autofree gchar *content = NULL;
 
   g_assert (GN_IS_NOTE (note));
 
-  title = g_markup_escape_text (gn_item_get_title (GN_ITEM (note)), -1);
+  title = gn_item_get_title (GN_ITEM (note));
+  if (title != NULL)
+    title_markup = g_markup_escape_text (title, -1);
 
   if (self->content != NULL)
     content = g_markup_escape_text (self->content, -1);
 
-  return g_strconcat ("<b>", title, "</b>\n\n",
-                      content, NULL);
+  if (title != NULL)
+    return g_strconcat ("<b>", title, "</b>\n\n",
+                        content, NULL);
+  else
+    return NULL;
 }
 
 static void
