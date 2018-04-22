@@ -18,10 +18,3 @@
   =./configure && make && sudo make install= from the source
   root directory to compile and install.
 
-* How to test
-
-  - Create the data dir for gnome-notes: =mkdir -p ~/.local/share/gnome-notes/=
-  - Add some notes in the created directory with your favorite editor.
-    - The notes should have ~.txt~ extention. The first line is interpreted
-      as title, and the rest as content.
-  - Now open GNOME Notes and see how it works.
