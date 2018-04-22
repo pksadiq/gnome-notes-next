@@ -32,7 +32,7 @@
 /**
  * SECTION: gn-editor
  * @title: GnEditor
- * @short_description:
+ * @short_description: The Note editor view
  * @include: "gn-editor.h"
  */
 
