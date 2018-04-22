@@ -47,6 +47,8 @@ struct _GnEditor
 
   GtkWidget *editor_view;
   GtkWidget *cut_button;
+
+  guint save_timeout_id;
 };
 
 G_DEFINE_TYPE (GnEditor, gn_editor, GTK_TYPE_GRID)
@@ -94,6 +96,7 @@ gn_editor_save_note (gpointer user_data)
 
   g_assert (GN_IS_EDITOR (self));
 
+  self->save_timeout_id = 0;
   manager = gn_manager_get_default ();
   note = GN_NOTE (gn_provider_item_get_item (self->provider_item));
 
@@ -114,13 +117,33 @@ gn_editor_buffer_modified_cb (GnEditor      *self,
   if (!gtk_text_buffer_get_modified (buffer))
     return;
 
-  g_timeout_add (SAVE_TIMEOUT, gn_editor_save_note, self);
+  if (self->save_timeout_id == 0)
+    self->save_timeout_id = g_timeout_add (SAVE_TIMEOUT,
+                                           gn_editor_save_note, self);
+}
+
+static void
+gn_editor_dispose (GObject *object)
+{
+  GnEditor *self = (GnEditor *)object;
+
+  if (self->save_timeout_id != 0)
+    {
+      g_source_remove (self->save_timeout_id);
+      self->save_timeout_id = 0;
+      gn_editor_save_note (self);
+    }
+
+  G_OBJECT_CLASS (gn_editor_parent_class)->dispose (object);
 }
 
 static void
 gn_editor_class_init (GnEditorClass *klass)
 {
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+  object_class->dispose = gn_editor_dispose;
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/org/sadiqpk/notes/"
