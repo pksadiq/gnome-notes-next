@@ -30,5 +30,6 @@ G_DECLARE_FINAL_TYPE (GnGridView, gn_grid_view, GN, GRID_VIEW, GtkFlowBox)
 
 GnGridView *gn_grid_view_new          (void);
 void        gn_grid_view_unselect_all (GtkFlowBox *box);
+GList      *gn_grid_view_get_selected_items (GnGridView *self);
 
 G_END_DECLS

@@ -84,3 +84,32 @@ gn_list_view_unselect_all (GtkListBox *box)
                                       FALSE);
     }
 }
+
+/**
+ * gn_list_view_get_selected_items:
+ * @self: A #GnListView
+ *
+ * Get selected items
+ *
+ * Returns: (transfer container): a #GList of #GnProviderItem or NULL
+ */
+GList *
+gn_list_view_get_selected_items (GnListView *self)
+{
+  g_autoptr(GList) children = NULL;
+  GList *provider_items = NULL;
+
+  g_return_val_if_fail (GN_IS_LIST_VIEW (self), NULL);
+
+  children = gtk_list_box_get_selected_rows (GTK_LIST_BOX (self));
+
+  for (GList *node = children; node != NULL; node = node->next)
+    {
+      GnListViewItem *child = GN_LIST_VIEW_ITEM (node->data);
+
+      provider_items = g_list_prepend (provider_items,
+                                       gn_list_view_item_get_item (child));
+    }
+
+  return provider_items;
+}

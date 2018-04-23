@@ -30,5 +30,6 @@ G_DECLARE_FINAL_TYPE (GnListView, gn_list_view, GN, LIST_VIEW, GtkListBox)
 
 GnListView *gn_list_view_new          (void);
 void        gn_list_view_unselect_all (GtkListBox *box);
+GList      *gn_list_view_get_selected_items (GnListView *self);
 
 G_END_DECLS

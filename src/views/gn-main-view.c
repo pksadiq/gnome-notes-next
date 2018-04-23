@@ -284,6 +284,28 @@ gn_main_view_set_selection_mode (GnMainView *self,
 }
 
 /**
+ * gn_main_view_get_selected_items:
+ * @self: A #GnMainView
+ *
+ * Get selected items
+ *
+ * Returns: (transfer container): a #GList of #GnProviderItem or NULL
+ */
+GList *
+gn_main_view_get_selected_items (GnMainView *self)
+{
+  g_return_val_if_fail (GN_IS_MAIN_VIEW (self), NULL);
+
+  if (!self->selection_mode)
+    return NULL;
+
+  if (self->current_view == GN_VIEW_TYPE_GRID)
+    return gn_grid_view_get_selected_items (GN_GRID_VIEW (self->grid_view));
+  else
+    return gn_list_view_get_selected_items (GN_LIST_VIEW (self->list_view));
+}
+
+/**
  * gn_main_view_set_model:
  * @self: A #GnMainView
  * @model: a #GListModel
