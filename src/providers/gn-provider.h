@@ -55,6 +55,10 @@ struct _GnProviderClass
                                         GAsyncResult         *result,
                                         GError              **error);
 
+  gboolean    (*trash_item)            (GnProvider           *self,
+                                        GnProviderItem       *provider_item,
+                                        GCancellable         *cancellable,
+                                        GError              **error);
   void        (*trash_item_async)      (GnProvider           *self,
                                         GnProviderItem       *provider_item,
                                         GCancellable         *cancellable,
@@ -120,6 +124,10 @@ gboolean    gn_provider_save_item_finish      (GnProvider           *self,
                                                GAsyncResult         *result,
                                                GError              **error);
 
+gboolean        gn_provider_trash_item        (GnProvider           *self,
+                                               GnProviderItem       *provider_item,
+                                               GCancellable         *cancellable,
+                                               GError              **error);
 void        gn_provider_trash_item_async      (GnProvider           *self,
                                                GnProviderItem       *provider_item,
                                                GCancellable         *cancellable,

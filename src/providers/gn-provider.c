@@ -190,6 +190,19 @@ gn_provider_real_save_item_finish (GnProvider    *self,
   return g_task_propagate_boolean (G_TASK (result), error);
 }
 
+static gboolean
+gn_provider_real_trash_item (GnProvider     *provider,
+                             GnProviderItem *provider_item,
+                             GCancellable   *cancellable,
+                             GError         **error)
+{
+  g_set_error_literal (error,
+                       G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED,
+                       "Trashing item synchronously not supported");
+
+  return FALSE;
+}
+
 static void
 gn_provider_real_trash_item_async (GnProvider          *self,
                                    GnProviderItem      *provider_item,
@@ -273,6 +286,7 @@ gn_provider_class_init (GnProviderClass *klass)
   klass->load_items_finish = gn_provider_real_load_items_finish;
   klass->save_item_async = gn_provider_real_save_item_async;
   klass->save_item_finish = gn_provider_real_save_item_finish;
+  klass->trash_item = gn_provider_real_trash_item;
   klass->trash_item_async = gn_provider_real_trash_item_async;
   klass->trash_item_finish = gn_provider_real_trash_item_finish;
   klass->restore_item_async = gn_provider_real_restore_item_async;
@@ -706,6 +720,38 @@ gn_provider_save_item_finish (GnProvider    *self,
       g_signal_emit (self, signals[ITEM_UPDATED], 0, provider_item);
     }
 
+  GN_RETURN (ret);
+}
+
+/**
+ * gn_provider_trash_item:
+ * @self: a #GnProvider
+ * @provider_item: a #GnProviderItem
+ * @cancellable: (nullable): a #GCancellable or %NULL
+ * @error: a #GError
+ *
+ * Synchronously trash the @provider_item. If the provider
+ * doesn't support trashing, the item will be deleted.
+ *
+ * Returns: %TRUE if the item was trashed/deleted successfully.
+ * %FALSE otherwise.
+ */
+gboolean
+gn_provider_trash_item (GnProvider      *self,
+                        GnProviderItem  *provider_item,
+                        GCancellable    *cancellable,
+                        GError         **error)
+{
+  gboolean ret;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
+  g_return_val_if_fail (GN_IS_PROVIDER_ITEM (provider_item), FALSE);
+  g_return_val_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable), FALSE);
+
+  ret = GN_PROVIDER_GET_CLASS (self)->trash_item (self, provider_item,
+                                                  cancellable, error);
   GN_RETURN (ret);
 }
 
