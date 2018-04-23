@@ -144,6 +144,26 @@ gn_manager_item_updated_cb (GnManager      *self,
 }
 
 static void
+gn_manager_item_trashed_cb (GnManager      *self,
+                            GnProviderItem *provider_item)
+{
+  guint position;
+
+  /*
+   * TODO: Handle notebooks. But as we don't have notebook trash
+   * feature (yet), we may not need that.
+   */
+  if (gn_manager_get_item_position (self, G_LIST_MODEL (self->notes_store),
+                                    provider_item, &position))
+    g_list_store_remove (self->notes_store, position);
+  else
+    g_queue_remove (self->notes_queue, provider_item);
+
+  g_list_store_insert_sorted (self->trash_notes_store, provider_item,
+                              gn_provider_item_compare, NULL);
+}
+
+static void
 gn_manager_save_item_cb (GObject      *object,
                          GAsyncResult *result,
                          gpointer      user_data)
@@ -248,6 +268,9 @@ gn_manager_load_local_providers_cb (GObject      *object,
                                G_CONNECT_SWAPPED);
       g_signal_connect_object (provider->data, "item-updated",
                                G_CALLBACK (gn_manager_item_updated_cb), self,
+                               G_CONNECT_SWAPPED);
+      g_signal_connect_object (provider->data, "item-trashed",
+                               G_CALLBACK (gn_manager_item_trashed_cb), self,
                                G_CONNECT_SWAPPED);
       g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider->data);
     }
@@ -517,4 +540,24 @@ gn_manager_save_item (GnManager      *self,
   gn_provider_save_item_async (provider, provider_item,
                                self->provider_cancellable,
                                gn_manager_save_item_cb, NULL);
+}
+
+void
+gn_manager_trash_items (GnManager  *self,
+                        GListStore *store,
+                        GList      *provider_items)
+{
+  g_autoptr(GError) error = NULL;
+
+  g_return_if_fail (GN_IS_MANAGER (self));
+  g_return_if_fail (G_IS_LIST_STORE (store));
+
+  for (GList *node = provider_items; node != NULL; node = node->next)
+    {
+      GnProviderItem *provider_item = node->data;
+      GnProvider *provider;
+
+      provider = gn_provider_item_get_provider (provider_item);
+      gn_provider_trash_item (provider, provider_item, NULL, &error);
+    }
 }

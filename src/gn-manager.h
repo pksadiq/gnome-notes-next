@@ -45,4 +45,7 @@ GnProviderItem *gn_manager_new_note           (GnManager *self);
 void        gn_manager_save_item              (GnManager      *self,
                                                GnProviderItem *item);
 
+void        gn_manager_trash_items            (GnManager  *self,
+                                               GListStore *store,
+                                               GList      *provider_items);
 G_END_DECLS
