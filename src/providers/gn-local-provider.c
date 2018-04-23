@@ -59,8 +59,8 @@ struct _GnLocalProvider
   gchar *domain;
   gchar *user_name;
 
-  GFile *location;
-  GFile *trash_location;
+  gchar *location;
+  gchar *trash_location;
 
   GList *notes;
   GList *trash_notes;
@@ -90,7 +90,7 @@ gn_local_provider_finalize (GObject *object)
   g_clear_pointer (&self->icon, g_free);
   g_clear_pointer (&self->domain, g_free);
   g_clear_pointer (&self->user_name, g_free);
-  g_clear_object (&self->location);
+  g_clear_pointer (&self->location, g_free);
 
   g_list_free_full (self->notes, g_object_unref);
 
@@ -131,20 +131,22 @@ gn_local_provider_get_user_name (GnProvider *provider)
 
 static void
 gn_local_provider_load_path (GnLocalProvider  *self,
-                             GFile            *location,
+                             const gchar      *path,
                              GList           **items,
                              GCancellable     *cancellable,
                              GError          **error)
 {
   g_autoptr(GFileEnumerator) enumerator = NULL;
+  g_autoptr(GFile) location = NULL;
   gpointer file_info_ptr;
 
   GN_ENTRY;
 
   g_assert (GN_IS_LOCAL_PROVIDER (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
-  g_assert (G_IS_FILE (location));
+  g_assert (path != NULL);
 
+  location = g_file_new_for_path (path);
   enumerator = g_file_enumerate_children (location,
                                           G_FILE_ATTRIBUTE_STANDARD_NAME","
                                           G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
@@ -339,8 +341,7 @@ gn_local_provider_trash_item (GnProvider      *provider,
 
   file = g_object_get_data (G_OBJECT (provider_item), "file");
   base_name = g_file_get_basename (file);
-  trash_file_name = g_build_filename (g_get_user_data_dir (), "gnome-notes",
-                                      ".Trash", base_name, NULL);
+  trash_file_name = g_build_filename (self->trash_location, base_name, NULL);
   trash_file = g_file_new_for_path (trash_file_name);
 
   success = g_file_move (file, trash_file, G_FILE_COPY_NONE,
@@ -408,17 +409,12 @@ gn_local_provider_init (GnLocalProvider *self)
 
   if (self->location == NULL)
     {
-      g_autofree gchar *path = NULL;
-
-      path = g_build_filename (g_get_user_data_dir (), "gnome-notes", NULL);
-      g_mkdir_with_parents (path, 0755);
-      self->location = g_file_new_for_path (path);
-      g_free (path);
-
-      path = g_build_filename (g_get_user_data_dir (), "gnome-notes",
-                               ".Trash", NULL);
-      g_mkdir_with_parents (path, 0755);
-      self->trash_location = g_file_new_for_path (path);
+      self->location = g_build_filename (g_get_user_data_dir (),
+                                         "gnome-notes", NULL);
+      self->trash_location = g_build_filename (self->location,
+                                               ".Trash", NULL);
+      g_mkdir_with_parents (self->location, 0755);
+      g_mkdir_with_parents (self->trash_location, 0755);
     }
 }
 
