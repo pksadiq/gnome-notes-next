@@ -317,6 +317,47 @@ gn_local_provider_save_item_finish (GnProvider   *self,
   return g_task_propagate_boolean (G_TASK (result), error);
 }
 
+static gboolean
+gn_local_provider_trash_item (GnProvider      *provider,
+                              GnProviderItem  *provider_item,
+                              GCancellable    *cancellable,
+                              GError         **error)
+{
+  GnLocalProvider *self = (GnLocalProvider *)provider;
+  g_autofree gchar *base_name = NULL;
+  g_autofree gchar *trash_file_name = NULL;
+  GFile *file;
+  GFile *trash_file;
+  GnItem *item;
+  gboolean success;
+
+  GN_ENTRY;
+
+  g_assert (GN_IS_LOCAL_PROVIDER (self));
+  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  file = g_object_get_data (G_OBJECT (provider_item), "file");
+  base_name = g_file_get_basename (file);
+  trash_file_name = g_build_filename (g_get_user_data_dir (), "gnome-notes",
+                                      ".Trash", base_name, NULL);
+  trash_file = g_file_new_for_path (trash_file_name);
+
+  success = g_file_move (file, trash_file, G_FILE_COPY_NONE,
+                         NULL, NULL, NULL, error);
+
+  if (!success)
+    GN_RETURN (success);
+
+  g_object_set_data_full (G_OBJECT (provider_item), "file", trash_file_name,
+                          g_object_unref);
+  self->notes = g_list_remove (self->notes, provider_item);
+  self->trash_notes = g_list_prepend (self->trash_notes, provider_item);
+  g_signal_emit_by_name (provider, "item-trashed", provider_item);
+
+  GN_RETURN (success);
+}
+
 static GList *
 gn_local_provider_get_notes (GnProvider *provider)
 {
@@ -357,6 +398,7 @@ gn_local_provider_class_init (GnLocalProviderClass *klass)
   provider_class->load_items = gn_local_provider_load_items;
   provider_class->save_item_async = gn_local_provider_save_item_async;
   provider_class->save_item_finish = gn_local_provider_save_item_finish;
+  provider_class->trash_item = gn_local_provider_trash_item;
 }
 
 static void
