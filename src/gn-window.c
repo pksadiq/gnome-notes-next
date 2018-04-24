@@ -575,3 +575,27 @@ gn_window_set_view (GnWindow   *self,
       gn_window_show_view (self, view);
     }
 }
+
+void
+gn_window_trash_selected_items (GnWindow *self)
+{
+  GtkWidget *current_view;
+  GnManager *manager;
+  GListStore *store;
+  g_autoptr(GList) provider_items = NULL;
+
+  g_return_if_fail (GN_IS_WINDOW (self));
+
+  current_view = gn_window_get_widget_for_view (self, self->current_view);
+  manager = gn_manager_get_default ();
+  provider_items = gn_main_view_get_selected_items (GN_MAIN_VIEW (current_view));
+
+  if (current_view == self->notes_view)
+    store = gn_manager_get_notes_store (manager);
+  else if (current_view == self->trash_view)
+    store = gn_manager_get_trash_notes_store (manager);
+  else
+    g_assert_not_reached ();
+
+  gn_manager_trash_items (manager, store, provider_items);
+}
