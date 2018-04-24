@@ -47,6 +47,7 @@ struct _GnWindow
   GtkWidget *navigate_button_stack;
   GtkWidget *new_button;
   GtkWidget *back_button;
+  GtkWidget *undo_revealer;
 
   GtkWidget *select_button_stack;
   GtkWidget *select_button;
@@ -65,6 +66,8 @@ struct _GnWindow
   GnView     current_view;
   GnViewMode current_view_mode;
 
+  guint      undo_timeout_id;
+
   gint       width;
   gint       height;
   gint       pos_x;
@@ -73,6 +76,54 @@ struct _GnWindow
 };
 
 G_DEFINE_TYPE (GnWindow, gn_window, GTK_TYPE_APPLICATION_WINDOW)
+
+static void
+gn_window_cancel_delete (GnWindow *self)
+{
+  GnManager *manager;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  manager = gn_manager_get_default ();
+  gtk_revealer_set_reveal_child (GTK_REVEALER (self->undo_revealer), FALSE);
+  gn_manager_dequeue_delete (manager);
+  g_clear_handle_id (&self->undo_timeout_id, g_source_remove);
+}
+
+static void
+gn_window_continue_delete (GnWindow *self)
+{
+  GnManager *manager;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  manager = gn_manager_get_default ();
+  gtk_revealer_set_reveal_child (GTK_REVEALER (self->undo_revealer), FALSE);
+  g_clear_handle_id (&self->undo_timeout_id, g_source_remove);
+  gn_manager_trash_queue_items (manager);
+}
+
+static int
+gn_window_undo_timeout_cb (gpointer user_data)
+{
+  GnWindow *self = user_data;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  self->undo_timeout_id = 0;
+  gn_window_continue_delete (self);
+
+  return G_SOURCE_REMOVE;
+}
+
+static void
+gn_window_show_undo_revealer (GnWindow *self)
+{
+  g_assert (GN_IS_WINDOW (self));
+
+  gtk_revealer_set_reveal_child (GTK_REVEALER (self->undo_revealer), TRUE);
+  self->undo_timeout_id = g_timeout_add_seconds (10, gn_window_undo_timeout_cb, self);
+}
 
 static void
 gn_window_provider_added_cb (GnWindow   *self,
@@ -507,12 +558,15 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, navigate_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, new_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, back_button);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, undo_revealer);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, cancel_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_action_bar);
 
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_continue_delete);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_destroy_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_size_allocate_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
@@ -582,7 +636,7 @@ gn_window_trash_selected_items (GnWindow *self)
   GtkWidget *current_view;
   GnManager *manager;
   GListStore *store;
-  g_autoptr(GList) provider_items = NULL;
+  GList *provider_items;
 
   g_return_if_fail (GN_IS_WINDOW (self));
 
@@ -597,5 +651,6 @@ gn_window_trash_selected_items (GnWindow *self)
   else
     g_assert_not_reached ();
 
-  gn_manager_trash_items (manager, store, provider_items);
+  gn_manager_queue_for_delete (manager, store, provider_items);
+  gn_window_show_undo_revealer (self);
 }

@@ -187,6 +187,66 @@
           <object class="GtkOverlay">
             <property name="visible">1</property>
 
+            <child type="overlay">
+              <object class="GtkRevealer" id="undo_revealer">
+                <property name="visible">1</property>
+                <property name="halign">center</property>
+                <property name="valign">start</property>
+                <child>
+                  <object class="GtkFrame">
+                    <property name="visible">1</property>
+                    <style>
+                     <class name="app-notification"/>
+                    </style>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="visible">1</property>
+                        <property name="spacing">10</property>
+                        <child>
+                          <object class="GtkLabel" id="undo_revealer_label">
+                            <property name="visible">1</property>
+                            <property name="hexpand">1</property>
+                            <property name="halign">start</property>
+                            <property name="label" translatable="1">Some items Deleted</property>
+                            <style>
+                             <class name="notification-label"/>
+                            </style>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="visible">1</property>
+                            <property name="focus-on-click">0</property>
+                            <property name="label" translatable="1">_Undo</property>
+                            <property name="use-underline">1</property>
+                            <signal name="clicked" handler="gn_window_cancel_delete" swapped="1"/>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton">
+                            <property name="visible">1</property>
+                            <property name="focus-on-click">0</property>
+                            <property name="relief">none</property>
+                            <signal name="clicked" handler="gn_window_continue_delete" swapped="1"/>
+                            <style>
+                             <class name="image-button"/>
+                            </style>
+                            <child>
+                              <object class="GtkImage">
+                                <property name="visible">1</property>
+                                <property name="icon-name">window-close-symbolic</property>
+                                <property name="icon-size">1</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child> <!-- ./GtkBox -->
+                  </object>
+                </child> <!-- ./GtkFrame -->
+              </object>
+            </child>
+
             <child>
               <object class="GtkStack" id="main_stack">
                 <property name="visible">1</property>

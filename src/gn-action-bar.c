@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include "gn-window.h"
 #include "gn-action-bar.h"
 #include "gn-trace.h"
 
@@ -30,6 +31,14 @@
  * @title: GnActionBar
  * @short_description:
  * @include: "gn-action-bar.h"
+ */
+
+/*
+ * FIXME: I don't feel the design of this class to be good. Because
+ * This class knows about #GnWindow class, and #GnWindow class knows
+ * about this class. It should better be only one way. That is,
+ * #GnWindow knows about this class. Should we try hard to fix that?
+ * Or just don't care?
  */
 
 struct _GnActionBar
@@ -42,6 +51,22 @@ struct _GnActionBar
 G_DEFINE_TYPE (GnActionBar, gn_action_bar, GTK_TYPE_ACTION_BAR)
 
 static void
+gn_action_bar_delete_selected_items (GnActionBar *self,
+                                     GtkWidget   *widget)
+{
+  GtkWidget *parent;
+
+  g_assert (GN_IS_ACTION_BAR (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  parent = gtk_widget_get_ancestor (GTK_WIDGET (self), GTK_TYPE_WINDOW);
+  g_assert (parent != NULL);
+
+  g_print ("deleted\n");
+  gn_window_trash_selected_items (GN_WINDOW (parent));
+}
+
+static void
 gn_action_bar_class_init (GnActionBarClass *klass)
 {
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
@@ -51,6 +76,8 @@ gn_action_bar_class_init (GnActionBarClass *klass)
                                                "ui/gn-action-bar.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnActionBar, actions_stack);
+
+  gtk_widget_class_bind_template_callback (widget_class, gn_action_bar_delete_selected_items);
 }
 
 static void

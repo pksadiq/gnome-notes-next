@@ -11,6 +11,21 @@
             <property name="visible">1</property>
             <property name="hexpand">1</property>
             <property name="spacing">6</property>
+
+            <child>
+              <object class="GtkButton">
+                <property name="visible">1</property>
+                <property name="label" translatable="1">Delete</property>
+                <signal name="clicked" handler="gn_action_bar_delete_selected_items" swapped="1"/>
+                <style>
+                 <class name="destructive-action"/>
+                </style>
+              </object>
+              <packing>
+                <property name="pack-type">end</property>
+              </packing>
+            </child>
+
           </object> <!-- ./GtkBox main_actions -->
         </child>
       </object> <!-- ./GtkStack actions_stack -->
