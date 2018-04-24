@@ -54,6 +54,9 @@ struct _GnManager
   GListStore   *notes_store;
   GListStore   *notebooks_store;
   GListStore   *trash_notes_store;
+
+  GList       *delete_queue;
+  GListStore  *delete_store;
 };
 
 G_DEFINE_TYPE (GnManager, gn_manager, G_TYPE_OBJECT)
@@ -542,17 +545,83 @@ gn_manager_save_item (GnManager      *self,
                                gn_manager_save_item_cb, NULL);
 }
 
+/**
+ * gn_manager_queue_for_delete:
+ * @self: A #GnManager
+ * @note_store: A #GListStore
+ * @provider_items: A #GList of #GnProviderItem
+ *
+ * Queue a #GList of #GnProviderItems from @note_store.
+ * If the item is a note, it should be present in @note_store.
+ * If it's a notebook, the function shall take care of that.
+ * The queued items will be removed from store.
+ *
+ * The reference on @provider_items is taken by the manager.
+ * Don't free it yourself.
+ */
 void
-gn_manager_trash_items (GnManager  *self,
-                        GListStore *store,
-                        GList      *provider_items)
+gn_manager_queue_for_delete (GnManager  *self,
+                             GListStore *note_store,
+                             GList      *provider_items)
+{
+  guint position;
+
+  g_return_if_fail (GN_IS_MANAGER (self));
+  g_return_if_fail (G_IS_LIST_STORE (note_store));
+
+  self->delete_store = note_store;
+  self->delete_queue = provider_items;
+
+  /* FIXME: The story is very different when notebooks come into scene */
+  for (GList *node = provider_items; node != NULL; node = node->next)
+    {
+      if (gn_manager_get_item_position (self, G_LIST_MODEL (note_store),
+                                        node->data, &position))
+        g_list_store_remove (note_store, position);
+    }
+}
+
+/**
+ * gn_manager_dequeue_delete:
+ * @self: A #GnManager
+ *
+ * Dequeue the items marked for deletion. The items
+ * Will be restored back to the corresponding store.
+ *
+ * Returns: %TRUE if dequeue succeeded. %FALSE otherwise
+ * (ie, The queue was empty and was already deleted).
+ */
+gboolean
+gn_manager_dequeue_delete (GnManager *self)
+{
+  g_return_val_if_fail (GN_IS_MANAGER (self), FALSE);
+
+  if (self->delete_queue == NULL)
+    return FALSE;
+
+  for (GList *node = self->delete_queue; node != NULL; node = node->next)
+    g_list_store_insert_sorted (self->delete_store, node->data,
+                                gn_provider_item_compare, NULL);
+
+  g_clear_pointer (&self->delete_queue, g_list_free);
+  return TRUE;
+}
+
+/**
+ * gn_manager_trash_queue_items:
+ * @self: A #GnManager
+ *
+ * Trash the items queued for deletion with
+ * gn_manager_queue_for_delete().
+ */
+void
+gn_manager_trash_queue_items (GnManager *self)
 {
   g_autoptr(GError) error = NULL;
 
   g_return_if_fail (GN_IS_MANAGER (self));
-  g_return_if_fail (G_IS_LIST_STORE (store));
 
-  for (GList *node = provider_items; node != NULL; node = node->next)
+  for (GList *node = self->delete_queue; node != NULL; node = node->next)
     {
       GnProviderItem *provider_item = node->data;
       GnProvider *provider;
@@ -560,4 +629,6 @@ gn_manager_trash_items (GnManager  *self,
       provider = gn_provider_item_get_provider (provider_item);
       gn_provider_trash_item (provider, provider_item, NULL, &error);
     }
+
+  g_clear_pointer (&self->delete_queue, g_list_free);
 }
