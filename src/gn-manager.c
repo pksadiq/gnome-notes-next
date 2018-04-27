@@ -33,7 +33,7 @@
 /**
  * SECTION: gn-manager
  * @title: GnManager
- * @short_description: A singleton class to manage providers
+ * @short_description: A class to manage providers
  * @include: "gn-manager.h"
  */
 
