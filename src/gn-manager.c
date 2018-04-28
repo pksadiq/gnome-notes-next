@@ -244,6 +244,11 @@ gn_manager_load_local_providers (GTask        *task,
                                  gn_provider_item_compare, NULL);
         }
     }
+  else /* ie, error on loading notes */
+    {
+      g_warning ("Error loading local notes: %s", error->message);
+      g_clear_error (&error);
+    }
 
   gn_manager_load_more_items (self, &self->notes_store,
                               &self->notes_queue);
