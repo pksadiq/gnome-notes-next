@@ -269,18 +269,18 @@ gn_manager_load_local_providers_cb (GObject      *object,
 
   providers = g_hash_table_get_values (self->providers);
 
-  for (GList *provider = providers; provider != NULL; provider = provider->next)
+  for (GList *node = providers; node != NULL; node = node->next)
     {
-      g_signal_connect_object (provider->data, "item-added",
-                               G_CALLBACK (gn_manager_item_added_cb), self,
-                               G_CONNECT_SWAPPED);
-      g_signal_connect_object (provider->data, "item-updated",
-                               G_CALLBACK (gn_manager_item_updated_cb), self,
-                               G_CONNECT_SWAPPED);
-      g_signal_connect_object (provider->data, "item-trashed",
-                               G_CALLBACK (gn_manager_item_trashed_cb), self,
-                               G_CONNECT_SWAPPED);
-      g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider->data);
+      g_signal_connect_object (node->data, "item-added",
+                               G_CALLBACK (gn_manager_item_added_cb),
+                               self, G_CONNECT_SWAPPED);
+      g_signal_connect_object (node->data, "item-updated",
+                               G_CALLBACK (gn_manager_item_updated_cb),
+                               self, G_CONNECT_SWAPPED);
+      g_signal_connect_object (node->data, "item-trashed",
+                               G_CALLBACK (gn_manager_item_trashed_cb),
+                               self, G_CONNECT_SWAPPED);
+      g_signal_emit (self, signals[PROVIDER_ADDED], 0, node->data);
     }
 }
 
