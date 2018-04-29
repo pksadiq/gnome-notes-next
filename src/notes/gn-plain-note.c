@@ -74,6 +74,18 @@ gn_plain_note_get_text_content (GnNote *note)
   return g_strdup (self->content);
 }
 
+static void
+gn_plain_note_set_text_content (GnNote      *note,
+                                const gchar *content)
+{
+  GnPlainNote *self = GN_PLAIN_NOTE (note);
+
+  g_assert (GN_IS_PLAIN_NOTE (self));
+
+  g_free (self->content);
+  self->content = g_strdup (content);
+}
+
 static gchar *
 gn_plain_note_get_markup (GnNote *note)
 {
@@ -108,6 +120,7 @@ gn_plain_note_class_init (GnPlainNoteClass *klass)
 
   note_class->get_raw_content = gn_plain_note_get_text_content;
   note_class->get_text_content = gn_plain_note_get_text_content;
+  note_class->set_text_content = gn_plain_note_set_text_content;
   note_class->get_markup = gn_plain_note_get_markup;
 
   note_class->set_content_from_buffer = gn_plain_note_set_content_from_buffer;

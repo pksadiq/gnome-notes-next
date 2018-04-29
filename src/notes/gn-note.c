@@ -166,6 +166,27 @@ gn_note_get_text_content (GnNote *self)
 }
 
 /**
+ * gn_note_set_text_content:
+ * @self: a #GnNote
+ * @content: The text to set as content
+ *
+ * Set the plain text content of the note. This should
+ * not contain the title of the note.
+ */
+void
+gn_note_set_text_content (GnNote      *self,
+                          const gchar *content)
+{
+  GN_ENTRY;
+
+  g_return_if_fail (GN_IS_NOTE (self));
+
+  GN_NOTE_GET_CLASS (self)->set_text_content (self, content);
+
+  GN_EXIT;
+}
+
+/**
  * gn_note_get_raw_content:
  * @self: a #GnNote
  *

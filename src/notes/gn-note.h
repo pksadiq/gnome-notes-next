@@ -35,6 +35,9 @@ struct _GnNoteClass
   GnItemClass parent_class;
 
   gchar *(*get_text_content)        (GnNote        *self);
+  void   (*set_text_content)        (GnNote        *self,
+                                     const gchar   *content);
+
   gchar *(*get_raw_content)         (GnNote        *self);
   gchar *(*get_markup)              (GnNote        *self);
   void   (*set_content_from_buffer) (GnNote        *self,
@@ -43,6 +46,9 @@ struct _GnNoteClass
 };
 
 gchar *gn_note_get_text_content        (GnNote        *self);
+void   gn_note_set_text_content        (GnNote        *self,
+                                        const gchar   *content);
+
 gchar *gn_note_get_raw_content         (GnNote        *self);
 gchar *gn_note_get_markup              (GnNote        *self);
 
