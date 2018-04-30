@@ -83,8 +83,12 @@ gn_note_real_get_buffer (GnNote *self)
 
   title = gn_item_get_title (GN_ITEM (self));
   raw_content = gn_note_get_raw_content (self);
-  full_content = g_strconcat (title, "\n",
-                             raw_content, NULL);
+
+  if (raw_content == NULL || raw_content[0] == '\0')
+    full_content = g_strdup (title);
+  else
+    full_content = g_strconcat (title, "\n",
+                                raw_content, NULL);
 
   buffer = GTK_TEXT_BUFFER (gn_note_buffer_new ());
 
