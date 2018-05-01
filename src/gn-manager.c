@@ -727,17 +727,19 @@ gn_manager_dequeue_delete (GnManager *self)
 void
 gn_manager_trash_queue_items (GnManager *self)
 {
-  g_autoptr(GError) error = NULL;
-
   g_return_if_fail (GN_IS_MANAGER (self));
 
   for (GList *node = self->delete_queue; node != NULL; node = node->next)
     {
+      g_autoptr(GError) error = NULL;
       GnProviderItem *provider_item = node->data;
       GnProvider *provider;
 
       provider = gn_provider_item_get_provider (provider_item);
       gn_provider_trash_item (provider, provider_item, NULL, &error);
+
+      if (error != NULL)
+        g_warning ("Error deleting item: %s", error->message);
     }
 
   g_clear_pointer (&self->delete_queue, g_list_free);
