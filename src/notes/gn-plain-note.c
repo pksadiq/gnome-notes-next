@@ -104,7 +104,7 @@ gn_plain_note_get_markup (GnNote *note)
     content = g_markup_escape_text (self->content, -1);
 
   if (title_markup != NULL)
-    return g_strconcat ("<b>", title, "</b>\n\n",
+    return g_strconcat ("<b>", title_markup, "</b>\n\n",
                         content, NULL);
   else
     return NULL;
