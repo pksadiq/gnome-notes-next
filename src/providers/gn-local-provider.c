@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <glib/gi18n.h>
+
 #include "gn-provider-item.h"
 #include "gn-plain-note.h"
 #include "gn-local-provider.h"
@@ -406,6 +408,7 @@ static void
 gn_local_provider_init (GnLocalProvider *self)
 {
   self->uid = g_strdup ("local");
+  self->name = g_strdup (_("Local"));
 
   if (self->location == NULL)
     {
