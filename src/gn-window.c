@@ -40,7 +40,7 @@ struct _GnWindow
   GtkApplicationWindow parent_instance;
 
   GtkWidget *header_bar;
-  GtkWidget *header_title_stack;
+  GtkWidget *stack_switcher;
   GtkWidget *view_button_stack;
   GtkWidget *grid_button;
   GtkWidget *list_button;
@@ -362,8 +362,8 @@ gn_window_selection_mode_toggled (GnWindow  *self,
       gtk_widget_hide (self->navigate_button_stack);
       gtk_widget_show (self->main_action_bar);
       gtk_style_context_add_class (style_context, "selection-mode");
-      gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
-                                        "title");
+      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
+                                        NULL);
       gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
                                 _("Click on items to select them"));
     }
@@ -372,8 +372,8 @@ gn_window_selection_mode_toggled (GnWindow  *self,
       gtk_style_context_remove_class (style_context, "selection-mode");
       gtk_widget_show (self->navigate_button_stack);
       gtk_widget_hide (self->main_action_bar);
-      gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
-                                        "main");
+      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
+                                       self->stack_switcher);
     }
 
   gtk_header_bar_set_show_close_button (GTK_HEADER_BAR (self->header_bar),
@@ -433,16 +433,16 @@ gn_window_update_header_bar (GnWindow *self,
     case GN_VIEW_NOTEBOOK_NOTES:
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->back_button);
-      gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
-                                        "title");
+      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
+                                       NULL);
       break;
 
     case GN_VIEW_NOTES:
     case GN_VIEW_NOTEBOOKS:
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->new_button);
-      gtk_stack_set_visible_child_name (GTK_STACK (self->header_title_stack),
-                                        "main");
+      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
+                                       self->stack_switcher);
       break;
     default:
       break;
@@ -542,7 +542,7 @@ gn_window_class_init (GnWindowClass *klass)
                                                "ui/gn-window.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, header_title_stack);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, stack_switcher);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_stack);

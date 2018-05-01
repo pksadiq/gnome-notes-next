@@ -16,28 +16,10 @@
         <property name="show-close-button">1</property>
 
         <child type="title">
-          <object class="GtkStack" id="header_title_stack">
+          <object class="GtkStackSwitcher" id="stack_switcher">
             <property name="visible">1</property>
-            <child>
-              <object class="GtkStackSwitcher">
-                <property name="visible">1</property>
-                <property name="stack">main_stack</property>
-              </object>
-              <packing>
-                <property name="name">main</property>
-              </packing>
-            </child>
-
-            <child>
-              <object class="GtkLabel">
-                <property name="visible">1</property>
-                <property name="label" bind-source="header_bar" bind-property="title"/>
-              </object>
-              <packing>
-                <property name="name">title</property>
-              </packing>
-            </child>
-          </object> <!-- ./GtkStack header_title_stack -->
+            <property name="stack">main_stack</property>
+          </object>
         </child>
 
         <!-- Back/New buttons -->
