@@ -66,6 +66,7 @@
             <child>
               <object class="GtkButton" id="grid_button">
                 <property name="visible">1</property>
+                <property name="tooltip-text" translatable="1">View items in a grid</property>
                 <signal name="clicked" handler="gn_window_view_button_toggled" swapped="1"/>
                 <style>
                  <class name="image-button"/>
@@ -80,7 +81,6 @@
                     <property name="visible">1</property>
                     <property name="icon-name">view-grid-symbolic</property>
                     <property name="icon-size">1</property>
-                    <property name="tooltip-text" translatable="1">View items in a grid</property>
                   </object>
                 </child>
               </object>
@@ -89,6 +89,7 @@
             <child>
               <object class="GtkButton" id="list_button">
                 <property name="visible">1</property>
+                <property name="tooltip-text" translatable="1">View items in a list</property>
                 <signal name="clicked" handler="gn_window_view_button_toggled" swapped="1"/>
                 <style>
                  <class name="image-button"/>
@@ -103,7 +104,6 @@
                     <property name="visible">1</property>
                     <property name="icon-name">view-list-symbolic</property>
                     <property name="icon-size">1</property>
-                    <property name="tooltip-text" translatable="1">View items in a list</property>
                   </object>
                 </child>
               </object>
@@ -122,6 +122,7 @@
             <child>
               <object class="GtkButton" id="select_button">
                 <property name="visible">1</property>
+                <property name="tooltip-text" translatable="1">Enable selection mode</property>
                 <signal name="clicked" handler="gn_window_selection_mode_toggled" swapped="1"/>
                 <style>
                  <class name="image-button"/>
@@ -136,7 +137,6 @@
                     <property name="visible">1</property>
                     <property name="icon-name">object-select-symbolic</property>
                     <property name="icon-size">1</property>
-                    <property name="tooltip-text" translatable="1">Enable selection mode</property>
                   </object>
                 </child>
               </object>
