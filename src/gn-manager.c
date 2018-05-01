@@ -313,7 +313,6 @@ gn_manager_load_local_providers (GTask        *task,
   GnManager *self = source_object;
   GnProvider *provider;
   g_autoptr(GError) error = NULL;
-  GList *provider_items;
   gboolean success;
 
   g_assert (G_IS_TASK (task));
@@ -329,33 +328,9 @@ gn_manager_load_local_providers (GTask        *task,
                                     self->provider_cancellable,
                                     &error);
   if (success)
-    {
-      provider_items = gn_provider_get_notes (provider);
-
-      for (GList *item = provider_items; item != NULL; item = item->next)
-        {
-          g_queue_insert_sorted (self->notes_queue, item->data,
-                                 gn_provider_item_compare, NULL);
-        }
-
-      provider_items = gn_provider_get_trash_notes (provider);
-
-      for (GList *item = provider_items; item != NULL; item = item->next)
-        {
-          g_queue_insert_sorted (self->trash_notes_queue, item->data,
-                                 gn_provider_item_compare, NULL);
-        }
-    }
-  else /* ie, error on loading notes */
-    {
-      g_warning ("Error loading local notes: %s", error->message);
-      g_clear_error (&error);
-    }
-
-  gn_manager_load_more_items (self, &self->notes_store,
-                              &self->notes_queue);
-  gn_manager_load_more_items (self, &self->trash_notes_store,
-                              &self->trash_notes_queue);
+    gn_manager_load_items (self, provider);
+  else
+    g_warning ("Error loading local notes: %s", error->message);
 }
 
 static void
