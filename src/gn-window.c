@@ -126,6 +126,31 @@ gn_window_show_undo_revealer (GnWindow *self)
 }
 
 static void
+gn_window_set_title (GnWindow    *self,
+                     const gchar *title,
+                     const gchar *subtitle)
+{
+  GtkHeaderBar *header_bar;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  header_bar = GTK_HEADER_BAR (self->header_bar);
+
+  if (title == NULL && subtitle == NULL)
+    {
+      gtk_header_bar_set_custom_title (header_bar,
+                                       self->stack_switcher);
+      gtk_header_bar_set_title (header_bar, _("Notes"));
+      gtk_header_bar_set_subtitle (header_bar, NULL);
+      return;
+    }
+
+  gtk_header_bar_set_custom_title (header_bar, NULL);
+  gtk_header_bar_set_title (header_bar, title);
+  gtk_header_bar_set_subtitle (header_bar, subtitle);
+}
+
+static void
 gn_window_provider_added_cb (GnWindow   *self,
                              GnProvider *provider,
                              GnManager  *manager)
@@ -198,10 +223,8 @@ gn_window_open_new_note (GnWindow *self)
   if (child != NULL)
     gtk_container_remove (GTK_CONTAINER (self->editor_stack), child);
 
-  gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
-                            _("Untitled"));
-  gtk_header_bar_set_subtitle (GTK_HEADER_BAR (self->header_bar),
-                               gn_provider_get_name (provider));
+  gn_window_set_title (self, _("Untitled"),
+                       gn_provider_get_name (provider));
   gtk_container_add (GTK_CONTAINER (self->editor_stack), editor);
   gn_window_set_view (self, GN_VIEW_EDITOR, GN_VIEW_MODE_NORMAL);
 }
@@ -275,10 +298,8 @@ gn_window_item_activated (GnWindow       *self,
       if (child != NULL)
         gtk_container_remove (GTK_CONTAINER (self->editor_stack), child);
 
-      gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
-                                gn_item_get_title (item));
-      gtk_header_bar_set_subtitle (GTK_HEADER_BAR (self->header_bar),
-                                   gn_provider_get_name (provider));
+      gn_window_set_title (self, gn_item_get_title (item),
+                           gn_provider_get_name (provider));
 
       gtk_container_add (GTK_CONTAINER (self->editor_stack), editor);
       gn_window_set_view (self, GN_VIEW_EDITOR, GN_VIEW_MODE_NORMAL);
@@ -373,20 +394,15 @@ gn_window_selection_mode_toggled (GnWindow  *self,
       gtk_widget_hide (self->navigate_button_stack);
       gtk_widget_show (self->main_action_bar);
       gtk_style_context_add_class (style_context, "selection-mode");
-      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
-                                        NULL);
-      gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
-                                _("Click on items to select them"));
-      gtk_header_bar_set_subtitle (GTK_HEADER_BAR (self->header_bar),
-                                   NULL);
+      gn_window_set_title (self, _("Click on items to select them"),
+                           NULL);
     }
   else
     {
       gtk_style_context_remove_class (style_context, "selection-mode");
       gtk_widget_show (self->navigate_button_stack);
       gtk_widget_hide (self->main_action_bar);
-      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
-                                       self->stack_switcher);
+      gn_window_set_title (self, NULL, NULL);
     }
 
   gtk_header_bar_set_show_close_button (GTK_HEADER_BAR (self->header_bar),
@@ -443,15 +459,10 @@ gn_window_update_header_bar (GnWindow *self,
       gtk_widget_hide (self->view_button_stack);
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->back_button);
-      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
-                                       NULL);
       break;
 
     case GN_VIEW_TRASH:
-      gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
-                                _("Trash"));
-      gtk_header_bar_set_subtitle (GTK_HEADER_BAR (self->header_bar),
-                                   NULL);
+      gn_window_set_title (self, _("Trash"), NULL);
       /* fallthrough */
 
     case GN_VIEW_NOTEBOOK_NOTES:
@@ -465,8 +476,7 @@ gn_window_update_header_bar (GnWindow *self,
     case GN_VIEW_NOTEBOOKS:
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->new_button);
-      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
-                                       self->stack_switcher);
+      gn_window_set_title (self, NULL, NULL);
       break;
     default:
       break;
