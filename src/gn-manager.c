@@ -617,7 +617,7 @@ gn_manager_load_more_trash_notes (GnManager *self)
  * @self: A #GnManager
  *
  * Create a New empty note for the default provider.
- * The default provider name can be retried by
+ * The default provider name can be retrieved by
  * gn_settings_get_provider_name().
  *
  * The format of the note is decided based on
