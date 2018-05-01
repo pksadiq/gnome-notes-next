@@ -181,6 +181,7 @@ static void
 gn_window_open_new_note (GnWindow *self)
 {
   GnProviderItem *provider_item;
+  GnProvider *provider;
   GnManager *manager;
   GtkWidget *editor, *child;
 
@@ -188,6 +189,7 @@ gn_window_open_new_note (GnWindow *self)
 
   manager = gn_manager_get_default ();
   provider_item = gn_manager_new_note (manager);
+  provider = gn_provider_item_get_provider (provider_item);
 
   editor = gn_editor_new ();
   gn_editor_set_item (GN_EDITOR (editor), provider_item);
@@ -196,6 +198,10 @@ gn_window_open_new_note (GnWindow *self)
   if (child != NULL)
     gtk_container_remove (GTK_CONTAINER (self->editor_stack), child);
 
+  gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
+                            _("Untitled"));
+  gtk_header_bar_set_subtitle (GTK_HEADER_BAR (self->header_bar),
+                               gn_provider_get_name (provider));
   gtk_container_add (GTK_CONTAINER (self->editor_stack), editor);
   gn_window_set_view (self, GN_VIEW_EDITOR, GN_VIEW_MODE_NORMAL);
 }
@@ -268,6 +274,11 @@ gn_window_item_activated (GnWindow       *self,
       child = gtk_bin_get_child (GTK_BIN (self->editor_stack));
       if (child != NULL)
         gtk_container_remove (GTK_CONTAINER (self->editor_stack), child);
+
+      gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
+                                gn_item_get_title (item));
+      gtk_header_bar_set_subtitle (GTK_HEADER_BAR (self->header_bar),
+                                   gn_provider_get_name (provider));
 
       gtk_container_add (GTK_CONTAINER (self->editor_stack), editor);
       gn_window_set_view (self, GN_VIEW_EDITOR, GN_VIEW_MODE_NORMAL);
@@ -366,6 +377,8 @@ gn_window_selection_mode_toggled (GnWindow  *self,
                                         NULL);
       gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
                                 _("Click on items to select them"));
+      gtk_header_bar_set_subtitle (GTK_HEADER_BAR (self->header_bar),
+                                   NULL);
     }
   else
     {
@@ -428,8 +441,19 @@ gn_window_update_header_bar (GnWindow *self,
     case GN_VIEW_EDITOR:
       gtk_widget_hide (self->select_button_stack);
       gtk_widget_hide (self->view_button_stack);
-      /* fallthrough */
+      gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
+                                   self->back_button);
+      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
+                                       NULL);
+      break;
+
     case GN_VIEW_TRASH:
+      gtk_header_bar_set_title (GTK_HEADER_BAR (self->header_bar),
+                                _("Trash"));
+      gtk_header_bar_set_subtitle (GTK_HEADER_BAR (self->header_bar),
+                                   NULL);
+      /* fallthrough */
+
     case GN_VIEW_NOTEBOOK_NOTES:
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->back_button);
