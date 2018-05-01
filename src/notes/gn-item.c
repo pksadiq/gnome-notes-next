@@ -353,7 +353,7 @@ gn_item_set_uid (GnItem      *self,
  *
  * Get the title/name of the item
  *
- * Returns: (transfer none) (nullable): the title of the item.
+ * Returns: (transfer none): the title of the item.
  */
 const gchar *
 gn_item_get_title (GnItem *self)
@@ -362,7 +362,7 @@ gn_item_get_title (GnItem *self)
 
   g_return_val_if_fail (GN_IS_ITEM (self), NULL);
 
-  return priv->title;
+  return priv->title ? priv->title : "";
 }
 
 /**
