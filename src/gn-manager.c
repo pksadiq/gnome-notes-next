@@ -24,6 +24,7 @@
 
 #include "gn-provider-item.h"
 #include "gn-plain-note.h"
+#include "gn-memo-provider.h"
 #include "gn-local-provider.h"
 #include "gn-settings.h"
 #include "gn-utils.h"
@@ -44,6 +45,8 @@ struct _GnManager
   GObject       parent_instance;
 
   GnSettings   *settings;
+
+  ESourceRegistry *eds_registry;
 
   GHashTable   *providers;
   GCancellable *provider_cancellable;
@@ -202,6 +205,105 @@ gn_manager_load_more_items (GnManager   *self,
     }
 }
 
+/* Load items from the provider to the store and queue */
+static void
+gn_manager_load_items (GnManager  *self,
+                       GnProvider *provider)
+{
+  GList *provider_items;
+
+  provider_items = gn_provider_get_notes (provider);
+
+  for (GList *node = provider_items; node != NULL; node = node->next)
+    {
+      g_queue_insert_sorted (self->notes_queue, node->data,
+                             gn_provider_item_compare, NULL);
+    }
+
+  provider_items = gn_provider_get_trash_notes (provider);
+
+  for (GList *node = provider_items; node != NULL; node = node->next)
+    {
+      g_queue_insert_sorted (self->trash_notes_queue, node->data,
+                             gn_provider_item_compare, NULL);
+    }
+
+  gn_manager_load_more_items (self, &self->notes_store,
+                              &self->notes_queue);
+  gn_manager_load_more_items (self, &self->trash_notes_store,
+                              &self->trash_notes_queue);
+}
+
+static void
+gn_manager_items_loaded_cb (GObject      *object,
+                            GAsyncResult *result,
+                            gpointer      user_data)
+{
+  GnProvider *provider = (GnProvider *)object;
+  GnManager *self = user_data;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (GN_IS_PROVIDER (provider));
+  g_assert (GN_IS_MANAGER (self));
+
+  if (gn_provider_load_items_finish (provider, result, &error))
+    gn_manager_load_items (self, provider);
+  else
+    g_warning ("Failed to load items: %s", error->message);
+}
+
+static void
+gn_manager_eds_client_connected_cb (GObject      *object,
+                                    GAsyncResult *result,
+                                    gpointer      user_data)
+{
+  GnManager *self = user_data;
+  g_autoptr(GError) error = NULL;
+  g_autoptr(ECalClient) client = NULL;
+  GnProvider *provider;
+  ESource *source;
+
+  g_assert (GN_IS_MANAGER (self));
+
+  client = E_CAL_CLIENT (e_cal_client_connect_finish (result, &error));
+  source = e_client_get_source (E_CLIENT (client));
+
+  if (error)
+    {
+      g_warning ("Failed to connect to eds memo list '%s': %s",
+                 e_source_get_uid (source), error->message);
+      return;
+    }
+
+  provider = GN_PROVIDER (gn_memo_provider_new (source, client));
+  gn_provider_load_items_async (provider, self->provider_cancellable,
+                                gn_manager_items_loaded_cb, self);
+}
+
+static void
+gn_manager_load_memo_providers (GnManager *self)
+{
+  GList *sources;
+
+  g_assert (GN_IS_MANAGER (self));
+
+  sources = e_source_registry_list_sources (self->eds_registry,
+                                            E_SOURCE_EXTENSION_MEMO_LIST);
+
+  for (GList *node = sources; node != NULL; node = node->next)
+    {
+      if (!e_source_has_extension (node->data, E_SOURCE_EXTENSION_MEMO_LIST))
+        continue;
+
+      e_cal_client_connect (node->data, E_CAL_CLIENT_SOURCE_TYPE_MEMOS,
+                            10, /* seconds to wait */
+                            NULL,
+                            gn_manager_eds_client_connected_cb,
+                            self);
+
+    }
+}
+
 static void
 gn_manager_load_local_providers (GTask        *task,
                                  gpointer      source_object,
@@ -262,6 +364,7 @@ gn_manager_load_local_providers_cb (GObject      *object,
                                     gpointer      user_data)
 {
   GnManager *self = (GnManager *)object;
+  g_autoptr(GError) error = NULL;
   GList *providers;
 
   g_assert (GN_IS_MANAGER (self));
@@ -282,12 +385,23 @@ gn_manager_load_local_providers_cb (GObject      *object,
                                self, G_CONNECT_SWAPPED);
       g_signal_emit (self, signals[PROVIDER_ADDED], 0, node->data);
     }
+
+  /*
+   * We load other providers after local provider is loaded.  This is
+   * because Evolution/goa providers may be stored remote and thus
+   * may be slow to load.  Don't bore the user waiting for those.
+   * We have completed setting up local provider above.  Now let's
+   * load other providers.
+   */
+  if (self->eds_registry != NULL)
+    gn_manager_load_memo_providers (self);
 }
 
 static void
 gn_manager_load_providers (GnManager *self)
 {
   g_autoptr(GTask) task = NULL;
+  g_autoptr(GError) error = NULL;
 
   GN_ENTRY;
 
@@ -297,6 +411,22 @@ gn_manager_load_providers (GnManager *self)
                      gn_manager_load_local_providers_cb, NULL);
   g_task_set_source_tag (task, gn_manager_load_providers);
   g_task_run_in_thread (task, gn_manager_load_local_providers);
+
+  /*
+   * Setup Evolution.  We are not actually loading any memos here.
+   * But simply trying to connect to the evolution data server.
+   * If it succeeds, we shall load the memos asynchronously after
+   * local notes are loaded.
+   */
+  self->eds_registry = e_source_registry_new_sync (self->provider_cancellable,
+                                                   &error);
+
+  if (error)
+    {
+      g_warning ("Error loading Evolution-Data-Server backend: %s",
+                 error->message);
+      g_clear_error (&error);
+    }
 
   GN_EXIT;
 }
