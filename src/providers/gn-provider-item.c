@@ -176,10 +176,14 @@ gn_provider_item_compare (gconstpointer a,
 {
   const GnProviderItem *item_a = a;
   const GnProviderItem *item_b = b;
+  g_autofree gchar *title_a = NULL;
+  g_autofree gchar *title_b = NULL;
 
   if (item_a == item_b)
     return 0;
 
-  return g_strcmp0 (gn_item_get_title (item_a->item),
-                    gn_item_get_title (item_b->item));
+  title_a = g_utf8_casefold (gn_item_get_title (item_a->item), -1);
+  title_b = g_utf8_casefold (gn_item_get_title (item_b->item), -1);
+
+  return g_strcmp0 (title_a, title_b);
 }
