@@ -135,7 +135,7 @@ gn_plain_note_init (GnPlainNote *self)
 static GnPlainNote *
 gn_plain_note_create_from_data (const gchar *data)
 {
-  g_auto(GStrv) split_data;
+  g_auto(GStrv) split_data = NULL;
   gchar *title = NULL, *content = NULL;
   GnPlainNote *note;
 
