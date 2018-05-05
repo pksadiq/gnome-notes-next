@@ -9,7 +9,7 @@
   The code is now in pre-alpha stage. And so, merge requests and
   bug reports are currently not accepted.
 
-  Code repo: https://gitlab.com/sadiq/gnome-notes
+  Code repo: https://gitlab.com/sadiq/gnome-notes-next
 
 * How to compile
 
