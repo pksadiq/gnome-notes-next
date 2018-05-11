@@ -32,19 +32,11 @@
             </child>
             <child>
               <object class="GtkButton" id="back_button">
+                <property name="icon-name">go-previous-symbolic</property>
                 <signal name="clicked" handler="gn_window_show_previous_view" swapped="1"/>
-                <style>
-                 <class name="image-button"/>
-                </style>
                 <child internal-child="accessible">
                   <object class="AtkObject">
                     <property name="accessible-name" translatable="1">Back</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkImage">
-                    <property name="icon-name">go-previous-symbolic</property>
-                    <property name="icon-size">1</property>
                   </object>
                 </child>
               </object>
@@ -60,19 +52,11 @@
             <child>
               <object class="GtkButton" id="grid_button">
                 <property name="tooltip-text" translatable="1">View items in a grid</property>
+                <property name="icon-name">view-grid-symbolic</property>
                 <signal name="clicked" handler="gn_window_view_button_toggled" swapped="1"/>
-                <style>
-                 <class name="image-button"/>
-                </style>
                 <child internal-child="accessible">
                   <object class="AtkObject">
                     <property name="accessible-name" translatable="1">Grid View</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkImage">
-                    <property name="icon-name">view-grid-symbolic</property>
-                    <property name="icon-size">1</property>
                   </object>
                 </child>
               </object>
@@ -81,19 +65,11 @@
             <child>
               <object class="GtkButton" id="list_button">
                 <property name="tooltip-text" translatable="1">View items in a list</property>
+                <property name="icon-name">view-list-symbolic</property>
                 <signal name="clicked" handler="gn_window_view_button_toggled" swapped="1"/>
-                <style>
-                 <class name="image-button"/>
-                </style>
                 <child internal-child="accessible">
                   <object class="AtkObject">
                     <property name="accessible-name" translatable="1">List View</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkImage">
-                    <property name="icon-name">view-list-symbolic</property>
-                    <property name="icon-size">1</property>
                   </object>
                 </child>
               </object>
@@ -111,19 +87,11 @@
             <child>
               <object class="GtkButton" id="select_button">
                 <property name="tooltip-text" translatable="1">Enable selection mode</property>
+                <property name="icon-name">object-select-symbolic</property>
                 <signal name="clicked" handler="gn_window_selection_mode_toggled" swapped="1"/>
-                <style>
-                 <class name="image-button"/>
-                </style>
                 <child internal-child="accessible">
                   <object class="AtkObject">
                     <property name="accessible-name" translatable="1">Enable selection mode</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkImage">
-                    <property name="icon-name">object-select-symbolic</property>
-                    <property name="icon-size">1</property>
                   </object>
                 </child>
               </object>
@@ -187,16 +155,8 @@
                           <object class="GtkButton">
                             <property name="focus-on-click">0</property>
                             <property name="relief">none</property>
+                            <property name="icon-name">window-close-symbolic</property>
                             <signal name="clicked" handler="gn_window_continue_delete" swapped="1"/>
-                            <style>
-                             <class name="image-button"/>
-                            </style>
-                            <child>
-                              <object class="GtkImage">
-                                <property name="icon-name">window-close-symbolic</property>
-                                <property name="icon-size">1</property>
-                              </object>
-                            </child>
                           </object>
                         </child>
                       </object>
