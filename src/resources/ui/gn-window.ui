@@ -12,12 +12,10 @@
       <object class="GtkHeaderBar" id="header_bar">
         <property name="title" translatable="1">New and Recent</property>
         <property name="can-focus">1</property>
-        <property name="visible">1</property>
         <property name="show-title-buttons">1</property>
 
         <child type="title">
           <object class="GtkStackSwitcher" id="stack_switcher">
-            <property name="visible">1</property>
             <property name="stack">main_stack</property>
           </object>
         </child>
@@ -25,18 +23,15 @@
         <!-- Back/New buttons -->
         <child>
           <object class="GtkStack" id="navigate_button_stack">
-            <property name="visible">1</property>
             <property name="homogeneous">0</property>
             <child>
               <object class="GtkButton" id="new_button">
-                <property name="visible">1</property>
                 <property name="label" translatable="1">New</property>
                 <signal name="clicked" handler="gn_window_open_new_note" swapped="1"/>
               </object>
             </child>
             <child>
               <object class="GtkButton" id="back_button">
-                <property name="visible">1</property>
                 <signal name="clicked" handler="gn_window_show_previous_view" swapped="1"/>
                 <style>
                  <class name="image-button"/>
@@ -48,7 +43,6 @@
                 </child>
                 <child>
                   <object class="GtkImage">
-                    <property name="visible">1</property>
                     <property name="icon-name">go-previous-symbolic</property>
                     <property name="icon-size">1</property>
                   </object>
@@ -65,7 +59,6 @@
                       bind-flags="sync-create"/>
             <child>
               <object class="GtkButton" id="grid_button">
-                <property name="visible">1</property>
                 <property name="tooltip-text" translatable="1">View items in a grid</property>
                 <signal name="clicked" handler="gn_window_view_button_toggled" swapped="1"/>
                 <style>
@@ -78,7 +71,6 @@
                 </child>
                 <child>
                   <object class="GtkImage">
-                    <property name="visible">1</property>
                     <property name="icon-name">view-grid-symbolic</property>
                     <property name="icon-size">1</property>
                   </object>
@@ -88,7 +80,6 @@
 
             <child>
               <object class="GtkButton" id="list_button">
-                <property name="visible">1</property>
                 <property name="tooltip-text" translatable="1">View items in a list</property>
                 <signal name="clicked" handler="gn_window_view_button_toggled" swapped="1"/>
                 <style>
@@ -101,7 +92,6 @@
                 </child>
                 <child>
                   <object class="GtkImage">
-                    <property name="visible">1</property>
                     <property name="icon-name">view-list-symbolic</property>
                     <property name="icon-size">1</property>
                   </object>
@@ -117,11 +107,9 @@
 
         <child>
           <object class="GtkStack" id="select_button_stack">
-            <property name="visible">1</property>
             <property name="homogeneous">0</property>
             <child>
               <object class="GtkButton" id="select_button">
-                <property name="visible">1</property>
                 <property name="tooltip-text" translatable="1">Enable selection mode</property>
                 <signal name="clicked" handler="gn_window_selection_mode_toggled" swapped="1"/>
                 <style>
@@ -134,7 +122,6 @@
                 </child>
                 <child>
                   <object class="GtkImage">
-                    <property name="visible">1</property>
                     <property name="icon-name">object-select-symbolic</property>
                     <property name="icon-size">1</property>
                   </object>
@@ -144,7 +131,6 @@
 
             <child>
               <object class="GtkButton" id="cancel_button">
-                <property name="visible">1</property>
                 <property name="label" translatable="1">Cancel</property>
                 <property name="visible" bind-source="select_button" bind-property="visible"
                           bind-flags="default|bidirectional|invert-boolean"/>
@@ -163,30 +149,24 @@
 
     <child>
       <object class="GtkBox">
-        <property name="visible">1</property>
         <property name="orientation">vertical</property>
         <child>
           <object class="GtkOverlay">
-            <property name="visible">1</property>
 
             <child type="overlay">
               <object class="GtkRevealer" id="undo_revealer">
-                <property name="visible">1</property>
                 <property name="halign">center</property>
                 <property name="valign">start</property>
                 <child>
                   <object class="GtkFrame">
-                    <property name="visible">1</property>
                     <style>
                      <class name="app-notification"/>
                     </style>
                     <child>
                       <object class="GtkBox">
-                        <property name="visible">1</property>
                         <property name="spacing">10</property>
                         <child>
                           <object class="GtkLabel" id="undo_revealer_label">
-                            <property name="visible">1</property>
                             <property name="hexpand">1</property>
                             <property name="halign">start</property>
                             <property name="label" translatable="1">Some items Deleted</property>
@@ -197,7 +177,6 @@
                         </child>
                         <child>
                           <object class="GtkButton">
-                            <property name="visible">1</property>
                             <property name="focus-on-click">0</property>
                             <property name="label" translatable="1">_Undo</property>
                             <property name="use-underline">1</property>
@@ -206,7 +185,6 @@
                         </child>
                         <child>
                           <object class="GtkButton">
-                            <property name="visible">1</property>
                             <property name="focus-on-click">0</property>
                             <property name="relief">none</property>
                             <signal name="clicked" handler="gn_window_continue_delete" swapped="1"/>
@@ -215,7 +193,6 @@
                             </style>
                             <child>
                               <object class="GtkImage">
-                                <property name="visible">1</property>
                                 <property name="icon-name">window-close-symbolic</property>
                                 <property name="icon-size">1</property>
                               </object>
@@ -231,24 +208,20 @@
 
             <child>
               <object class="GtkStack" id="main_stack">
-                <property name="visible">1</property>
                 <signal name="notify::visible-child" handler="gn_window_main_view_changed" swapped="1"/>
                 <child>
                   <object class="GtkStack" id="notes_stack">
-                    <property name="visible">1</property>
                     <property name="expand">1</property>
 
                     <!-- Empty notes view -->
                     <child>
                       <object class="GtkGrid">
-                        <property name="visible">1</property>
                         <property name="column-spacing">12</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
 
                         <child>
                           <object class="GtkImage">
-                            <property name="visible">1</property>
                             <property name="icon-name">note-symbolic</property>
                             <property name="pixel-size">48</property>
                           </object>
@@ -261,7 +234,6 @@
 
                         <child>
                           <object class="GtkLabel">
-                            <property name="visible">1</property>
                             <property name="label" translatable="1">No notes</property>
                             <property name="halign">start</property>
                             <attributes>
@@ -277,7 +249,6 @@
 
                         <child>
                           <object class="GtkLabel">
-                            <property name="visible">1</property>
                             <property name="label" translatable="1">Press the new button to create a note</property>
                           </object>
                           <packing>
@@ -297,17 +268,14 @@
 
                     <child>
                       <object class="GtkScrolledWindow">
-                        <property name="visible">1</property>
                         <signal name="edge-reached" handler="gn_window_load_more_items" swapped="1"/>
                         <child>
                           <object class="GtkFrame">
-                            <property name="visible">1</property>
                             <style>
                              <class name="content-view"/>
                             </style>
                             <child>
                               <object class="GnMainView" id="notes_view">
-                                <property name="visible">1</property>
                                 <signal name="item-activated" handler="gn_window_item_activated" swapped="1"/>
                               </object>
                             </child>
@@ -328,7 +296,6 @@
 
                 <child>
                   <object class="GtkStack" id="notebook_stack">
-                    <property name="visible">1</property>
                   </object>
                   <packing>
                     <property name="name">notebooks</property>
@@ -338,19 +305,16 @@
 
                 <child>
                   <object class="GtkStack" id="trash_stack">
-                    <property name="visible">1</property>
 
                     <!-- Empty trash view -->
                     <child>
                       <object class="GtkGrid">
-                        <property name="visible">1</property>
                         <property name="column-spacing">12</property>
                         <property name="halign">center</property>
                         <property name="valign">center</property>
 
                         <child>
                           <object class="GtkLabel">
-                            <property name="visible">1</property>
                             <property name="label" translatable="1">No notes</property>
                             <property name="halign">start</property>
                             <attributes>
@@ -371,17 +335,14 @@
 
                     <child>
                       <object class="GtkScrolledWindow">
-                        <property name="visible">1</property>
                         <signal name="edge-reached" handler="gn_window_load_more_items" swapped="1"/>
                         <child>
                           <object class="GtkFrame">
-                            <property name="visible">1</property>
                             <style>
                              <class name="content-view"/>
                             </style>
                             <child>
                               <object class="GnMainView" id="trash_view">
-                                <property name="visible">1</property>
                                 <signal name="item-activated" handler="gn_window_item_activated" swapped="1"/>
                               </object>
                             </child>
@@ -398,7 +359,6 @@
 
                 <child>
                   <object class="GtkFrame" id="editor_stack">
-                    <property name="visible">1</property>
                     <property name="shadow-type">none</property>
                   </object>
                 </child>

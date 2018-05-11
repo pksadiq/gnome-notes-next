@@ -2,16 +2,13 @@
 <interface>
   <!-- interface-requires gtk 3.14 -->
   <template class="GnMainView" parent="GtkGrid">
-    <property name="visible">1</property>
 
     <child>
       <object class="GtkStack" id="view_stack">
-        <property name="visible">1</property>
         <property name="homogeneous">0</property>
 
         <child>
           <object class="GnGridView" id="grid_view">
-            <property name="visible">1</property>
             <property name="halign">start</property>
             <property name="valign">start</property>
             <property name="hexpand">1</property>
@@ -30,7 +27,6 @@
 
         <child>
           <object class="GnListView" id="list_view">
-            <property name="visible">1</property>
             <property name="halign">fill</property>
             <property name="valign">start</property>
             <property name="expand">1</property>

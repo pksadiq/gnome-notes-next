@@ -2,19 +2,15 @@
 <interface>
   <!-- interface-requires gtk 3.12 -->
   <template class="GnActionBar" parent="GtkActionBar">
-    <property name="visible">1</property>
     <child>
       <object class="GtkStack" id="actions_stack">
-        <property name="visible">1</property>
         <child>
           <object class="GtkBox" id="main_actions">
-            <property name="visible">1</property>
             <property name="hexpand">1</property>
             <property name="spacing">6</property>
 
             <child>
               <object class="GtkButton">
-                <property name="visible">1</property>
                 <property name="label" translatable="1">Delete</property>
                 <signal name="clicked" handler="gn_action_bar_delete_selected_items" swapped="1"/>
                 <style>

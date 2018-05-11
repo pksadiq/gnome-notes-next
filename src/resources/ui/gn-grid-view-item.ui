@@ -2,32 +2,27 @@
 <interface>
   <!-- interface-requires gtk 3.12 -->
   <template class="GnGridViewItem" parent="GtkFlowBoxChild">
-    <property name="visible">1</property>
     <style>
      <class name="transparent"/>
     </style>
     <child>
       <object class="GtkGrid">
-        <property name="visible">1</property>
         <property name="orientation">vertical</property>
 
         <!-- Note content preview -->
         <child>
           <object class="GtkFrame">
-            <property name="visible">1</property>
             <style>
              <class name="tile"/>
             </style>
             <child>
               <object class="GtkOverlay">
-                <property name="visible">1</property>
                 <property name="halign">start</property>
                 <property name="valign">start</property>
                 <property name="width-request">200</property>
                 <property name="height-request">200</property>
                 <child type="overlay">
                   <object class="GtkBox">
-                    <property name="visible">1</property>
                     <child>
                       <object class="GnItemThumbnail" id="preview_label">
                         <property name="width-request">200</property>
@@ -43,7 +38,6 @@
                   <object class="GtkCheckButton" id="check_box">
                     <property name="halign">end</property>
                     <property name="valign">end</property>
-                    <property name="visible">1</property>
                     <signal name="toggled" handler="gn_grid_view_item_toggled" swapped="1"/>
                   </object>
                 </child>
@@ -55,7 +49,6 @@
         <!-- Note Label -->
         <child>
           <object class="GtkLabel" id="title_label">
-            <property name="visible">1</property>
             <property name="margin-start">12</property>
             <property name="margin-end">12</property>
             <property name="margin-top">6</property>

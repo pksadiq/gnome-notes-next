@@ -2,13 +2,11 @@
 <interface>
   <!-- interface-requires gtk 3.12 -->
   <template class="GnListViewItem" parent="GtkListBoxRow">
-    <property name="visible">1</property>
     <style>
      <class name="transparent"/>
     </style>
     <child>
       <object class="GtkGrid">
-        <property name="visible">1</property>
         <property name="margin">3</property>
         <property name="orientation">horizontal</property>
 
@@ -25,10 +23,8 @@
         <!-- Note content preview -->
         <child>
           <object class="GtkFrame">
-            <property name="visible">1</property>
             <child>
               <object class="GtkOverlay">
-                <property name="visible">1</property>
                 <property name="halign">start</property>
                 <property name="valign">start</property>
                 <property name="width-request">32</property>
@@ -44,7 +40,6 @@
         <!-- Note Label -->
         <child>
           <object class="GtkLabel" id="title_label">
-            <property name="visible">1</property>
             <property name="margin-start">12</property>
             <property name="lines">1</property>
             <property name="ellipsize">end</property>
