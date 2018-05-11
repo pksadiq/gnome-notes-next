@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <!-- interface-requires gtk 3.10 -->
   <template class="GnWindow" parent="GtkApplicationWindow">
     <property name="width-request">400</property>
     <property name="height-request">300</property>
