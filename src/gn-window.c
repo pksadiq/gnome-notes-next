@@ -405,8 +405,8 @@ gn_window_selection_mode_toggled (GnWindow  *self,
       gn_window_set_title (self, NULL, NULL);
     }
 
-  gtk_header_bar_set_show_close_button (GTK_HEADER_BAR (self->header_bar),
-                                        !selection_mode);
+  gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (self->header_bar),
+                                         !selection_mode);
   /*
    * widget can either be select_button or cancel_button. As their
    * 'visible' property is bind to inverse of each other, hiding

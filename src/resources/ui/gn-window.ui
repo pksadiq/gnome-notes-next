@@ -13,7 +13,7 @@
         <property name="title" translatable="1">New and Recent</property>
         <property name="can-focus">1</property>
         <property name="visible">1</property>
-        <property name="show-close-button">1</property>
+        <property name="show-title-buttons">1</property>
 
         <child type="title">
           <object class="GtkStackSwitcher" id="stack_switcher">

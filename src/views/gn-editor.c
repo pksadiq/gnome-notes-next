@@ -57,13 +57,12 @@ static void
 gn_editor_copy_or_cut (GnEditor  *self,
                        GtkWidget *button)
 {
-  GtkClipboard *clipboard;
+  GdkClipboard *clipboard;
 
   g_assert (GN_IS_EDITOR (self));
   g_assert (GTK_IS_BUTTON (button));
 
-  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self),
-                                        GDK_SELECTION_CLIPBOARD);
+  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self));
 
   if (button == self->cut_button)
     gtk_text_buffer_cut_clipboard (self->note_buffer, clipboard, TRUE);
@@ -75,12 +74,11 @@ gn_editor_copy_or_cut (GnEditor  *self,
 static void
 gn_editor_paste (GnEditor *self)
 {
-  GtkClipboard *clipboard;
+  GdkClipboard *clipboard;
 
   g_assert (GN_IS_EDITOR (self));
 
-  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self),
-                                        GDK_SELECTION_CLIPBOARD);
+  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self));
   gtk_text_buffer_paste_clipboard (self->note_buffer, clipboard,
                                    NULL, TRUE);
 }

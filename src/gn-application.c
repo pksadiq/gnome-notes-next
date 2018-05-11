@@ -172,11 +172,11 @@ gn_application_startup (GApplication *application)
 
       self->css_provider = gtk_css_provider_new ();
       file = g_file_new_for_uri ("resource:///org/sadiqpk/notes/css/style.css");
-      gtk_css_provider_load_from_file (self->css_provider, file, NULL);
+      gtk_css_provider_load_from_file (self->css_provider, file);
 
-      gtk_style_context_add_provider_for_screen (gdk_screen_get_default (),
-                                                 GTK_STYLE_PROVIDER (self->css_provider),
-                                                 GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+      gtk_style_context_add_provider_for_display (gdk_display_get_default (),
+                                                  GTK_STYLE_PROVIDER (self->css_provider),
+                                                  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
     }
 }
 

@@ -85,7 +85,7 @@ gn_item_thumbnail_draw (GtkWidget *widget,
   gdk_cairo_set_source_rgba (cr, self->rgba);
   cairo_fill_preserve (cr);
 
-  return GTK_WIDGET_CLASS (gn_item_thumbnail_parent_class)->draw (widget, cr);
+  /* return GTK_WIDGET_CLASS (gn_item_thumbnail_parent_class)->draw (widget, cr); */
 }
 
 static void
@@ -152,7 +152,7 @@ gn_item_thumbnail_class_init (GnItemThumbnailClass *klass)
   object_class->set_property = gn_item_thumbnail_set_property;
   object_class->finalize = gn_item_thumbnail_finalize;
 
-  widget_class->draw = gn_item_thumbnail_draw;
+  /* widget_class->draw = gn_item_thumbnail_draw; */
 
   properties[PROP_RGBA] =
     g_param_spec_boxed ("rgba",
