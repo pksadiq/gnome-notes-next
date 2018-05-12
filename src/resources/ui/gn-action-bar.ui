@@ -2,7 +2,7 @@
 <interface>
   <template class="GnActionBar" parent="GtkActionBar">
     <child>
-      <object class="GtkStack" id="actions_stack">
+      <object class="GtkStack" id="actions_start">
         <child>
           <object class="GtkBox" id="main_actions">
             <property name="hexpand">1</property>
@@ -16,14 +16,17 @@
                  <class name="destructive-action"/>
                 </style>
               </object>
-              <packing>
-                <property name="pack-type">end</property>
-              </packing>
             </child>
 
           </object> <!-- ./GtkBox main_actions -->
+          <packing>
+            <property name="name">main</property>
+          </packing>
         </child>
       </object> <!-- ./GtkStack actions_stack -->
+      <packing>
+        <property name="pack-type">end</property>
+      </packing>
     </child>
   </template>
 </interface>
