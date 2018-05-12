@@ -54,9 +54,9 @@ enum {
 
 static GParamSpec *properties[N_PROPS];
 
-static gboolean
-gn_item_thumbnail_draw (GtkWidget *widget,
-                        cairo_t   *cr)
+static void
+gn_item_thumbnail_snapshot (GtkWidget *widget,
+                            GtkSnapshot *snapshot)
 {
   GnItemThumbnail *self = (GnItemThumbnail *)widget;
   GtkStyleContext *context;
@@ -65,10 +65,25 @@ gn_item_thumbnail_draw (GtkWidget *widget,
 
   g_assert (GN_IS_ITEM_THUMBNAIL (self));
 
-  width = gtk_widget_get_allocated_width (widget);
-  height = gtk_widget_get_allocated_height (widget);
+  width = gtk_widget_get_width (widget);
+  height = gtk_widget_get_height (widget);
   context = gtk_widget_get_style_context (widget);
   rgba = self->rgba;
+
+  /*
+   * FIXME: There seems a slight padding between the frame border (the parent
+   * widget) and this widget background color.  Adding custom size do fix this.
+   * Like using &GRAPHENE_RECT_INIT (-3, -3, width + 6, height + 6).  But
+   * that's a hack.  Anyway, the current style with this bug is more stylish
+   * than filling the whole frame with single color.  Should we consider
+   * this a feature than a bug?
+   * To explain it better: We do CSS padding of 3x for this widget.  May be
+   * @snapshot is restricted to the content of widget, and not the full
+   * widget allocation.  The same comment applies to the above
+   * gtk_widget_get_width/height() too.
+   */
+  gtk_snapshot_append_color (snapshot, self->rgba,
+                             &GRAPHENE_RECT_INIT (0, 0, width, height));
 
   if (INTENSITY (rgba->red, rgba->green, rgba->blue) > 0.5)
     {
@@ -81,11 +96,7 @@ gn_item_thumbnail_draw (GtkWidget *widget,
       gtk_style_context_remove_class (context, "dark");
     }
 
-  cairo_rectangle (cr, 0, 0, width, height);
-  gdk_cairo_set_source_rgba (cr, self->rgba);
-  cairo_fill_preserve (cr);
-
-  /* return GTK_WIDGET_CLASS (gn_item_thumbnail_parent_class)->draw (widget, cr); */
+  GTK_WIDGET_CLASS (gn_item_thumbnail_parent_class)->snapshot (widget, snapshot);
 }
 
 static void
@@ -152,7 +163,7 @@ gn_item_thumbnail_class_init (GnItemThumbnailClass *klass)
   object_class->set_property = gn_item_thumbnail_set_property;
   object_class->finalize = gn_item_thumbnail_finalize;
 
-  /* widget_class->draw = gn_item_thumbnail_draw; */
+  widget_class->snapshot = gn_item_thumbnail_snapshot;
 
   properties[PROP_RGBA] =
     g_param_spec_boxed ("rgba",
