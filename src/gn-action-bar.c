@@ -45,7 +45,7 @@ struct _GnActionBar
 {
   GtkActionBar parent_instance;
 
-  GtkWidget *actions_stack;
+  GtkWidget *actions_start;
 };
 
 G_DEFINE_TYPE (GnActionBar, gn_action_bar, GTK_TYPE_ACTION_BAR)
@@ -75,7 +75,7 @@ gn_action_bar_class_init (GnActionBarClass *klass)
                                                "/org/sadiqpk/notes/"
                                                "ui/gn-action-bar.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, GnActionBar, actions_stack);
+  gtk_widget_class_bind_template_child (widget_class, GnActionBar, actions_start);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_action_bar_delete_selected_items);
 }
