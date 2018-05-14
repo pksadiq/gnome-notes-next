@@ -22,6 +22,8 @@
          <class name="osd"/>
         </style>
 
+        <!-- XXX: Do we need cut/copy/paste? On systems with keyboard, Ctrl+[XCV]
+        is better. On touch systems, a popover will be shown with those actions. -->
         <child>
           <object class="GtkButtonBox">
             <property name="layout-style">expand</property>
