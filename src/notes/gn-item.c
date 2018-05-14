@@ -556,3 +556,32 @@ gn_item_is_new (GnItem *self)
   /* If uid is NULL, that means the item isn't saved */
   return priv->uid == NULL;
 }
+
+/**
+ * gn_item_compare:
+ * @a: A #GnItem
+ * @b: A #GnItem
+ *
+ * Compare two #GnItem
+ *
+ * Returns: an integer less than, equal to, or greater
+ * than 0, if title of @a is <, == or > than title of @b.
+ */
+gint
+gn_item_compare (gconstpointer a,
+                 gconstpointer b,
+                 gpointer      user_data)
+{
+  GnItemPrivate *item_a = gn_item_get_instance_private ((GnItem *)a);
+  GnItemPrivate *item_b = gn_item_get_instance_private ((GnItem *)b);
+  g_autofree gchar *title_a = NULL;
+  g_autofree gchar *title_b = NULL;
+
+  if (item_a == item_b)
+    return 0;
+
+  title_a = g_utf8_casefold (item_a->title, -1);
+  title_b = g_utf8_casefold (item_b->title, -1);
+
+  return g_strcmp0 (title_a, title_b);
+}

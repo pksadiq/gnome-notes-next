@@ -91,13 +91,13 @@ gn_grid_view_unselect_all (GtkFlowBox *box)
  *
  * Get selected items
  *
- * Returns: (transfer container): a #GList of #GnProviderItem or NULL
+ * Returns: (transfer container): a #GList of #GnItem or NULL
  */
 GList *
 gn_grid_view_get_selected_items (GnGridView *self)
 {
   g_autoptr(GList) children = NULL;
-  GList *provider_items = NULL;
+  GList *items = NULL;
 
   g_return_val_if_fail (GN_IS_GRID_VIEW (self), NULL);
 
@@ -107,9 +107,9 @@ gn_grid_view_get_selected_items (GnGridView *self)
     {
       GnGridViewItem *child = GN_GRID_VIEW_ITEM (node->data);
 
-      provider_items = g_list_prepend (provider_items,
-                                       gn_grid_view_item_get_item (child));
+      items = g_list_prepend (items,
+                              gn_grid_view_item_get_item (child));
     }
 
-  return provider_items;
+  return items;
 }

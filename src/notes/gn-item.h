@@ -58,4 +58,7 @@ void         gn_item_unset_modified        (GnItem        *self);
 
 gboolean     gn_item_is_new                (GnItem        *self);
 
+gint         gn_item_compare               (gconstpointer a,
+                                            gconstpointer b,
+                                            gpointer      user_data);;
 G_END_DECLS

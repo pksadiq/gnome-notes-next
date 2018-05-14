@@ -24,7 +24,6 @@
 
 #include <glib/gi18n.h>
 
-#include "gn-provider-item.h"
 #include "gn-plain-note.h"
 #include "gn-local-provider.h"
 #include "gn-trace.h"
@@ -164,7 +163,6 @@ gn_local_provider_load_path (GnLocalProvider  *self,
       g_autoptr(GFile) file = NULL;
       g_autofree gchar *contents = NULL;
       g_autofree gchar *file_name = NULL;
-      GnProviderItem *provider_item;
       GnPlainNote *note;
       const gchar *name;
       gchar *end;
@@ -181,11 +179,11 @@ gn_local_provider_load_path (GnLocalProvider  *self,
       g_file_load_contents (file, cancellable, &contents, NULL, NULL, NULL);
 
       note = gn_plain_note_new_from_data (contents);
-      provider_item = gn_provider_item_new (GN_PROVIDER (self), GN_ITEM (note));
       gn_item_set_uid (GN_ITEM (note), file_name);
-      g_object_set_data_full (G_OBJECT (provider_item), "file", g_steal_pointer (&file),
+      g_object_set_data (G_OBJECT (note), "provider", GN_PROVIDER (self));
+      g_object_set_data_full (G_OBJECT (note), "file", g_steal_pointer (&file),
                               g_object_unref);
-      *items = g_list_prepend (*items, provider_item);
+      *items = g_list_prepend (*items, note);
     }
 }
 
@@ -217,24 +215,22 @@ gn_local_provider_load_items (GnProvider    *provider,
 
 static void
 gn_local_provider_save_note (GnLocalProvider *self,
-                             GnProviderItem  *provider_item,
+                             GnItem          *item,
                              GTask           *task,
                              GCancellable    *cancellable)
 {
   GFile *file;
-  GnItem *item;
   const gchar *title;
   g_autofree gchar *content = NULL;
   g_autofree gchar *full_content = NULL;
   g_autoptr(GError) error = NULL;
 
   g_assert (GN_IS_LOCAL_PROVIDER (self));
-  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (GN_IS_ITEM (item));
   g_assert (G_IS_TASK (task));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  file = g_object_get_data (G_OBJECT (provider_item), "file");
-  item = gn_provider_item_get_item (provider_item);
+  file = g_object_get_data (G_OBJECT (item), "file");
   title = gn_item_get_title (item);
   content = gn_note_get_raw_content (GN_NOTE (item));
 
@@ -252,7 +248,7 @@ gn_local_provider_save_note (GnLocalProvider *self,
       file_name = g_strconcat (uuid, ".txt", NULL);
       file = g_file_new_build_filename (g_get_user_data_dir (),
                                         "gnome-notes", file_name, NULL);
-      g_object_set_data_full (G_OBJECT (provider_item), "file", file,
+      g_object_set_data_full (G_OBJECT (item), "file", file,
                               g_object_unref);
     }
 
@@ -272,26 +268,23 @@ gn_local_provider_real_save_item (GTask        *task,
                                   GCancellable *cancellable)
 {
   GnLocalProvider *self = source_object;
-  GnProviderItem *provider_item = task_data;
-  GnItem *item;
+  GnItem *item = task_data;
 
   GN_ENTRY;
 
   g_assert (G_IS_TASK (task));
   g_assert (GN_IS_LOCAL_PROVIDER (self));
-  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (GN_IS_ITEM (item));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  item = gn_provider_item_get_item (provider_item);
-
   if (GN_IS_NOTE (item))
-    gn_local_provider_save_note (self, provider_item, task, cancellable);
+    gn_local_provider_save_note (self, item, task, cancellable);
   GN_EXIT;
 }
 
 static void
 gn_local_provider_save_item_async (GnProvider          *provider,
-                                   GnProviderItem      *provider_item,
+                                   GnItem              *item,
                                    GCancellable        *cancellable,
                                    GAsyncReadyCallback  callback,
                                    gpointer             user_data)
@@ -302,12 +295,12 @@ gn_local_provider_save_item_async (GnProvider          *provider,
   GN_ENTRY;
 
   g_assert (GN_IS_LOCAL_PROVIDER (self));
-  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (GN_IS_ITEM (item));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
   task = g_task_new (self, cancellable, callback, user_data);
   g_task_set_source_tag (task, gn_local_provider_save_item_async);
-  g_task_set_task_data (task, g_object_ref (provider_item), g_object_unref);
+  g_task_set_task_data (task, g_object_ref (item), g_object_unref);
   g_task_run_in_thread (task, gn_local_provider_real_save_item);
 
   GN_EXIT;
@@ -322,26 +315,25 @@ gn_local_provider_save_item_finish (GnProvider   *self,
 }
 
 static gboolean
-gn_local_provider_trash_item (GnProvider      *provider,
-                              GnProviderItem  *provider_item,
-                              GCancellable    *cancellable,
-                              GError         **error)
+gn_local_provider_trash_item (GnProvider    *provider,
+                              GnItem        *item,
+                              GCancellable  *cancellable,
+                              GError       **error)
 {
   GnLocalProvider *self = (GnLocalProvider *)provider;
   g_autofree gchar *base_name = NULL;
   g_autofree gchar *trash_file_name = NULL;
   GFile *file;
   GFile *trash_file;
-  GnItem *item;
   gboolean success;
 
   GN_ENTRY;
 
   g_assert (GN_IS_LOCAL_PROVIDER (self));
-  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (GN_IS_ITEM (item));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  file = g_object_get_data (G_OBJECT (provider_item), "file");
+  file = g_object_get_data (G_OBJECT (item), "file");
   base_name = g_file_get_basename (file);
   trash_file_name = g_build_filename (self->trash_location, base_name, NULL);
   trash_file = g_file_new_for_path (trash_file_name);
@@ -352,11 +344,11 @@ gn_local_provider_trash_item (GnProvider      *provider,
   if (!success)
     GN_RETURN (success);
 
-  g_object_set_data_full (G_OBJECT (provider_item), "file", trash_file_name,
+  g_object_set_data_full (G_OBJECT (item), "file", trash_file_name,
                           g_object_unref);
-  self->notes = g_list_remove (self->notes, provider_item);
-  self->trash_notes = g_list_prepend (self->trash_notes, provider_item);
-  g_signal_emit_by_name (provider, "item-trashed", provider_item);
+  self->notes = g_list_remove (self->notes, item);
+  self->trash_notes = g_list_prepend (self->trash_notes, item);
+  g_signal_emit_by_name (provider, "item-trashed", item);
 
   GN_RETURN (success);
 }

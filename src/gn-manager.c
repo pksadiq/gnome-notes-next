@@ -22,7 +22,6 @@
 
 #include "config.h"
 
-#include "gn-provider-item.h"
 #include "gn-plain-note.h"
 #include "gn-memo-provider.h"
 #include "gn-local-provider.h"
@@ -73,23 +72,23 @@ enum {
 static guint signals[N_SIGNALS];
 
 static gboolean
-gn_manager_get_item_position (GnManager      *self,
-                              GListModel     *model,
-                              GnProviderItem *provider_item,
-                              guint          *position)
+gn_manager_get_item_position (GnManager  *self,
+                              GListModel *model,
+                              GnItem     *item,
+                              guint      *position)
 {
   gpointer object;
   guint i = 0;
 
   g_assert (GN_IS_MANAGER (self));
   g_assert (G_IS_LIST_MODEL (model));
-  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (GN_IS_ITEM (item));
   g_assert (position != NULL);
 
   /* This maybe slow. But, for now let's do. */
   while ((object = g_list_model_get_item (model, i)))
     {
-      if (object == (gpointer) provider_item)
+      if (object == (gpointer) item)
         {
           *position = i;
           return TRUE;
@@ -101,38 +100,33 @@ gn_manager_get_item_position (GnManager      *self,
 }
 
 static void
-gn_manager_item_added_cb (GnManager      *self,
-                          GnProviderItem *provider_item)
+gn_manager_item_added_cb (GnManager *self,
+                          GnItem    *item)
 {
   GnProvider *provider;
-  GnItem *item;
 
   g_assert (GN_IS_MANAGER (self));
-  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (GN_IS_ITEM (item));
 
-  item = gn_provider_item_get_item (provider_item);
-  provider = gn_provider_item_get_provider (provider_item);
+  provider = g_object_get_data (G_OBJECT (item), "provider");
 
   if (GN_IS_NOTE (item))
-    g_list_store_insert_sorted (self->notes_store, provider_item,
-                                gn_provider_item_compare, NULL);
+    g_list_store_insert_sorted (self->notes_store, item,
+                                gn_item_compare, NULL);
 
   /* FIXME: A temporary hack before we settle on the design */
   g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider);
 }
 
 static void
-gn_manager_item_updated_cb (GnManager      *self,
-                            GnProviderItem *provider_item)
+gn_manager_item_updated_cb (GnManager *self,
+                            GnItem    *item)
 {
-  GnItem *item;
   GListModel *model;
   guint position;
 
   g_assert (GN_IS_MANAGER (self));
-  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
-
-  item = gn_provider_item_get_item (provider_item);
+  g_assert (GN_IS_ITEM (item));
 
   /*
    * FIXME: The item title may have changed. Should we actually
@@ -144,14 +138,14 @@ gn_manager_item_updated_cb (GnManager      *self,
     {
       model = G_LIST_MODEL (self->notes_store);
 
-      if (gn_manager_get_item_position (self, model, provider_item, &position))
+      if (gn_manager_get_item_position (self, model, item, &position))
         g_list_model_items_changed (model, position, 1, 1);
     }
 }
 
 static void
-gn_manager_item_trashed_cb (GnManager      *self,
-                            GnProviderItem *provider_item)
+gn_manager_item_trashed_cb (GnManager *self,
+                            GnItem    *item)
 {
   guint position;
 
@@ -160,13 +154,13 @@ gn_manager_item_trashed_cb (GnManager      *self,
    * feature (yet), we may not need that.
    */
   if (gn_manager_get_item_position (self, G_LIST_MODEL (self->notes_store),
-                                    provider_item, &position))
+                                    item, &position))
     g_list_store_remove (self->notes_store, position);
   else
-    g_queue_remove (self->notes_queue, provider_item);
+    g_queue_remove (self->notes_queue, item);
 
-  g_list_store_insert_sorted (self->trash_notes_store, provider_item,
-                              gn_provider_item_compare, NULL);
+  g_list_store_insert_sorted (self->trash_notes_store, item,
+                              gn_item_compare, NULL);
 }
 
 static void
@@ -189,15 +183,15 @@ gn_manager_load_more_items (GnManager   *self,
                             GListStore **store,
                             GQueue     **queue)
 {
-  GnProviderItem *provider_item;
+  GnItem *item;
   int i = 0;
 
   g_assert (GN_IS_MANAGER (self));
   g_assert (G_IS_LIST_STORE (*store));
 
-  while ((provider_item = g_queue_pop_head (*queue)))
+  while ((item = g_queue_pop_head (*queue)))
     {
-      g_list_store_append (*store, provider_item);
+      g_list_store_append (*store, item);
 
       i++;
       if (i >= MAX_ITEMS_TO_LOAD)
@@ -210,22 +204,22 @@ static void
 gn_manager_load_items (GnManager  *self,
                        GnProvider *provider)
 {
-  GList *provider_items;
+  GList *items;
 
-  provider_items = gn_provider_get_notes (provider);
+  items = gn_provider_get_notes (provider);
 
-  for (GList *node = provider_items; node != NULL; node = node->next)
+  for (GList *node = items; node != NULL; node = node->next)
     {
       g_queue_insert_sorted (self->notes_queue, node->data,
-                             gn_provider_item_compare, NULL);
+                             gn_item_compare, NULL);
     }
 
-  provider_items = gn_provider_get_trash_notes (provider);
+  items = gn_provider_get_trash_notes (provider);
 
-  for (GList *node = provider_items; node != NULL; node = node->next)
+  for (GList *node = items; node != NULL; node = node->next)
     {
       g_queue_insert_sorted (self->trash_notes_queue, node->data,
-                             gn_provider_item_compare, NULL);
+                             gn_item_compare, NULL);
     }
 
   gn_manager_load_more_items (self, &self->notes_store,
@@ -486,9 +480,9 @@ gn_manager_init (GnManager *self)
   self->providers = g_hash_table_new_full (g_str_hash, g_str_equal,
                                            g_free, NULL);
   self->notes_queue = g_queue_new ();
-  self->notes_store = g_list_store_new (GN_TYPE_PROVIDER_ITEM);
+  self->notes_store = g_list_store_new (GN_TYPE_ITEM);
   self->trash_notes_queue = g_queue_new ();
-  self->trash_notes_store = g_list_store_new (GN_TYPE_PROVIDER_ITEM);
+  self->trash_notes_store = g_list_store_new (GN_TYPE_ITEM);
   self->provider_cancellable = g_cancellable_new ();
 
   gn_manager_load_providers (self);
@@ -626,34 +620,35 @@ gn_manager_load_more_trash_notes (GnManager *self)
  * The format of the note is decided based on
  * the default provider.
  *
- * Returns: (transfer full): a #GnProviderItem
+ * Returns: (transfer full): a #GnItem
  */
-GnProviderItem *
+GnItem *
 gn_manager_new_note (GnManager *self)
 {
   GnProvider *provider;
-  GnNote *note;
+  GnItem *item;
 
   provider = gn_manager_get_default_provider (self);
 
   /* TODO: set note type based on provider */
-  note = GN_NOTE (gn_plain_note_new_from_data (NULL));
+  item = GN_ITEM (gn_plain_note_new_from_data (NULL));
+  g_object_set_data (G_OBJECT (item), "provider", provider);
 
-  return gn_provider_item_new (provider, GN_ITEM (note));
+  return item;
 }
 
 void
-gn_manager_save_item (GnManager      *self,
-                      GnProviderItem *provider_item)
+gn_manager_save_item (GnManager *self,
+                      GnItem    *item)
 {
   GnProvider *provider;
 
   g_return_if_fail (GN_IS_MANAGER (self));
-  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (GN_IS_ITEM (item));
 
-  provider = gn_provider_item_get_provider (provider_item);
+  provider = g_object_get_data (G_OBJECT (item), "provider");
 
-  gn_provider_save_item_async (provider, provider_item,
+  gn_provider_save_item_async (provider, item,
                                self->provider_cancellable,
                                gn_manager_save_item_cb, NULL);
 }
@@ -662,20 +657,20 @@ gn_manager_save_item (GnManager      *self,
  * gn_manager_queue_for_delete:
  * @self: A #GnManager
  * @note_store: A #GListStore
- * @provider_items: A #GList of #GnProviderItem
+ * @items: A #GList of #GnItem
  *
- * Queue a #GList of #GnProviderItems from @note_store.
+ * Queue a #GList of #GnItems from @note_store.
  * If the item is a note, it should be present in @note_store.
  * If it's a notebook, the function shall take care of that.
  * The queued items will be removed from store.
  *
- * The reference on @provider_items is taken by the manager.
+ * The reference on @items is taken by the manager.
  * Don't free it yourself.
  */
 void
 gn_manager_queue_for_delete (GnManager  *self,
                              GListStore *note_store,
-                             GList      *provider_items)
+                             GList      *items)
 {
   guint position;
 
@@ -683,10 +678,10 @@ gn_manager_queue_for_delete (GnManager  *self,
   g_return_if_fail (G_IS_LIST_STORE (note_store));
 
   self->delete_store = note_store;
-  self->delete_queue = provider_items;
+  self->delete_queue = items;
 
   /* FIXME: The story is very different when notebooks come into scene */
-  for (GList *node = provider_items; node != NULL; node = node->next)
+  for (GList *node = items; node != NULL; node = node->next)
     {
       if (gn_manager_get_item_position (self, G_LIST_MODEL (note_store),
                                         node->data, &position))
@@ -714,7 +709,7 @@ gn_manager_dequeue_delete (GnManager *self)
 
   for (GList *node = self->delete_queue; node != NULL; node = node->next)
     g_list_store_insert_sorted (self->delete_store, node->data,
-                                gn_provider_item_compare, NULL);
+                                gn_item_compare, NULL);
 
   g_clear_pointer (&self->delete_queue, g_list_free);
   return TRUE;
@@ -735,11 +730,10 @@ gn_manager_trash_queue_items (GnManager *self)
   for (GList *node = self->delete_queue; node != NULL; node = node->next)
     {
       g_autoptr(GError) error = NULL;
-      GnProviderItem *provider_item = node->data;
       GnProvider *provider;
 
-      provider = gn_provider_item_get_provider (provider_item);
-      gn_provider_trash_item (provider, provider_item, NULL, &error);
+      provider = g_object_get_data (G_OBJECT (node->data), "provider");
+      gn_provider_trash_item (provider, node->data, NULL, &error);
 
       if (error != NULL)
         g_warning ("Error deleting item: %s", error->message);

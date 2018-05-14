@@ -24,7 +24,6 @@
 
 #include "gn-note.h"
 #include "gn-provider.h"
-#include "gn-provider-item.h"
 #include "gn-trace.h"
 
 /**
@@ -170,7 +169,7 @@ gn_provider_real_load_items_finish (GnProvider    *self,
 
 static void
 gn_provider_real_save_item_async (GnProvider          *self,
-                                  GnProviderItem      *provider_item,
+                                  GnItem              *item,
                                   GCancellable        *cancellable,
                                   GAsyncReadyCallback  callback,
                                   gpointer             user_data)
@@ -191,10 +190,10 @@ gn_provider_real_save_item_finish (GnProvider    *self,
 }
 
 static gboolean
-gn_provider_real_trash_item (GnProvider     *provider,
-                             GnProviderItem *provider_item,
-                             GCancellable   *cancellable,
-                             GError         **error)
+gn_provider_real_trash_item (GnProvider    *provider,
+                             GnItem        *item,
+                             GCancellable  *cancellable,
+                             GError       **error)
 {
   g_set_error_literal (error,
                        G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED,
@@ -205,7 +204,7 @@ gn_provider_real_trash_item (GnProvider     *provider,
 
 static void
 gn_provider_real_trash_item_async (GnProvider          *self,
-                                   GnProviderItem      *provider_item,
+                                   GnItem              *item,
                                    GCancellable        *cancellable,
                                    GAsyncReadyCallback  callback,
                                    gpointer             user_data)
@@ -227,7 +226,7 @@ gn_provider_real_trash_item_finish (GnProvider    *self,
 
 static void
 gn_provider_real_restore_item_async (GnProvider          *self,
-                                     GnProviderItem      *provider_item,
+                                     GnItem              *item,
                                      GCancellable        *cancellable,
                                      GAsyncReadyCallback  callback,
                                      gpointer             user_data)
@@ -249,7 +248,7 @@ gn_provider_real_restore_item_finish (GnProvider    *self,
 
 static void
 gn_provider_real_delete_item_async (GnProvider          *self,
-                                    GnProviderItem      *provider_item,
+                                    GnItem              *item,
                                     GCancellable        *cancellable,
                                     GAsyncReadyCallback  callback,
                                     gpointer             user_data)
@@ -334,7 +333,7 @@ gn_provider_class_init (GnProviderClass *klass)
   /**
    * GnProvider::item-added:
    * @self: a #GnProvider
-   * @item: a #GnProviderItem
+   * @item: a #GnItem
    *
    * item-added signal is emitted when a new item is added
    * to the provider.
@@ -345,12 +344,12 @@ gn_provider_class_init (GnProviderClass *klass)
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL,
                   g_cclosure_marshal_VOID__OBJECT,
-                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+                  G_TYPE_NONE, 1, GN_TYPE_ITEM);
 
   /**
    * GnProvider::item-deleted:
    * @self: a #GnProvider
-   * @item: a #GnProviderItem
+   * @item: a #GnItem
    *
    * item-deleted signal is emitted when a new item is deleted
    * from the provider.
@@ -361,12 +360,12 @@ gn_provider_class_init (GnProviderClass *klass)
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL,
                   g_cclosure_marshal_VOID__OBJECT,
-                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+                  G_TYPE_NONE, 1, GN_TYPE_ITEM);
 
   /**
    * GnProvider::item-trashed:
    * @self: a #GnProvider
-   * @item: a #GnProviderItem
+   * @item: a #GnItem
    *
    * item-trashed signal is emitted when an item is trashed
    * in the provider.
@@ -377,12 +376,12 @@ gn_provider_class_init (GnProviderClass *klass)
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL,
                   g_cclosure_marshal_VOID__OBJECT,
-                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+                  G_TYPE_NONE, 1, GN_TYPE_ITEM);
 
   /**
    * GnProvider::item-restored:
    * @self: a #GnProvider
-   * @item: a #GnProviderItem
+   * @item: a #GnItem
    *
    * item-restored signal is emitted when an item is restored
    * from the trash in the provider.
@@ -393,12 +392,12 @@ gn_provider_class_init (GnProviderClass *klass)
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL,
                   g_cclosure_marshal_VOID__OBJECT,
-                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+                  G_TYPE_NONE, 1, GN_TYPE_ITEM);
 
   /**
    * GnProvider::item-updated:
    * @self: a #GnProvider
-   * @item: a #GnProviderItem
+   * @item: a #GnItem
    *
    * item-updated signal is emitted when an item is updated
    * in the provider.
@@ -409,7 +408,7 @@ gn_provider_class_init (GnProviderClass *klass)
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL,
                   g_cclosure_marshal_VOID__OBJECT,
-                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+                  G_TYPE_NONE, 1, GN_TYPE_ITEM);
 
 }
 
@@ -628,12 +627,12 @@ gn_provider_load_items_finish (GnProvider    *self,
 /**
  * gn_provider_save_item_async:
  * @self: a #GnProvider
- * @provider_item: a #GnProviderItem
+ * @item: a #GnItem
  * @cancellable: (nullable): a #GCancellable or %NULL
  * @callback: a #GAsyncReadyCallback, or %NULL
  * @user_data: closure data for @callback
  *
- * Asynchronously save the @provider_item. If the item
+ * Asynchronously save the @item. If the item
  * isn't saved at all, a new item (ie, a file, or database
  * entry, or whatever) is created. Else, the old item is
  * updated with the new data.
@@ -643,7 +642,7 @@ gn_provider_load_items_finish (GnProvider    *self,
  */
 void
 gn_provider_save_item_async (GnProvider          *self,
-                             GnProviderItem      *provider_item,
+                             GnItem              *item,
                              GCancellable        *cancellable,
                              GAsyncReadyCallback  callback,
                              gpointer             user_data)
@@ -651,10 +650,10 @@ gn_provider_save_item_async (GnProvider          *self,
   GN_ENTRY;
 
   g_return_if_fail (GN_IS_PROVIDER (self));
-  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (GN_IS_ITEM (item));
   g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  GN_PROVIDER_GET_CLASS (self)->save_item_async (self, provider_item,
+  GN_PROVIDER_GET_CLASS (self)->save_item_async (self, item,
                                                  cancellable, callback,
                                                  user_data);
   GN_EXIT;
@@ -677,7 +676,6 @@ gn_provider_save_item_finish (GnProvider    *self,
                               GAsyncResult  *result,
                               GError       **error)
 {
-  GnProviderItem *provider_item;
   GnItem *item;
   gboolean ret;
 
@@ -691,8 +689,7 @@ gn_provider_save_item_finish (GnProvider    *self,
   if (!ret)
     GN_RETURN (ret);
 
-  provider_item = g_task_get_task_data (G_TASK (result));
-  item = gn_provider_item_get_item (provider_item);
+  item = g_task_get_task_data (G_TASK (result));
 
   if (gn_item_is_new (item))
     {
@@ -700,11 +697,11 @@ gn_provider_save_item_finish (GnProvider    *self,
       g_autofree gchar *file_name = NULL;
       gchar *end;
 
-      g_signal_emit (self, signals[ITEM_ADDED], 0, provider_item);
+      g_signal_emit (self, signals[ITEM_ADDED], 0, item);
 
       if (GN_IS_NOTE (item))
         {
-          file = g_object_get_data (G_OBJECT (provider_item), "file");
+          file = g_object_get_data (G_OBJECT (item), "file");
           file_name = g_file_get_basename (file);
           end = g_strrstr (file_name, ".");
 
@@ -717,7 +714,7 @@ gn_provider_save_item_finish (GnProvider    *self,
     }
   else
     {
-      g_signal_emit (self, signals[ITEM_UPDATED], 0, provider_item);
+      g_signal_emit (self, signals[ITEM_UPDATED], 0, item);
     }
 
   GN_RETURN (ret);
@@ -726,31 +723,31 @@ gn_provider_save_item_finish (GnProvider    *self,
 /**
  * gn_provider_trash_item:
  * @self: a #GnProvider
- * @provider_item: a #GnProviderItem
+ * @item: a #GnItem
  * @cancellable: (nullable): a #GCancellable or %NULL
  * @error: a #GError
  *
- * Synchronously trash the @provider_item. If the provider
+ * Synchronously trash the @item. If the provider
  * doesn't support trashing, the item will be deleted.
  *
  * Returns: %TRUE if the item was trashed/deleted successfully.
  * %FALSE otherwise.
  */
 gboolean
-gn_provider_trash_item (GnProvider      *self,
-                        GnProviderItem  *provider_item,
-                        GCancellable    *cancellable,
-                        GError         **error)
+gn_provider_trash_item (GnProvider    *self,
+                        GnItem        *item,
+                        GCancellable  *cancellable,
+                        GError       **error)
 {
   gboolean ret;
 
   GN_ENTRY;
 
   g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
-  g_return_val_if_fail (GN_IS_PROVIDER_ITEM (provider_item), FALSE);
+  g_return_val_if_fail (GN_IS_ITEM (item), FALSE);
   g_return_val_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable), FALSE);
 
-  ret = GN_PROVIDER_GET_CLASS (self)->trash_item (self, provider_item,
+  ret = GN_PROVIDER_GET_CLASS (self)->trash_item (self, item,
                                                   cancellable, error);
   GN_RETURN (ret);
 }
@@ -759,12 +756,12 @@ gn_provider_trash_item (GnProvider      *self,
 /**
  * gn_provider_trash_item_async:
  * @self: a #GnProvider
- * @provider_item: a #GnProviderItem
+ * @item: a #GnItem
  * @cancellable: (nullable): a #GCancellable or %NULL
  * @callback: a #GAsyncReadyCallback, or %NULL
  * @user_data: closure data for @callback
  *
- * Asynchronously trash the @provider_item. If the provider
+ * Asynchronously trash the @item. If the provider
  * doesn't support trashing, the item will be deleted.
  *
  * @callback should complete the operation by calling
@@ -772,7 +769,7 @@ gn_provider_trash_item (GnProvider      *self,
  */
 void
 gn_provider_trash_item_async (GnProvider          *self,
-                              GnProviderItem      *provider_item,
+                              GnItem              *item,
                               GCancellable        *cancellable,
                               GAsyncReadyCallback  callback,
                               gpointer             user_data)
@@ -780,10 +777,10 @@ gn_provider_trash_item_async (GnProvider          *self,
   GN_ENTRY;
 
   g_return_if_fail (GN_IS_PROVIDER (self));
-  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (GN_IS_ITEM (item));
   g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  GN_PROVIDER_GET_CLASS (self)->trash_item_async (self, provider_item,
+  GN_PROVIDER_GET_CLASS (self)->trash_item_async (self, item,
                                                   cancellable, callback,
                                                   user_data);
   GN_EXIT;
@@ -823,19 +820,19 @@ gn_provider_trash_item_finish (GnProvider    *self,
 /**
  * gn_provider_restore_item_async:
  * @self: a #GnProvider
- * @provider_item: a #GnProviderItem
+ * @item: a #GnItem
  * @cancellable: (nullable): a #GCancellable or %NULL
  * @callback: a #GAsyncReadyCallback, or %NULL
  * @user_data: closure data for @callback
  *
- * Asynchronously restore the @provider_item.
+ * Asynchronously restore the @item.
  *
  * @callback should complete the operation by calling
  * gn_provider_restore_item_finish().
  */
 void
 gn_provider_restore_item_async (GnProvider          *self,
-                                GnProviderItem      *provider_item,
+                                GnItem              *item,
                                 GCancellable        *cancellable,
                                 GAsyncReadyCallback  callback,
                                 gpointer             user_data)
@@ -843,10 +840,10 @@ gn_provider_restore_item_async (GnProvider          *self,
   GN_ENTRY;
 
   g_return_if_fail (GN_IS_PROVIDER (self));
-  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (GN_IS_ITEM (item));
   g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  GN_PROVIDER_GET_CLASS (self)->restore_item_async (self, provider_item,
+  GN_PROVIDER_GET_CLASS (self)->restore_item_async (self, item,
                                                     cancellable, callback,
                                                     user_data);
   GN_EXIT;
@@ -884,19 +881,19 @@ gn_provider_restore_item_finish (GnProvider   *self,
 /**
  * gn_provider_delete_item_async:
  * @self: a #GnProvider
- * @provider_item: a #GnProviderItem
+ * @item: a #GnItem
  * @cancellable: (nullable): a #GCancellable or %NULL
  * @callback: a #GAsyncReadyCallback, or %NULL
  * @user_data: closure data for @callback
  *
- * Asynchronously delete the @provider_item.
+ * Asynchronously delete the @item.
  *
  * @callback should complete the operation by calling
  * gn_provider_delete_item_finish().
  */
 void
 gn_provider_delete_item_async (GnProvider          *self,
-                               GnProviderItem      *provider_item,
+                               GnItem              *item,
                                GCancellable        *cancellable,
                                GAsyncReadyCallback  callback,
                                gpointer             user_data)
@@ -904,10 +901,10 @@ gn_provider_delete_item_async (GnProvider          *self,
   GN_ENTRY;
 
   g_return_if_fail (GN_IS_PROVIDER (self));
-  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (GN_IS_ITEM (item));
   g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  GN_PROVIDER_GET_CLASS (self)->delete_item_async (self, provider_item,
+  GN_PROVIDER_GET_CLASS (self)->delete_item_async (self, item,
                                                    cancellable, callback,
                                                    user_data);
   GN_EXIT;
@@ -950,7 +947,7 @@ gn_provider_delete_item_finish (GnProvider   *self,
  * or gn_provider_load_items_async() is called.
  *
  * Returns: (transfer none) (nullable): A #GList of
- * #GnProviderItem or %NULL if empty.
+ * #GnItem or %NULL if empty.
  */
 GList *
 gn_provider_get_notes (GnProvider *self)
@@ -975,7 +972,7 @@ gn_provider_get_notes (GnProvider *self)
  * or gn_provider_load_items_async() is called.
  *
  * Returns: (transfer none) (nullable): A #GList of
- * #GnProviderItem or %NULL if empty.
+ * #GnItem or %NULL if empty.
  */
 GList *
 gn_provider_get_trash_notes (GnProvider *self)

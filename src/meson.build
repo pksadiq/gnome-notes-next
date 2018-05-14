@@ -29,7 +29,6 @@ src += [
   'notes/gn-note-buffer.c',
   'notes/gn-plain-note.c',
   'providers/gn-provider.c',
-  'providers/gn-provider-item.c',
   'providers/gn-memo-provider.c',
   'providers/gn-local-provider.c',
   'views/gn-editor.c',

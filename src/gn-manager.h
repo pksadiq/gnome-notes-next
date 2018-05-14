@@ -22,7 +22,8 @@
 
 #include <glib-object.h>
 
-#include "gn-provider-item.h"
+#include "gn-item.h"
+#include "gn-provider.h"
 #include "gn-settings.h"
 
 G_BEGIN_DECLS
@@ -41,13 +42,13 @@ GListStore *gn_manager_get_trash_notes_store  (GnManager *self);
 void        gn_manager_load_more_notes        (GnManager *self);
 void        gn_manager_load_more_trash_notes  (GnManager *self);
 
-GnProviderItem *gn_manager_new_note           (GnManager *self);
-void        gn_manager_save_item              (GnManager      *self,
-                                               GnProviderItem *item);
+GnItem     *gn_manager_new_note               (GnManager *self);
+void        gn_manager_save_item              (GnManager *self,
+                                               GnItem    *item);
 
 void        gn_manager_queue_for_delete       (GnManager  *self,
                                                GListStore *store,
-                                               GList      *provider_items);
+                                               GList      *items);
 gboolean    gn_manager_dequeue_delete         (GnManager  *self);
 void        gn_manager_trash_queue_items      (GnManager  *self);
 

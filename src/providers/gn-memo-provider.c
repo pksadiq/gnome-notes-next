@@ -24,7 +24,6 @@
 
 #include "gn-item.h"
 #include "gn-plain-note.h"
-#include "gn-provider-item.h"
 #include "gn-memo-provider.h"
 #include "gn-trace.h"
 
@@ -117,7 +116,6 @@ gn_memo_provider_objects_added_cb (ECalClientView *client_view,
       g_autofree gchar *content = NULL;
       ECalComponentText component_text;
       icalcomponent *icomponent;
-      GnProviderItem *provider_item;
       GnNote *note;
       GSList *text_list;
       const gchar *uid;
@@ -147,12 +145,12 @@ gn_memo_provider_objects_added_cb (ECalClientView *client_view,
                            "title", component_text.value,
                            NULL);
       gn_note_set_text_content (note, content);
+      g_object_set_data (G_OBJECT (note), "provider", GN_PROVIDER (self));
       g_object_set_data_full (G_OBJECT (note), "component",
                               g_object_ref (component),
                               g_object_unref);
 
-      provider_item = gn_provider_item_new (GN_PROVIDER (self), GN_ITEM (note));
-      self->notes = g_list_prepend (self->notes, provider_item);
+      self->notes = g_list_prepend (self->notes, note);
     }
 
   GN_EXIT;

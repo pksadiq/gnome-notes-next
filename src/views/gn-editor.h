@@ -22,6 +22,8 @@
 
 #include <gtk/gtk.h>
 
+#include "gn-item.h"
+
 G_BEGIN_DECLS
 
 #define GN_TYPE_EDITOR (gn_editor_get_type ())
@@ -29,7 +31,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (GnEditor, gn_editor, GN, EDITOR, GtkGrid)
 
 GtkWidget *gn_editor_new      (void);
-void       gn_editor_set_item (GnEditor       *self,
-                               GnProviderItem *provider_item);
+void       gn_editor_set_item (GnEditor *self,
+                               GnItem   *item);
 
 G_END_DECLS

@@ -22,7 +22,7 @@
 
 #include <gtk/gtk.h>
 
-#include "gn-provider-item.h"
+#include "gn-item.h"
 
 G_BEGIN_DECLS
 
@@ -36,6 +36,6 @@ void            gn_grid_view_item_set_selected     (GnGridViewItem *self,
                                                     gboolean        is_selected);
 gboolean        gn_grid_view_item_get_selected     (GnGridViewItem *self);
 void            gn_grid_view_item_toggle_selection (GnGridViewItem *self);
-GnProviderItem *gn_grid_view_item_get_item         (GnGridViewItem *self);
+GnItem         *gn_grid_view_item_get_item         (GnGridViewItem *self);
 
 G_END_DECLS

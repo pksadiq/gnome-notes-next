@@ -24,7 +24,6 @@
 
 #include "gn-note.h"
 #include "gn-note-buffer.h"
-#include "gn-provider-item.h"
 #include "gn-manager.h"
 #include "gn-editor.h"
 #include "gn-trace.h"
@@ -42,8 +41,8 @@ struct _GnEditor
 {
   GtkGrid parent_instance;
 
-  GnProviderItem *provider_item;
-  GtkTextBuffer  *note_buffer;
+  GnItem        *item;
+  GtkTextBuffer *note_buffer;
 
   GtkWidget *editor_view;
   GtkWidget *cut_button;
@@ -88,7 +87,6 @@ gn_editor_save_note (gpointer user_data)
 {
   GnEditor *self = (GnEditor *)user_data;
   GnManager *manager;
-  GnNote *note;
 
   GN_ENTRY;
 
@@ -96,11 +94,10 @@ gn_editor_save_note (gpointer user_data)
 
   self->save_timeout_id = 0;
   manager = gn_manager_get_default ();
-  note = GN_NOTE (gn_provider_item_get_item (self->provider_item));
 
-  gn_note_set_content_from_buffer (note, self->note_buffer);
+  gn_note_set_content_from_buffer (GN_NOTE (self->item), self->note_buffer);
   gtk_text_buffer_set_modified (self->note_buffer, FALSE);
-  gn_manager_save_item (manager, self->provider_item);
+  gn_manager_save_item (manager, self->item);
 
   GN_RETURN (G_SOURCE_REMOVE);
 }
@@ -168,24 +165,22 @@ gn_editor_new (void)
 }
 
 void
-gn_editor_set_item (GnEditor       *self,
-                    GnProviderItem *provider_item)
+gn_editor_set_item (GnEditor *self,
+                    GnItem   *item)
 {
   g_autoptr(GtkTextBuffer) buffer = NULL;
-  GnItem *item;
 
   GN_ENTRY;
 
   g_return_if_fail (GN_IS_EDITOR (self));
-  g_return_if_fail (GN_IS_PROVIDER_ITEM (provider_item));
+  g_return_if_fail (GN_IS_ITEM (item));
 
-  if (self->provider_item != NULL)
+  if (self->item != NULL)
     GN_EXIT;
 
-  item = gn_provider_item_get_item (provider_item);
   buffer = gn_note_get_buffer (GN_NOTE (item));
 
-  self->provider_item = provider_item;
+  self->item = item;
   self->note_buffer = buffer;
 
   gtk_text_view_set_buffer (GTK_TEXT_VIEW (self->editor_view), buffer);

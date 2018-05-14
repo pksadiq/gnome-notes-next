@@ -22,7 +22,7 @@
 
 #include <gtk/gtk.h>
 
-#include "gn-provider-item.h"
+#include "gn-item.h"
 
 G_BEGIN_DECLS
 
@@ -37,6 +37,6 @@ void            gn_list_view_item_set_selected     (GnListViewItem *self,
                                                     gboolean        is_selected);
 gboolean        gn_list_view_item_get_selected     (GnListViewItem *self);
 void            gn_list_view_item_toggle_selection (GnListViewItem *self);
-GnProviderItem *gn_list_view_item_get_item         (GnListViewItem *self);
+GnItem         *gn_list_view_item_get_item         (GnListViewItem *self);
 
 G_END_DECLS

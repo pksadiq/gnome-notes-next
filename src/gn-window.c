@@ -27,7 +27,7 @@
 #include "gn-enums.h"
 #include "gn-utils.h"
 #include "gn-note.h"
-#include "gn-provider-item.h"
+#include "gn-provider.h"
 #include "gn-settings.h"
 #include "gn-editor.h"
 #include "gn-main-view.h"
@@ -205,7 +205,7 @@ gn_window_load_more_items (GnWindow          *self,
 static void
 gn_window_open_new_note (GnWindow *self)
 {
-  GnProviderItem *provider_item;
+  GnItem *item;
   GnProvider *provider;
   GnManager *manager;
   GtkWidget *editor, *child;
@@ -213,11 +213,11 @@ gn_window_open_new_note (GnWindow *self)
   g_assert (GN_IS_WINDOW (self));
 
   manager = gn_manager_get_default ();
-  provider_item = gn_manager_new_note (manager);
-  provider = gn_provider_item_get_provider (provider_item);
+  item = gn_manager_new_note (manager);
+  provider = g_object_get_data (G_OBJECT (item), "provider");
 
   editor = gn_editor_new ();
-  gn_editor_set_item (GN_EDITOR (editor), provider_item);
+  gn_editor_set_item (GN_EDITOR (editor), item);
 
   child = gtk_bin_get_child (GTK_BIN (self->editor_stack));
   if (child != NULL)
@@ -269,30 +269,28 @@ gn_window_main_view_changed (GnWindow   *self,
 }
 
 static void
-gn_window_item_activated (GnWindow       *self,
-                          GnProviderItem *provider_item,
-                          GnMainView     *main_view)
+gn_window_item_activated (GnWindow   *self,
+                          GnItem     *item,
+                          GnMainView *main_view)
 {
   GtkTextBuffer *buffer = NULL;
   GtkWidget *editor;
   GtkWidget *scrolled_window;
   GtkWidget *grid;
   GnProvider *provider;
-  GnItem *item;
 
   g_assert (GN_IS_WINDOW (self));
-  g_assert (GN_IS_PROVIDER_ITEM (provider_item));
+  g_assert (GN_IS_ITEM (item));
   g_assert (GN_IS_MAIN_VIEW (main_view));
 
-  provider = gn_provider_item_get_provider (provider_item);
-  item = gn_provider_item_get_item (provider_item);
+  provider = g_object_get_data (G_OBJECT (item), "provider");
 
   if (GN_IS_NOTE (item))
     {
       GtkWidget *child;
 
       editor = gn_editor_new ();
-      gn_editor_set_item (GN_EDITOR (editor), provider_item);
+      gn_editor_set_item (GN_EDITOR (editor), item);
 
       child = gtk_bin_get_child (GTK_BIN (self->editor_stack));
       if (child != NULL)
@@ -670,13 +668,13 @@ gn_window_trash_selected_items (GnWindow *self)
   GtkWidget *current_view;
   GnManager *manager;
   GListStore *store;
-  GList *provider_items;
+  GList *items;
 
   g_return_if_fail (GN_IS_WINDOW (self));
 
   current_view = gn_window_get_widget_for_view (self, self->current_view);
   manager = gn_manager_get_default ();
-  provider_items = gn_main_view_get_selected_items (GN_MAIN_VIEW (current_view));
+  items = gn_main_view_get_selected_items (GN_MAIN_VIEW (current_view));
 
   if (current_view == self->notes_view)
     store = gn_manager_get_notes_store (manager);
@@ -685,6 +683,6 @@ gn_window_trash_selected_items (GnWindow *self)
   else
     g_assert_not_reached ();
 
-  gn_manager_queue_for_delete (manager, store, provider_items);
+  gn_manager_queue_for_delete (manager, store, items);
   gn_window_show_undo_revealer (self);
 }

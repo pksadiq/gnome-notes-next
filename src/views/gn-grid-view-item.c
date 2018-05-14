@@ -24,7 +24,6 @@
 
 #include "gn-note.h"
 #include "gn-item-thumbnail.h"
-#include "gn-provider-item.h"
 #include "gn-manager.h"
 #include "gn-settings.h"
 #include "gn-grid-view-item.h"
@@ -41,7 +40,7 @@ struct _GnGridViewItem
 {
   GtkFlowBoxChild parent_instance;
 
-  GnProviderItem *item;
+  GnItem *item;
 
   GtkWidget *preview_label;
   GtkWidget *title_label;
@@ -94,22 +93,20 @@ gn_grid_view_item_new (gpointer data,
                        gpointer user_data)
 {
   GnGridViewItem *self;
-  GnProviderItem *provider_item = data;
+  GnItem *item = data;
   GObject *object = user_data;
   g_autofree gchar *markup = NULL;
   const gchar *title;
-  GnItem *item;
   GdkRGBA rgba;
 
   GN_ENTRY;
 
-  g_return_val_if_fail (GN_IS_PROVIDER_ITEM (provider_item), NULL);
+  g_return_val_if_fail (GN_IS_ITEM (item), NULL);
 
   self = g_object_new (GN_TYPE_GRID_VIEW_ITEM, NULL);
-  item = gn_provider_item_get_item (provider_item);
   title = gn_item_get_title (item);
   markup = gn_note_get_markup (GN_NOTE (item));
-  self->item = provider_item;
+  self->item = item;
 
   g_object_bind_property (object, "selection-mode",
                           self->check_box, "visible",
@@ -169,7 +166,7 @@ gn_grid_view_item_toggle_selection (GnGridViewItem *self)
   gn_grid_view_item_set_selected (self, selection);
 }
 
-GnProviderItem *
+GnItem *
 gn_grid_view_item_get_item (GnGridViewItem *self)
 {
   g_return_val_if_fail (GN_IS_GRID_VIEW_ITEM (self), NULL);

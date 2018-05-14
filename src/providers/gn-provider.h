@@ -23,7 +23,7 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
-#include "gn-types.h"
+#include "gn-item.h"
 
 G_BEGIN_DECLS
 
@@ -47,7 +47,7 @@ struct _GnProviderClass
                                         GError              **error);
 
   void        (*save_item_async)       (GnProvider           *self,
-                                        GnProviderItem       *provider_item,
+                                        GnItem               *item,
                                         GCancellable         *cancellable,
                                         GAsyncReadyCallback   callback,
                                         gpointer              user_data);
@@ -56,11 +56,11 @@ struct _GnProviderClass
                                         GError              **error);
 
   gboolean    (*trash_item)            (GnProvider           *self,
-                                        GnProviderItem       *provider_item,
+                                        GnItem               *item,
                                         GCancellable         *cancellable,
                                         GError              **error);
   void        (*trash_item_async)      (GnProvider           *self,
-                                        GnProviderItem       *provider_item,
+                                        GnItem              *item,
                                         GCancellable         *cancellable,
                                         GAsyncReadyCallback   callback,
                                         gpointer              user_data);
@@ -69,7 +69,7 @@ struct _GnProviderClass
                                         GError              **error);
 
   void        (*restore_item_async)    (GnProvider           *self,
-                                        GnProviderItem       *provider_item,
+                                        GnItem               *item,
                                         GCancellable         *cancellable,
                                         GAsyncReadyCallback   callback,
                                         gpointer              user_data);
@@ -78,7 +78,7 @@ struct _GnProviderClass
                                         GError              **error);
 
   void        (*delete_item_async)     (GnProvider           *self,
-                                        GnProviderItem       *provider_item,
+                                        GnItem               *item,
                                         GCancellable         *cancellable,
                                         GAsyncReadyCallback   callback,
                                         gpointer              user_data);
@@ -116,7 +116,7 @@ gboolean    gn_provider_load_items_finish     (GnProvider           *self,
                                                GAsyncResult         *result,
                                                GError              **error);
 void        gn_provider_save_item_async       (GnProvider           *self,
-                                               GnProviderItem       *provider_item,
+                                               GnItem               *item,
                                                GCancellable         *cancellable,
                                                GAsyncReadyCallback   callback,
                                                gpointer              user_data);
@@ -125,11 +125,11 @@ gboolean    gn_provider_save_item_finish      (GnProvider           *self,
                                                GError              **error);
 
 gboolean        gn_provider_trash_item        (GnProvider           *self,
-                                               GnProviderItem       *provider_item,
+                                               GnItem               *item,
                                                GCancellable         *cancellable,
                                                GError              **error);
 void        gn_provider_trash_item_async      (GnProvider           *self,
-                                               GnProviderItem       *provider_item,
+                                               GnItem               *item,
                                                GCancellable         *cancellable,
                                                GAsyncReadyCallback   callback,
                                                gpointer              user_data);
@@ -138,7 +138,7 @@ gboolean    gn_provider_trash_item_finish     (GnProvider           *self,
                                                GError              **error);
 
 void        gn_provider_restore_item_async    (GnProvider           *self,
-                                               GnProviderItem       *provider_item,
+                                               GnItem               *item,
                                                GCancellable         *cancellable,
                                                GAsyncReadyCallback   callback,
                                                gpointer              user_data);
@@ -147,7 +147,7 @@ gboolean    gn_provider_restore_item_finish   (GnProvider           *self,
                                                GError              **error);
 
 void        gn_provider_delete_item_async     (GnProvider           *self,
-                                               GnProviderItem       *provider_item,
+                                               GnItem               *item,
                                                GCancellable         *cancellable,
                                                GAsyncReadyCallback   callback,
                                                gpointer              user_data);

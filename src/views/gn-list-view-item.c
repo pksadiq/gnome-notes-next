@@ -24,7 +24,6 @@
 
 #include "gn-note.h"
 #include "gn-item-thumbnail.h"
-#include "gn-provider-item.h"
 #include "gn-manager.h"
 #include "gn-settings.h"
 #include "gn-list-view-item.h"
@@ -41,7 +40,7 @@ struct _GnListViewItem
 {
   GtkListBoxRow parent_instance;
 
-  GnProviderItem *item;
+  GnItem *item;
 
   GtkWidget *color_box;
   GtkWidget *title_label;
@@ -94,20 +93,18 @@ gn_list_view_item_new (gpointer data,
                        gpointer user_data)
 {
   GnListViewItem *self;
-  GnProviderItem *provider_item = data;
+  GnItem *item = data;
   GObject *object = user_data;
   const gchar *title;
-  GnItem *item;
   GdkRGBA rgba;
 
   GN_ENTRY;
 
-  g_return_val_if_fail (GN_IS_PROVIDER_ITEM (provider_item), NULL);
+  g_return_val_if_fail (GN_IS_ITEM (item), NULL);
 
   self = g_object_new (GN_TYPE_LIST_VIEW_ITEM, NULL);
-  item = gn_provider_item_get_item (provider_item);
   title = gn_item_get_title (item);
-  self->item = provider_item;
+  self->item = item;
 
   g_object_bind_property (object, "selection-mode",
                           self->check_box, "visible",
@@ -166,7 +163,7 @@ gn_list_view_item_toggle_selection (GnListViewItem *self)
   gn_list_view_item_set_selected (self, selection);
 }
 
-GnProviderItem *
+GnItem *
 gn_list_view_item_get_item (GnListViewItem *self)
 {
   g_return_val_if_fail (GN_IS_LIST_VIEW_ITEM (self), NULL);

@@ -180,7 +180,7 @@ gn_main_view_class_init (GnMainViewClass *klass)
   /**
    * GnMainView::item-activated:
    * @self: a #GnMainView
-   * @item: a #GnProviderItem
+   * @item: a #GnItem
    *
    * item-activated signal is emitted when the user activates
    * an item by click, tap, or by some key.
@@ -191,7 +191,7 @@ gn_main_view_class_init (GnMainViewClass *klass)
                   G_SIGNAL_RUN_LAST,
                   0, NULL, NULL,
                   g_cclosure_marshal_VOID__OBJECT,
-                  G_TYPE_NONE, 1, GN_TYPE_PROVIDER_ITEM);
+                  G_TYPE_NONE, 1, GN_TYPE_ITEM);
   g_signal_set_va_marshaller (signals [ITEM_ACTIVATED],
                               G_TYPE_FROM_CLASS (klass),
                               g_cclosure_marshal_VOID__OBJECTv);
