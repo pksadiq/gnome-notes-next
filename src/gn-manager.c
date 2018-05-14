@@ -276,6 +276,9 @@ gn_manager_eds_client_connected_cb (GObject      *object,
     }
 
   provider = GN_PROVIDER (gn_memo_provider_new (source, client));
+  g_hash_table_insert (self->providers,
+                       gn_provider_get_uid (provider),
+                       provider);
   gn_provider_load_items_async (provider, self->provider_cancellable,
                                 gn_manager_items_loaded_cb, self);
 }
