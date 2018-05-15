@@ -35,6 +35,8 @@ struct _GnItemClass
 
   gboolean (*is_modified)    (GnItem *self);
   void     (*unset_modified) (GnItem *self);
+  gboolean (*match)          (GnItem *self,
+                              const gchar *needle);
 };
 
 const gchar *gn_item_get_uid               (GnItem        *self);
@@ -61,4 +63,6 @@ gboolean     gn_item_is_new                (GnItem        *self);
 gint         gn_item_compare               (gconstpointer a,
                                             gconstpointer b,
                                             gpointer      user_data);;
+gboolean     gn_item_match                 (GnItem       *self,
+                                            const gchar  *needle);
 G_END_DECLS

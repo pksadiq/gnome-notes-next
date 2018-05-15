@@ -38,6 +38,7 @@ GnProvider *gn_manager_get_default_provider   (GnManager *self);
 
 GListStore *gn_manager_get_notes_store        (GnManager *self);
 GListStore *gn_manager_get_trash_notes_store  (GnManager *self);
+GListStore *gn_manager_get_search_store       (GnManager *self);
 
 void        gn_manager_load_more_notes        (GnManager *self);
 void        gn_manager_load_more_trash_notes  (GnManager *self);
@@ -51,5 +52,7 @@ void        gn_manager_queue_for_delete       (GnManager  *self,
                                                GList      *items);
 gboolean    gn_manager_dequeue_delete         (GnManager  *self);
 void        gn_manager_trash_queue_items      (GnManager  *self);
+void        gn_manager_search                 (GnManager  *self,
+                                               const gchar **terms);
 
 G_END_DECLS

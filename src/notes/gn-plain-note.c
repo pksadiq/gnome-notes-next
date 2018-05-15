@@ -110,11 +110,33 @@ gn_plain_note_get_markup (GnNote *note)
     return NULL;
 }
 
+gboolean
+gn_plain_note_match (GnItem      *item,
+                     const gchar *needle)
+{
+  GnPlainNote *self = GN_PLAIN_NOTE (item);
+  g_autofree gchar *content = NULL;
+  gboolean match;
+
+  match = GN_ITEM_CLASS (gn_plain_note_parent_class)->match (item, needle);
+
+  if (match)
+    return TRUE;
+
+  content = g_utf8_casefold (self->content, -1);
+
+  if (strstr (content, needle) != NULL)
+    return TRUE;
+
+  return FALSE;
+}
+
 static void
 gn_plain_note_class_init (GnPlainNoteClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GnNoteClass *note_class = GN_NOTE_CLASS (klass);
+  GnItemClass *item_class = GN_ITEM_CLASS (klass);
 
   object_class->finalize = gn_plain_note_finalize;
 
@@ -124,6 +146,8 @@ gn_plain_note_class_init (GnPlainNoteClass *klass)
   note_class->get_markup = gn_plain_note_get_markup;
 
   note_class->set_content_from_buffer = gn_plain_note_set_content_from_buffer;
+
+  item_class->match = gn_plain_note_match;
 }
 
 static void

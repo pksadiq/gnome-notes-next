@@ -37,6 +37,12 @@
  * @include: "gn-manager.h"
  */
 
+/*
+ * TODO:
+ * 0. The search feature can have lots of improvement.
+ *    * Current design assums items are not added/updated/removed midst search
+ */
+
 #define MAX_ITEMS_TO_LOAD 30
 
 struct _GnManager
@@ -53,13 +59,28 @@ struct _GnManager
   GQueue       *notes_queue;
   GQueue       *notebooks_queue;
   GQueue       *trash_notes_queue;
+  GQueue       *search_queue;
   GListStore   *notes_store;
   GListStore   *notebooks_store;
   GListStore   *trash_notes_store;
+  GListStore   *search_store;
 
   GList       *delete_queue;
   GListStore  *delete_store;
+
+  /* Search */
+  GCancellable *search_cancellable;
+  gchar *old_search_needle;
+  gchar *search_needle;
+  gboolean search_is_narrowing;
 };
+
+typedef struct
+{
+  GQueue *search_queue;
+  gchar *search_needle;
+  gboolean search_is_narrowing;
+} SearchData;
 
 G_DEFINE_TYPE (GnManager, gn_manager, G_TYPE_OBJECT)
 
@@ -198,6 +219,121 @@ gn_manager_load_more_items (GnManager   *self,
         break;
     }
 }
+
+static void
+gn_manager_search_complete_cb (GObject      *object,
+                               GAsyncResult *result,
+                               gpointer      user_data)
+{
+  GnManager *self = user_data;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (GN_IS_MANAGER (self));
+  g_assert (G_IS_ASYNC_RESULT (result));
+
+  g_list_store_remove_all (self->search_store);
+  gn_manager_load_more_items (self, &self->search_store,
+                              &self->search_queue);
+}
+
+static void
+gn_manager_update_search (GTask        *task,
+                          gpointer      source_object,
+                          gpointer      task_data,
+                          GCancellable *cancellable)
+{
+  GnManager *self = source_object;
+  GnItem *item;
+  GListModel *model;
+  g_autofree gchar *needle = NULL;
+  int i = 0;
+
+  g_assert (GN_IS_MANAGER (self));
+
+  needle = g_strdup (self->search_needle);
+  g_print ("search updating\n");
+
+  for (GList *node = self->search_queue->head; node != NULL;)
+    {
+      GList *next = node->next;
+
+      if (!gn_item_match (node->data, needle))
+        g_queue_remove (self->search_queue, node->data);
+      node = next;
+    }
+
+  model = G_LIST_MODEL (self->search_store);
+  while ((item = g_list_model_get_item (model, i)))
+    {
+      if (gn_item_match (item, needle))
+        {
+          g_queue_insert_sorted (self->search_queue, item,
+                                 gn_item_compare, NULL);
+        }
+      i++;
+    }
+}
+
+static void
+gn_manager_full_search (GTask        *task,
+                        gpointer      source_object,
+                        gpointer      task_data,
+                        GCancellable *cancellable)
+{
+  GnManager *self = source_object;
+  g_autofree gchar *needle = NULL;
+  GList *values;
+
+  g_assert (GN_IS_MANAGER (self));
+  g_print ("full search\n");
+
+  needle = g_strdup (self->search_needle);
+  values = g_hash_table_get_values (self->providers);
+  g_clear_pointer (&self->search_queue, g_queue_free);
+  self->search_queue = g_queue_new ();
+
+  for (GList *node = values; node != NULL; node = node->next)
+    {
+      GList *items = gn_provider_get_notes (node->data);
+
+      for (GList *item = items; item != NULL; item = item->next)
+        {
+          if (gn_item_match (item->data, needle))
+            g_queue_insert_sorted (self->search_queue, item->data,
+                                   gn_item_compare, NULL);
+        }
+    }
+}
+
+static void
+gn_manager_do_search_async (GnManager           *self,
+                            GCancellable        *cancellable,
+                            GAsyncReadyCallback  callback,
+                            gpointer             user_data)
+{
+  g_autoptr(GTask) task = NULL;
+  SearchData *search_data;
+
+  search_data = g_new (SearchData, 1);
+  search_data->search_queue = g_steal_pointer (&self->search_queue);
+  search_data->search_needle = g_strdup (self->search_needle);
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_task_data (task, search_data, NULL);
+  g_task_set_priority (task, G_PRIORITY_LOW);
+
+  if (self->search_is_narrowing)
+    {
+      g_task_set_source_tag (task, gn_manager_update_search);
+      g_task_run_in_thread (task, gn_manager_update_search);
+    }
+  else
+    {
+      g_task_set_source_tag (task, gn_manager_update_search);
+      g_task_run_in_thread (task, gn_manager_full_search);
+    }
+}
+
 
 /* Load items from the provider to the store and queue */
 static void
@@ -485,6 +621,13 @@ gn_manager_init (GnManager *self)
   self->trash_notes_store = g_list_store_new (GN_TYPE_ITEM);
   self->provider_cancellable = g_cancellable_new ();
 
+  self->search_needle = g_strdup ("");
+  self->old_search_needle = g_strdup ("");
+
+  self->search_queue = g_queue_new ();
+  self->search_store = g_list_store_new (GN_TYPE_ITEM);
+  self->search_cancellable = g_cancellable_new ();
+
   gn_manager_load_providers (self);
 }
 
@@ -569,6 +712,20 @@ GListStore *
 gn_manager_get_trash_notes_store (GnManager *self)
 {
   return self->trash_notes_store;
+}
+
+/**
+ * gn_manager_get_search_store:
+ * @self: A #GnManager
+ *
+ * Get a sorted list of items for search results.
+ *
+ * Returns: (transfer none): a #GListStore
+ */
+GListStore *
+gn_manager_get_search_store (GnManager *self)
+{
+  return self->search_store;
 }
 
 /**
@@ -740,4 +897,59 @@ gn_manager_trash_queue_items (GnManager *self)
     }
 
   g_clear_pointer (&self->delete_queue, g_list_free);
+}
+
+/**
+ * gn_manager_search:
+ * @self: A #GnManager
+ * @terms: A %NULL terminated array of strings
+ *
+ * Asynchronously search for items that matches
+ * @terms.  The seach store shall be then updated
+ * in the main thread.  The store can be retrieved
+ * with gn_manager_get_search_store().
+ *
+ * Currently only text search is supported.  That
+ * is, the first string from @terms is searched.
+ * The rest is ignored.
+ */
+void
+gn_manager_search (GnManager    *self,
+                   const gchar **terms)
+{
+  g_return_if_fail (GN_IS_MANAGER (self));
+
+  g_cancellable_cancel (self->search_cancellable);
+  g_free (self->old_search_needle);
+
+  if (terms == NULL || *terms == NULL || **terms == '\0')
+    {
+      g_free (self->search_needle);
+
+      self->search_needle = g_strdup ("");
+      self->old_search_needle = g_strdup ("");
+      g_list_store_remove_all (self->search_store);
+
+      return;
+    }
+
+  self->old_search_needle = self->search_needle;
+  self->search_needle = g_strdup (terms[0]);
+  self->search_is_narrowing = FALSE;
+
+  /*
+   * If the prefix of new string and old string are same,
+   * the user have appended some text to the end of search.
+   * Which means, we can use the old result and filter out
+   * some to get the new result.
+   * If the old string is empty, we require a fresh search.
+   */
+  if (self->old_search_needle[0] == '\0')
+    self->search_is_narrowing = FALSE;
+  else if (strncmp (self->old_search_needle, self->search_needle,
+                    strlen (self->old_search_needle)) == 0)
+    self->search_is_narrowing = TRUE;
+
+  gn_manager_do_search_async (self, self->search_cancellable,
+                              gn_manager_search_complete_cb, self);
 }

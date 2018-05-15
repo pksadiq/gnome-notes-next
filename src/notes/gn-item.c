@@ -195,6 +195,22 @@ gn_item_real_unset_modified (GnItem *self)
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODIFIED]);
 }
 
+static gboolean
+gn_item_real_match (GnItem      *self,
+                    const gchar *needle)
+{
+  GnItemPrivate *priv = gn_item_get_instance_private (self);
+  g_autofree gchar *title = NULL;
+
+  g_assert (GN_IS_ITEM (self));
+
+  title = g_utf8_casefold (gn_item_get_title (self), -1);
+  if (strstr (title, needle) != NULL)
+    return TRUE;
+
+  return FALSE;
+}
+
 static void
 gn_item_class_init (GnItemClass *klass)
 {
@@ -206,6 +222,7 @@ gn_item_class_init (GnItemClass *klass)
 
   klass->is_modified = gn_item_real_is_modified;
   klass->unset_modified = gn_item_real_unset_modified;
+  klass->match = gn_item_real_match;
 
   properties[PROP_UID] =
     g_param_spec_string ("uid",
@@ -584,4 +601,20 @@ gn_item_compare (gconstpointer a,
   title_b = g_utf8_casefold (item_b->title, -1);
 
   return g_strcmp0 (title_a, title_b);
+}
+
+gboolean
+gn_item_match (GnItem      *self,
+               const gchar *needle)
+{
+  gboolean ret;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_ITEM (self), FALSE);
+  g_return_val_if_fail (needle != NULL, FALSE);
+
+  ret = GN_ITEM_GET_CLASS (self)->match (self, needle);
+
+  GN_RETURN (ret);
 }
