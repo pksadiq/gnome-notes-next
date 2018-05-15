@@ -41,6 +41,7 @@ struct _GnMainView
   GtkGrid parent_instance;
 
   GListModel *model;
+  gchar *content_status;
 
   GtkWidget *view_stack;
   GtkWidget *grid_view;
@@ -56,6 +57,7 @@ enum {
   PROP_0,
   PROP_SELECTION_MODE,
   PROP_MODEL,
+  PROP_CONTENT_STATUS,
   N_PROPS
 };
 
@@ -66,6 +68,40 @@ enum {
 
 static GParamSpec *properties[N_PROPS];
 static guint signals[N_SIGNALS];
+
+static void
+gn_main_view_model_changed (GListModel *model,
+                            guint       position,
+                            guint       removed,
+                            guint       added,
+                            GnMainView *self)
+{
+  gboolean empty;
+
+  g_assert (GN_IS_MAIN_VIEW (self));
+  g_assert (G_IS_LIST_MODEL (model));
+
+  if (g_list_model_get_item (model, 0) != NULL)
+    empty = FALSE;
+  else
+    empty = TRUE;
+
+  /* Ie, if the model is empty now, and not empty previously */
+  if (empty && strcmp (self->content_status, "non-empty") == 0)
+    {
+      g_free (self->content_status);
+      self->content_status = g_strdup ("empty");
+    }
+  else if (!empty && strcmp (self->content_status, "empty") == 0)
+    {
+      g_free (self->content_status);
+      self->content_status = g_strdup ("non-empty");
+    }
+  else
+    return;
+
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CONTENT_STATUS]);
+}
 
 static void
 gn_main_view_grid_item_activated (GnMainView      *self,
@@ -121,6 +157,10 @@ gn_main_view_get_property (GObject    *object,
       g_value_set_object (value, self->model);
       break;
 
+    case PROP_CONTENT_STATUS:
+      g_value_set_string (value, self->content_status);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -142,6 +182,10 @@ gn_main_view_set_property (GObject      *object,
 
     case PROP_MODEL:
       gn_main_view_set_model (self, g_value_get_object (value));
+      break;
+
+    case PROP_CONTENT_STATUS:
+      self->content_status = g_value_dup_string (value);
       break;
 
     default:
@@ -167,6 +211,14 @@ gn_main_view_class_init (GnMainViewClass *klass)
                           "If mode is selection mode or not",
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  properties[PROP_CONTENT_STATUS] =
+  g_param_spec_string ("content-status",
+                       "Cotent status",
+                       "If the content is empty or non-empty",
+                       "empty",
+                       G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
+                       G_PARAM_STATIC_STRINGS);
 
   properties[PROP_MODEL] =
     g_param_spec_object ("model",
@@ -332,6 +384,12 @@ gn_main_view_set_model (GnMainView *self,
                                model,
                                gn_list_view_item_new,
                                G_OBJECT (self), NULL);
+
+      g_signal_connect_object (self->model, "items-changed",
+                               G_CALLBACK (gn_main_view_model_changed),
+                               self, G_CONNECT_AFTER);
+
+      gn_main_view_model_changed (model, 0, 0, 0, self);
 
       g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_MODEL]);
       return TRUE;

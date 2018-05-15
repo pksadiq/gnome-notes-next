@@ -203,6 +203,8 @@
                 <child>
                   <object class="GtkStack" id="notes_stack">
                     <property name="expand">1</property>
+                    <property name="visible-child-name" bind-source="notes_view"
+                              bind-property="content-status" bind-flags="sync-create"/>
 
                     <!-- Empty notes view -->
                     <child>
@@ -274,7 +276,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="name">note-view</property>
+                        <property name="name">non-empty</property>
                       </packing>
                     </child>
 
@@ -296,6 +298,8 @@
 
                 <child>
                   <object class="GtkStack" id="trash_stack">
+                    <property name="visible-child-name" bind-source="trash_view"
+                              bind-property="content-status" bind-flags="sync-create"/>
 
                     <!-- Empty trash view -->
                     <child>
@@ -341,7 +345,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="name">content-view</property>
+                        <property name="name">non-empty</property>
                       </packing>
                     </child>
 
@@ -350,6 +354,8 @@
 
                 <child>
                   <object class="GtkStack" id="search_stack">
+                    <property name="visible-child-name" bind-source="search_view"
+                              bind-property="content-status" bind-flags="sync-create"/>
 
                     <!-- Empty Search results -->
                     <child>
@@ -395,7 +401,7 @@
                         </child>
                       </object>
                       <packing>
-                        <property name="name">content-view</property>
+                        <property name="name">non-empty</property>
                       </packing>
                     </child>
 

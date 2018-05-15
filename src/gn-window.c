@@ -173,19 +173,10 @@ gn_window_provider_added_cb (GnWindow   *self,
   gn_main_view_set_model (GN_MAIN_VIEW (self->notes_view),
                           G_LIST_MODEL (store));
 
-  /* Change view if we have at least one item in store */
-  if (g_list_model_get_item (G_LIST_MODEL (store), 0) != NULL)
-    gtk_stack_set_visible_child_name (GTK_STACK (self->notes_stack),
-                                      "note-view");
-
   store = gn_manager_get_trash_notes_store (gn_manager_get_default ());
 
   gn_main_view_set_model (GN_MAIN_VIEW (self->trash_view),
                           G_LIST_MODEL (store));
-
-  if (g_list_model_get_item (G_LIST_MODEL (store), 0) != NULL)
-    gtk_stack_set_visible_child_name (GTK_STACK (self->trash_stack),
-                                      "content-view");
 }
 
 static void
