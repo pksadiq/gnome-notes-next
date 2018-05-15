@@ -43,6 +43,21 @@
           </object>
         </child>
 
+        <child>
+          <object class="GtkToggleButton" id="search_button">
+            <property name="icon-name">edit-find-symbolic</property>
+            <child internal-child="accessible">
+              <object class="AtkObject">
+                <property name="accessible-name" translatable="1">Search</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="position">2</property>
+            <property name="pack-type">end</property>
+          </packing>
+        </child>
+
         <!-- List/Grid view buttons -->
         <child>
           <object class="GtkStack" id="view_button_stack">
@@ -117,6 +132,23 @@
     <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
+
+        <child>
+          <object class="GtkSearchBar" id="search_bar">
+            <property name="search-mode-enabled" bind-source="search_button"
+                      bind-property="active" bind-flags="sync-create|bidirectional"/>
+            <signal name="notify::search-mode-enabled" handler="gn_window_search_mode_changed"
+                    swapped="1"/>
+            <child>
+              <object class="GtkSearchEntry" id="search_entry">
+                <property name="width-chars">50</property>
+                <signal name="search-changed" handler="gn_window_search_changed"
+                        swapped="1"/>
+              </object>
+            </child>
+          </object>
+        </child>
+
         <child>
           <object class="GtkOverlay">
 
@@ -314,6 +346,60 @@
                     </child>
 
                   </object> <!-- ./GtkStack trash_stack -->
+                </child>
+
+                <child>
+                  <object class="GtkStack" id="search_stack">
+
+                    <!-- Empty Search results -->
+                    <child>
+                      <object class="GtkGrid">
+                        <property name="column-spacing">12</property>
+                        <property name="halign">center</property>
+                        <property name="valign">center</property>
+
+                        <child>
+                          <object class="GtkLabel">
+                            <property name="label" translatable="1">No Search Results</property>
+                            <property name="halign">start</property>
+                            <attributes>
+                              <attribute name="weight" value="bold"/>
+                              <attribute name="scale" value="1.2"/>
+                            </attributes>
+                          </object>
+                        </child>
+
+                        <style>
+                         <class name="dim-label"/>
+                        </style>
+                      </object> <!-- ./GtkGrid -->
+                      <packing>
+                        <property name="name">empty</property>
+                      </packing>
+                    </child>
+
+                    <child>
+                      <object class="GtkScrolledWindow">
+                        <signal name="edge-reached" handler="gn_window_load_more_items" swapped="1"/>
+                        <child>
+                          <object class="GtkFrame">
+                            <style>
+                             <class name="content-view"/>
+                            </style>
+                            <child>
+                              <object class="GnMainView" id="search_view">
+                                <signal name="item-activated" handler="gn_window_item_activated" swapped="1"/>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                      <packing>
+                        <property name="name">content-view</property>
+                      </packing>
+                    </child>
+
+                  </object> <!-- ./GtkStack search_stack -->
                 </child>
 
                 <child>

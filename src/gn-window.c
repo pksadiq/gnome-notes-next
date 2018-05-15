@@ -54,6 +54,10 @@ struct _GnWindow
   GtkWidget *cancel_button;
   GtkWidget *main_action_bar;
 
+  GtkWidget *search_button;
+  GtkWidget *search_bar;
+  GtkWidget *search_entry;
+  GtkWidget *search_stack;
   GtkWidget *main_stack;
   GtkWidget *notes_stack;
   GtkWidget *notes_view;
@@ -200,6 +204,48 @@ gn_window_load_more_items (GnWindow          *self,
     gn_manager_load_more_notes (gn_manager_get_default ());
   else if (self->current_view == GN_VIEW_TRASH)
     gn_manager_load_more_trash_notes (gn_manager_get_default ());
+}
+
+static void
+gn_window_search_mode_changed (GnWindow     *self,
+                               GParamSpec   *pspec,
+                               GtkSearchBar *search_bar)
+{
+  gboolean search_enabled;
+
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_SEARCH_BAR (search_bar));
+
+  search_enabled = gtk_search_bar_get_search_mode (search_bar);
+
+  if (!search_enabled)
+    gtk_entry_set_text (GTK_ENTRY (self->search_entry), "");
+}
+
+static void
+gn_window_search_changed (GnWindow       *self,
+                          GtkSearchEntry *search_entry)
+{
+  const gchar *needle;
+  GnManager *manager;
+  GnView last_view;
+
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_SEARCH_ENTRY (search_entry));
+
+  manager = gn_manager_get_default ();
+  needle = gtk_entry_get_text (GTK_ENTRY (search_entry));
+  gn_manager_search (manager, &needle);
+
+  if (needle[0] != '\0')
+    {
+      gn_window_set_view (self, GN_VIEW_SEARCH, GN_VIEW_MODE_NORMAL);
+    }
+  else
+    {
+      last_view = GPOINTER_TO_INT (g_queue_pop_head (self->view_stack));
+      gn_window_set_view (self, last_view, GN_VIEW_MODE_NORMAL);
+    }
 }
 
 static void
@@ -437,6 +483,12 @@ gn_window_update_main_view (GnWindow *self,
     case GN_VIEW_EDITOR:
       gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
                                    self->editor_stack);
+      break;
+
+    case GN_VIEW_SEARCH:
+      gtk_stack_set_visible_child (GTK_STACK (self->main_stack),
+                                   self->search_stack);
+      break;
 
     default:
       break;
@@ -449,12 +501,15 @@ gn_window_update_header_bar (GnWindow *self,
 {
   gtk_widget_show (self->select_button_stack);
   gtk_widget_show (self->view_button_stack);
+  gtk_widget_show (self->search_button);
+
 
   switch (view)
     {
     case GN_VIEW_EDITOR:
       gtk_widget_hide (self->select_button_stack);
       gtk_widget_hide (self->view_button_stack);
+      gtk_widget_hide (self->search_button);
       gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                    self->back_button);
       break;
@@ -523,6 +578,19 @@ gn_window_size_allocate_cb (GnWindow *self)
   gn_settings_set_window_geometry (settings, width, height, x, y);
 }
 
+static gboolean
+gn_window_key_press_cb (GnWindow *self,
+                        GdkEvent *event)
+{
+  g_assert (GN_IS_WINDOW (self));
+
+  if (self->current_view != GN_VIEW_EDITOR)
+    return gtk_search_bar_handle_event (GTK_SEARCH_BAR (self->search_bar),
+                                        event);
+
+  return GDK_EVENT_PROPAGATE;
+}
+
 static void
 gn_window_destroy_cb (GnWindow *self)
 {
@@ -576,6 +644,10 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, stack_switcher);
 
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, search_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
@@ -601,6 +673,9 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_destroy_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_size_allocate_cb);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_key_press_cb);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_search_mode_changed);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_previous_view);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_view_button_toggled);
