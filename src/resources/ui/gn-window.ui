@@ -4,6 +4,7 @@
     <property name="width-request">400</property>
     <property name="height-request">300</property>
     <signal name="size-allocate" handler="gn_window_size_allocate_cb"/>
+    <signal name="key-press-event" handler="gn_window_key_press_cb"/>
     <signal name="destroy" handler="gn_window_destroy_cb"/>
 
     <!-- Headerbar -->

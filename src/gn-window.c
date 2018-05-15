@@ -58,6 +58,7 @@ struct _GnWindow
   GtkWidget *search_bar;
   GtkWidget *search_entry;
   GtkWidget *search_stack;
+  GtkWidget *search_view;
   GtkWidget *main_stack;
   GtkWidget *notes_stack;
   GtkWidget *notes_view;
@@ -638,6 +639,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, search_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_stack);
