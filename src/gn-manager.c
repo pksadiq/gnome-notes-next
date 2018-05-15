@@ -226,10 +226,16 @@ gn_manager_search_complete_cb (GObject      *object,
                                gpointer      user_data)
 {
   GnManager *self = user_data;
+  SearchData *search_data;
   g_autoptr(GError) error = NULL;
 
   g_assert (GN_IS_MANAGER (self));
   g_assert (G_IS_ASYNC_RESULT (result));
+
+  search_data = g_task_get_task_data (G_TASK (result));
+
+  if (self->search_queue == NULL)
+    self->search_queue = g_steal_pointer (&search_data->search_queue);
 
   g_list_store_remove_all (self->search_store);
   gn_manager_load_more_items (self, &self->search_store,
@@ -245,20 +251,21 @@ gn_manager_update_search (GTask        *task,
   GnManager *self = source_object;
   GnItem *item;
   GListModel *model;
-  g_autofree gchar *needle = NULL;
+  SearchData *search_data = task_data;
+  gchar *needle;
   int i = 0;
 
   g_assert (GN_IS_MANAGER (self));
 
-  needle = g_strdup (self->search_needle);
+  needle = search_data->search_needle;
   g_print ("search updating\n");
 
-  for (GList *node = self->search_queue->head; node != NULL;)
+  for (GList *node = search_data->search_queue->head; node != NULL;)
     {
       GList *next = node->next;
 
       if (!gn_item_match (node->data, needle))
-        g_queue_remove (self->search_queue, node->data);
+        g_queue_remove (search_data->search_queue, node->data);
       node = next;
     }
 
@@ -267,7 +274,7 @@ gn_manager_update_search (GTask        *task,
     {
       if (gn_item_match (item, needle))
         {
-          g_queue_insert_sorted (self->search_queue, item,
+          g_queue_insert_sorted (search_data->search_queue, item,
                                  gn_item_compare, NULL);
         }
       i++;
