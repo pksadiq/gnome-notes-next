@@ -178,6 +178,11 @@ gn_window_provider_added_cb (GnWindow   *self,
 
   gn_main_view_set_model (GN_MAIN_VIEW (self->trash_view),
                           G_LIST_MODEL (store));
+
+  store = gn_manager_get_search_store (gn_manager_get_default ());
+
+  gn_main_view_set_model (GN_MAIN_VIEW (self->search_view),
+                          G_LIST_MODEL (store));
 }
 
 static void
