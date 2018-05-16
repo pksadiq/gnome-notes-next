@@ -23,6 +23,8 @@
 #include <glib-object.h>
 #include <gdk/gdk.h>
 
+#include "gn-enums.h"
+
 G_BEGIN_DECLS
 
 #define GN_TYPE_ITEM (gn_item_get_type ())
@@ -37,6 +39,7 @@ struct _GnItemClass
   void     (*unset_modified) (GnItem *self);
   gboolean (*match)          (GnItem *self,
                               const gchar *needle);
+  GnFeature (*get_features)  (GnItem *self);
 };
 
 const gchar *gn_item_get_uid               (GnItem        *self);
@@ -65,4 +68,6 @@ gint         gn_item_compare               (gconstpointer a,
                                             gpointer      user_data);;
 gboolean     gn_item_match                 (GnItem       *self,
                                             const gchar  *needle);
+GnFeature    gn_item_get_features          (GnItem       *self);
+
 G_END_DECLS

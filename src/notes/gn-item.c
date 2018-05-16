@@ -211,6 +211,14 @@ gn_item_real_match (GnItem      *self,
   return FALSE;
 }
 
+static GnFeature
+gn_item_real_get_features (GnItem *self)
+{
+  g_assert (GN_IS_ITEM (self));
+
+  return GN_FEATURE_NONE;
+}
+
 static void
 gn_item_class_init (GnItemClass *klass)
 {
@@ -223,6 +231,7 @@ gn_item_class_init (GnItemClass *klass)
   klass->is_modified = gn_item_real_is_modified;
   klass->unset_modified = gn_item_real_unset_modified;
   klass->match = gn_item_real_match;
+  klass->get_features = gn_item_real_get_features;
 
   properties[PROP_UID] =
     g_param_spec_string ("uid",
@@ -617,4 +626,26 @@ gn_item_match (GnItem      *self,
   ret = GN_ITEM_GET_CLASS (self)->match (self, needle);
 
   GN_RETURN (ret);
+}
+
+/**
+ * gn_item_get_features:
+ * @self: a #GnItem
+ *
+ * Get the features supported by @self.
+ *
+ * Returns: A #GnFeature
+ */
+GnFeature
+gn_item_get_features (GnItem *self)
+{
+  GnFeature features;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_ITEM (self), 0);
+
+  features = GN_ITEM_GET_CLASS (self)->get_features (self);
+
+  GN_RETURN (features);
 }
