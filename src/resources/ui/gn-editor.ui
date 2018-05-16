@@ -54,6 +54,63 @@
           </object> <!-- ./GtkButtonBox -->
         </child>
 
+        <child type="center">
+          <object class="GtkButtonBox">
+            <property name="layout-style">expand</property>
+            <child>
+              <object class="GtkButton" id="bold_button">
+                <property name="icon-name">format-text-bold-symbolic</property>
+                <property name="can-focus">0</property>
+                <signal name="clicked" handler="gn_editor_format_clicked" swapped="1" />
+                <child internal-child="accessible">
+                  <object class="AtkObject">
+                    <property name="accessible-name" translatable="1">Bold</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="italic_button">
+                <property name="icon-name">format-text-italic-symbolic</property>
+                <property name="sensitive" bind-source="bold_button" bind-property="sensitive"/>
+                <property name="can-focus">0</property>
+                <signal name="clicked" handler="gn_editor_format_clicked" swapped="1" />
+                <child internal-child="accessible">
+                  <object class="AtkObject">
+                    <property name="accessible-name" translatable="1">Italic</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="underline_button">
+                <property name="icon-name">format-text-underline-symbolic</property>
+                <property name="sensitive" bind-source="bold_button" bind-property="sensitive"/>
+                <property name="can-focus">0</property>
+                <signal name="clicked" handler="gn_editor_format_clicked" swapped="1" />
+                <child internal-child="accessible">
+                  <object class="AtkObject">
+                    <property name="accessible-name" translatable="1">Underline</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="strikethrough_button">
+                <property name="icon-name">format-text-strikethrough-symbolic</property>
+                <property name="sensitive" bind-source="bold_button" bind-property="sensitive"/>
+                <property name="can-focus">0</property>
+                <signal name="clicked" handler="gn_editor_format_clicked" swapped="1" />
+                <child internal-child="accessible">
+                  <object class="AtkObject">
+                    <property name="accessible-name" translatable="1">Strikethrough</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+
       </object> <!-- ./GtkActionBar action_bar -->
     </child>
   </template>

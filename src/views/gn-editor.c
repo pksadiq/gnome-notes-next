@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include "gn-enums.h"
 #include "gn-note.h"
 #include "gn-note-buffer.h"
 #include "gn-manager.h"
@@ -47,10 +48,31 @@ struct _GnEditor
   GtkWidget *editor_view;
   GtkWidget *cut_button;
 
+  GtkWidget *bold_button;
+  GtkWidget *italic_button;
+  GtkWidget *strikethrough_button;
+  GtkWidget *underline_button;
+
   guint save_timeout_id;
 };
 
 G_DEFINE_TYPE (GnEditor, gn_editor, GTK_TYPE_GRID)
+
+static void
+gn_editor_selection_changed_cb (GnEditor *self)
+{
+  g_assert (GN_IS_EDITOR (self));
+
+  if (gtk_text_buffer_get_has_selection (self->note_buffer))
+    {
+      if (gn_item_get_features (self->item) & GN_FEATURE_FORMAT)
+        gtk_widget_set_sensitive (self->bold_button, TRUE);
+    }
+  else
+    {
+      gtk_widget_set_sensitive (self->bold_button, FALSE);
+    }
+}
 
 static void
 gn_editor_copy_or_cut (GnEditor  *self,
@@ -80,6 +102,26 @@ gn_editor_paste (GnEditor *self)
   clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self));
   gtk_text_buffer_paste_clipboard (self->note_buffer, clipboard,
                                    NULL, TRUE);
+}
+
+static void
+gn_editor_format_clicked (GnEditor  *self,
+                          GtkWidget *widget)
+{
+  const gchar *tag_name;
+  g_assert (GN_IS_EDITOR (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  if (widget == self->bold_button)
+    tag_name = "bold";
+  else if (widget == self->italic_button)
+    tag_name = "italic";
+  else if (widget == self->underline_button)
+    tag_name = "underline";
+  else if (widget == self->strikethrough_button)
+    tag_name = "strikethrough";
+
+  gn_note_buffer_apply_tag (GN_NOTE_BUFFER (self->note_buffer), tag_name);
 }
 
 static gboolean
@@ -146,9 +188,15 @@ gn_editor_class_init (GnEditorClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, GnEditor, editor_view);
   gtk_widget_class_bind_template_child (widget_class, GnEditor, cut_button);
+  gtk_widget_class_bind_template_child (widget_class, GnEditor, bold_button);
+  gtk_widget_class_bind_template_child (widget_class, GnEditor, italic_button);
+  gtk_widget_class_bind_template_child (widget_class, GnEditor, strikethrough_button);
+  gtk_widget_class_bind_template_child (widget_class, GnEditor, underline_button);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_editor_copy_or_cut);
   gtk_widget_class_bind_template_callback (widget_class, gn_editor_paste);
+
+  gtk_widget_class_bind_template_callback (widget_class, gn_editor_format_clicked);
 }
 
 static void
@@ -184,6 +232,11 @@ gn_editor_set_item (GnEditor *self,
   self->note_buffer = buffer;
 
   gtk_text_view_set_buffer (GTK_TEXT_VIEW (self->editor_view), buffer);
+  g_signal_connect_object (buffer, "notify::has-selection",
+                           G_CALLBACK (gn_editor_selection_changed_cb),
+                           self, G_CONNECT_SWAPPED);
+  gn_editor_selection_changed_cb (self);
+
   g_object_bind_property (buffer, "has-selection",
                           self->cut_button, "sensitive",
                           G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
