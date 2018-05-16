@@ -49,4 +49,18 @@ typedef enum
   GN_VIEW_TYPE_LIST
 } GnViewType;
 
+typedef enum
+{
+  GN_FEATURE_NONE              = 0,
+  GN_FEATURE_COLOR             = 1 <<  0,
+  /* If note supports bold, italic, underline, strikethrough */
+  GN_FEATURE_FORMAT            = 1 << 1,
+  GN_FEATURE_TRASH             = 1 << 2,
+  GN_FEATURE_NOTEBOOK          = 1 << 3,
+  /* If provider supports a Note to be a part of atmost one notebook */
+  GN_FEATURE_ISOLATED_NOTEBOOK = 1 << 4,
+  GN_FEATURE_CREATION_DATE     = 1 << 5,
+  GN_FEATURE_MODIFICATION_DATE = 1 << 6,
+} GnFeature;
+
 G_END_DECLS
