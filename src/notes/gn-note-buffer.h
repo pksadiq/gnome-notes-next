@@ -29,5 +29,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (GnNoteBuffer, gn_note_buffer, GN, NOTE_BUFFER, GtkTextBuffer)
 
 GnNoteBuffer *gn_note_buffer_new (void);
+void          gn_note_buffer_apply_tag (GnNoteBuffer *self,
+                                        const gchar  *tag_name);
 
 G_END_DECLS

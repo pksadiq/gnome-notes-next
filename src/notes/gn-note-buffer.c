@@ -48,6 +48,38 @@ struct _GnNoteBuffer
 G_DEFINE_TYPE (GnNoteBuffer, gn_note_buffer, GTK_TYPE_TEXT_BUFFER)
 
 static void
+gn_note_buffer_toggle_tag (GnNoteBuffer *buffer,
+                           GtkTextTag   *tag,
+                           GtkTextIter  *start,
+                           GtkTextIter  *end)
+{
+  gboolean has_tag;
+
+  g_assert (GN_IS_NOTE_BUFFER (buffer));
+  g_assert (GTK_IS_TEXT_TAG (tag));
+  g_assert (start != NULL && end != NULL);
+
+  /*
+   * If tag isn't present in either start or end,
+   * we can safely apply tag.
+   * FIXME: This is really a lame way of checking tag.
+   * The selection starts and end with some tag doesn't
+   * mean that every character in the selection has
+   * the tag applied.
+   */
+  has_tag = gtk_text_iter_has_tag (start, tag) &&
+    (gtk_text_iter_has_tag (end, tag) ||
+     gtk_text_iter_ends_tag (end, tag));
+
+  if (has_tag)
+    gtk_text_buffer_remove_tag (GTK_TEXT_BUFFER (buffer), tag,
+                                start, end);
+  else
+    gtk_text_buffer_apply_tag (GTK_TEXT_BUFFER (buffer), tag,
+                               start, end);
+}
+
+static void
 gn_note_buffer_insert_text (GtkTextBuffer *buffer,
                               GtkTextIter   *pos,
                               const gchar   *text,
@@ -140,4 +172,31 @@ gn_note_buffer_new (void)
 {
   return g_object_new (GN_TYPE_NOTE_BUFFER,
                        NULL);
+}
+
+void
+gn_note_buffer_apply_tag (GnNoteBuffer *self,
+                          const gchar  *tag_name)
+{
+  GtkTextIter start, end;
+  GtkTextTag *tag;
+
+  g_return_if_fail (GN_IS_NOTE_BUFFER (self));
+  g_return_if_fail (gtk_text_buffer_get_has_selection (GTK_TEXT_BUFFER (self)));
+  g_return_if_fail (tag_name != NULL);
+
+  gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (self), &start, &end);
+
+  if (strcmp (tag_name, "bold") == 0)
+    tag = self->tag_bold;
+  else if (strcmp (tag_name, "italic") == 0)
+    tag = self->tag_italic;
+  else if (strcmp (tag_name, "underline") == 0)
+    tag = self->tag_underline;
+  else if (strcmp (tag_name, "strikethrough") == 0)
+    tag = self->tag_strike;
+  else
+    g_return_if_reached ();
+
+  gn_note_buffer_toggle_tag (self, tag, &start, &end);
 }
