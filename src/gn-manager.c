@@ -812,8 +812,7 @@ gn_manager_save_item (GnManager *self,
 
   provider = g_object_get_data (G_OBJECT (item), "provider");
 
-  gn_provider_save_item_async (provider, item,
-                               self->provider_cancellable,
+  gn_provider_save_item_async (provider, item, NULL,
                                gn_manager_save_item_cb, NULL);
 }
 

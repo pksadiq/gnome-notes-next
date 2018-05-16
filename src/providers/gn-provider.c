@@ -653,6 +653,8 @@ gn_provider_save_item_async (GnProvider          *self,
   g_return_if_fail (GN_IS_ITEM (item));
   g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
 
+  g_application_hold (g_application_get_default ());
+
   GN_PROVIDER_GET_CLASS (self)->save_item_async (self, item,
                                                  cancellable, callback,
                                                  user_data);
@@ -685,6 +687,8 @@ gn_provider_save_item_finish (GnProvider    *self,
   g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
 
   ret = GN_PROVIDER_GET_CLASS (self)->save_item_finish (self, result, error);
+
+  g_application_release (g_application_get_default ());
 
   if (!ret)
     GN_RETURN (ret);
