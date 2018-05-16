@@ -38,6 +38,11 @@
 struct _GnNoteBuffer
 {
   GtkTextBuffer parent_instance;
+
+  GtkTextTag *tag_bold;
+  GtkTextTag *tag_italic;
+  GtkTextTag *tag_underline;
+  GtkTextTag *tag_strike;
 };
 
 G_DEFINE_TYPE (GnNoteBuffer, gn_note_buffer, GTK_TYPE_TEXT_BUFFER)
@@ -84,12 +89,34 @@ static void
 gn_note_buffer_constructed (GObject *object)
 {
   GnNoteBuffer *self = (GnNoteBuffer *)object;
+  GtkTextBuffer *buffer = (GtkTextBuffer *)object;
+  GtkTextTag *tag;
 
-  gtk_text_buffer_create_tag (GTK_TEXT_BUFFER (self), "title",
+  gtk_text_buffer_create_tag (buffer, "title",
                               "weight", PANGO_WEIGHT_BOLD,
                               "pixels-below-lines", TITLE_SPACING,
                               "scale", TITLE_SCALE,
                               NULL);
+
+  tag = gtk_text_buffer_create_tag (buffer, "bold",
+                                    "weight", PANGO_WEIGHT_BOLD,
+                                    NULL);
+  self->tag_bold = g_object_ref (tag);
+
+  tag = gtk_text_buffer_create_tag (buffer, "italic",
+                                    "style", PANGO_STYLE_ITALIC,
+                                    NULL);
+  self->tag_italic = g_object_ref (tag);
+
+  tag = gtk_text_buffer_create_tag (buffer, "strike",
+                                    "strikethrough", TRUE,
+                                    NULL);
+  self->tag_strike = g_object_ref (tag);
+
+  tag = gtk_text_buffer_create_tag (buffer, "underline",
+                                    "underline", PANGO_UNDERLINE_SINGLE,
+                                    NULL);
+  self->tag_underline = g_object_ref (tag);
 }
 
 static void
