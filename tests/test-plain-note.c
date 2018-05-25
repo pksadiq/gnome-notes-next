@@ -86,6 +86,37 @@ test_plain_note_empty (void)
   test_plain_note_with_change (plain_note);
 }
 
+static void
+test_plain_note_title (void)
+{
+  GnPlainNote *plain_note;
+  GnNote *note;
+  GnItem *item;
+  GdkRGBA rgba;
+  const gchar *uid;
+  const gchar *title;
+  g_autofree gchar *content = NULL;
+  gboolean has_color;
+
+  plain_note = gn_plain_note_new_from_data ("Some Randomly long test 😊");
+  g_assert (GN_IS_PLAIN_NOTE (plain_note));
+
+  item = GN_ITEM (plain_note);
+  note = GN_NOTE (plain_note);
+
+  uid = gn_item_get_uid (item);
+  g_assert_null (uid);
+
+  title = gn_item_get_title (item);
+  g_assert_nonnull (title);
+  g_assert (g_str_equal (title, "Some Randomly long test 😊"));
+
+  content = gn_note_get_raw_content (note);
+  g_assert_null (content);
+
+  test_plain_note_with_change (plain_note);
+}
+
 int
 main (int   argc,
       char *argv[])
@@ -93,7 +124,7 @@ main (int   argc,
   g_test_init (&argc, &argv, NULL);
 
   g_test_add_func ("/note/plain/empty", test_plain_note_empty);
-  /* g_test_add_func ("/note/plain/title", test_plain_note_empty); */
+  g_test_add_func ("/note/plain/title", test_plain_note_title);
   /* g_test_add_func ("/note/plain/content", test_plain_note_empty); */
 
   return g_test_run ();
