@@ -92,11 +92,9 @@ test_plain_note_title (void)
   GnPlainNote *plain_note;
   GnNote *note;
   GnItem *item;
-  GdkRGBA rgba;
   const gchar *uid;
   const gchar *title;
   g_autofree gchar *content = NULL;
-  gboolean has_color;
 
   plain_note = gn_plain_note_new_from_data ("Some Randomly long test 😊");
   g_assert (GN_IS_PLAIN_NOTE (plain_note));
@@ -123,11 +121,9 @@ test_plain_note_content (void)
   GnPlainNote *plain_note;
   GnNote *note;
   GnItem *item;
-  GdkRGBA rgba;
   const gchar *uid;
   const gchar *title;
   g_autofree gchar *content = NULL;
-  gboolean has_color;
 
   plain_note = gn_plain_note_new_from_data ("Some Randomly\nlong test 😊");
   g_assert (GN_IS_PLAIN_NOTE (plain_note));
