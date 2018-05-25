@@ -75,6 +75,7 @@ subdir('src')
 subdir('data')
 subdir('docs')
 subdir('po')
+subdir('tests')
 
 if get_option('bash_completion')
   subdir('completion')

@@ -50,6 +50,20 @@ inc_dir = [
     'views'
   )]
 
+libsrc = [
+  'notes/gn-item.c',
+  'notes/gn-note.c',
+  'notes/gn-plain-note.c',
+  'notes/gn-note-buffer.c'
+]
+
+libgnotes = static_library(
+  'gnotes', libsrc,
+  install: false,
+  include_directories: inc_dir,
+  dependencies: pkg_dep
+)
+
 executable(
   'gnome-notes',
   src,
