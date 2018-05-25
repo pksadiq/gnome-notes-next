@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include "gn-plain-note.h"
+#include "gn-goa-provider.h"
 #include "gn-memo-provider.h"
 #include "gn-local-provider.h"
 #include "gn-settings.h"
@@ -52,6 +53,7 @@ struct _GnManager
   GnSettings   *settings;
 
   ESourceRegistry *eds_registry;
+  GoaClient *goa_client;
 
   GHashTable   *providers;
   GCancellable *provider_cancellable;
@@ -445,6 +447,62 @@ gn_manager_load_memo_providers (GnManager *self)
 }
 
 static void
+gn_manager_goa_connect_cb (GObject      *object,
+                           GAsyncResult *result,
+                           gpointer      user_data)
+{
+  GnProvider *provider = (GnProvider *)object;
+  GnManager *self = user_data;
+  g_autoptr(GError) error = NULL;
+
+  g_assert (GN_IS_MANAGER (self));
+  g_assert (GN_IS_PROVIDER (provider));
+  g_assert (G_IS_ASYNC_RESULT (result));
+
+   /* TODO: Check how severe the error is before adding to hashtable */
+  if (!gn_goa_provider_connect_finish (GN_GOA_PROVIDER (provider),
+                                       result, &error))
+    g_warning ("Failed to Load GOA: %s", error->message);
+  else
+    g_hash_table_insert (self->providers,
+                         gn_provider_get_uid (provider),
+                         provider);
+
+  /* gn_provider_load_items_async (provider, self->provider_cancellable, */
+  /*                               gn_manager_items_loaded_cb, self); */
+}
+
+static void
+gn_manager_load_goa_providers (GnManager *self)
+{
+  GList *accounts;
+  GoaAccount *account;
+  GnGoaProvider *provider;
+
+  g_assert (GN_IS_MANAGER (self));
+
+  accounts = goa_client_get_accounts (self->goa_client);
+
+  for (GList *account = accounts; account != NULL; account = account->next)
+    {
+      GoaObject *object = account->data;
+      GoaAccount *account = goa_object_peek_account (object);
+
+      if (goa_object_peek_files (object)  == NULL ||
+          goa_account_get_files_disabled (account))
+        continue;
+
+      provider = gn_goa_provider_new (object);
+      gn_goa_provider_connect_async (GN_GOA_PROVIDER (provider),
+                                     self->provider_cancellable,
+                                     gn_manager_goa_connect_cb,
+                                     self);
+    }
+
+  g_list_free_full (accounts, g_object_unref);
+}
+
+static void
 gn_manager_load_local_providers (GTask        *task,
                                  gpointer      source_object,
                                  gpointer      task_data,
@@ -510,6 +568,9 @@ gn_manager_load_local_providers_cb (GObject      *object,
    */
   if (self->eds_registry != NULL)
     gn_manager_load_memo_providers (self);
+
+  if (self->goa_client != NULL)
+    gn_manager_load_goa_providers (self);
 }
 
 static void
@@ -542,6 +603,11 @@ gn_manager_load_providers (GnManager *self)
                  error->message);
       g_clear_error (&error);
     }
+
+  self->goa_client = goa_client_new_sync (self->provider_cancellable, &error);
+
+  if (error)
+    g_warning ("Error loading GNOME Online accounts: %s", error->message);
 
   GN_EXIT;
 }

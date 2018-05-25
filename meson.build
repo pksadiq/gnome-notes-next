@@ -56,6 +56,7 @@ add_global_arguments(common_flags, language: 'c')
 pkg_dep = [
   dependency('glib-2.0', version: '>= 2.44.0'),
   dependency('gtk+-4.0', version: '>= 3.93.0'),
+  dependency('goa-1.0',),
   dependency('libecal-1.2', version: '>= 3.18.0'),
   dependency('libedataserver-1.2', version: '>= 3.18.0'),
 ]
