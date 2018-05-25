@@ -15,3 +15,13 @@ test_plain_note = executable(
   dependencies: pkg_dep
 )
 test('test-plain-note', test_plain_note, env: env)
+
+test_note_buffer = executable(
+  'test-note-buffer',
+  'test-note-buffer.c',
+  include_directories: tests_inc,
+  link_with: libgnotes,
+  dependencies: pkg_dep
+)
+test('test-note-buffer', test_note_buffer, env: env)
+
