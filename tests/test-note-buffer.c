@@ -54,7 +54,7 @@ test_note_buffer_plain (void)
   buffer = gn_note_get_buffer (note);
 
   g_object_get (G_OBJECT (buffer), "text", &content, NULL);
-  g_assert (g_str_equal (content, "Test\nContent"));
+  g_assert_cmpstr (content, ==, "Test\nContent");
   g_clear_pointer (&content, g_free);
 
   tag_table = gtk_text_buffer_get_tag_table (buffer);

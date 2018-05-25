@@ -40,13 +40,11 @@ test_plain_note_with_change (GnPlainNote *plain_note)
 
   gn_item_set_uid (item, "test-uid");
   uid = gn_item_get_uid (item);
-  g_assert_nonnull (uid);
-  g_assert (g_str_equal (uid, "test-uid"));
+  g_assert_cmpstr (uid, ==, "test-uid");
 
   gn_item_set_title (item, "test title");
   title = gn_item_get_title (item);
-  g_assert_nonnull (item);
-  g_assert (g_str_equal (title, "test title"));
+  g_assert_cmpstr (title, ==, "test title");
 
   gdk_rgba_parse (&rgba, "#123");
   gn_item_set_rgba (item, &rgba);
@@ -75,8 +73,7 @@ test_plain_note_empty (void)
   g_assert_null (uid);
 
   title = gn_item_get_title (item);
-  g_assert_nonnull (title);
-  g_assert (title[0] == '\0');
+  g_assert_cmpstr (title, ==, "");
 
   has_color = gn_item_get_rgba (item, &rgba);
   g_assert_false (has_color);
@@ -106,8 +103,7 @@ test_plain_note_title (void)
   g_assert_null (uid);
 
   title = gn_item_get_title (item);
-  g_assert_nonnull (title);
-  g_assert (g_str_equal (title, "Some Randomly long test 😊"));
+  g_assert_cmpstr (title, ==, "Some Randomly long test 😊");
 
   content = gn_note_get_raw_content (note);
   g_assert_null (content);
@@ -135,12 +131,10 @@ test_plain_note_content (void)
   g_assert_null (uid);
 
   title = gn_item_get_title (item);
-  g_assert_nonnull (title);
-  g_assert (g_str_equal (title, "Some Randomly"));
+  g_assert_cmpstr (title, ==, "Some Randomly");
 
   content = gn_note_get_raw_content (note);
-  g_assert_nonnull (content);
-  g_assert (g_str_equal (content, "long test 😊"));
+  g_assert_cmpstr (content, ==, "long test 😊");
 
   test_plain_note_with_change (plain_note);
 }
