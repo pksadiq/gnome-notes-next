@@ -28,6 +28,7 @@ src += [
   'notes/gn-note.c',
   'notes/gn-note-buffer.c',
   'notes/gn-plain-note.c',
+  'notes/gn-xml-note.c',
   'providers/gn-provider.c',
   'providers/gn-goa-provider.c',
   'providers/gn-memo-provider.c',
