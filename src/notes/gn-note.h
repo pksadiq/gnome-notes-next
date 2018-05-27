@@ -26,6 +26,7 @@
 
 G_BEGIN_DECLS
 
+#define GN_NOTE_MARKUP_LINES_MAX 20
 #define GN_TYPE_NOTE (gn_note_get_type ())
 
 G_DECLARE_DERIVABLE_TYPE (GnNote, gn_note, GN, NOTE, GnItem)
