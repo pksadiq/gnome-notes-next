@@ -27,5 +27,7 @@ G_BEGIN_DECLS
 #define GN_IS_MAIN_THREAD() (g_thread_self () == gn_utils_get_main_thread ())
 
 GThread    *gn_utils_get_main_thread    (void);
+gchar      *gn_utils_get_markup_from_bijiben (const gchar *xml,
+                                              gint         max_line);
 
 G_END_DECLS
