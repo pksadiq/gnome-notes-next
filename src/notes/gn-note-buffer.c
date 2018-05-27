@@ -174,6 +174,17 @@ gn_note_buffer_new (void)
                        NULL);
 }
 
+/**
+ * gn_note_buffer_apply_tag:
+ * @self: A #GnNoteBuffer
+ * @tag_name: A valid tag name
+ *
+ * @tag_name can be one of "bold", "italic",
+ * "underline", or "strikethrough".
+ *
+ * The tag is applied to the selected text in
+ * @self.
+ */
 void
 gn_note_buffer_apply_tag (GnNoteBuffer *self,
                           const gchar  *tag_name)
