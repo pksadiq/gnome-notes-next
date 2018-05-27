@@ -159,6 +159,27 @@ gn_utils_get_main_thread (void)
 }
 
 static void
+gn_utils_append_unescaped (GString     *str,
+                           const gchar *start,
+                           const gchar *end)
+{
+  gchar c;
+
+  if (g_str_has_prefix (start, "&lt;"))
+    c = '<';
+  else if (g_str_has_prefix (start, "&gt;"))
+    c = '>';
+  else if (g_str_has_prefix (start, "&amp;"))
+    c = '&';
+  else if (g_str_has_prefix (start, "&quote;"))
+    c = '"';
+  else
+    c = '\0';
+
+  g_string_append_c (str, c);
+}
+
+static void
 gn_utils_append_string (GString     *str,
                         const gchar *start,
                         const gchar *end)
@@ -255,6 +276,62 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
   gn_utils_append_string (str, start, end);
   gn_utils_append_tags_queue (str, tags_queue);
   g_queue_free (tags_queue);
+
+  return g_string_free (str, FALSE);
+}
+
+/**
+ * gn_utils_get_text_from_xml:
+ * @xml: An XML string.
+ *
+ * Remove all tags from @xml. Also, unescape &lt;
+ * &gt; &amp; and &quote;
+ *
+ * Returns: (transfer full): A string.  Free with g_free()
+ */
+gchar *
+gn_utils_get_text_from_xml (const gchar *xml)
+{
+  GString *str;
+  const gchar *start, *end;
+  gchar c;
+
+  if (xml == NULL)
+    return g_strdup ("");
+
+  /* Some random size */
+  str = g_string_sized_new (10);
+  start = end = xml;
+
+  while ((c = *end))
+    {
+      if (c == '<')
+        {
+          gn_utils_append_string (str, start, end);
+
+          /* Skip the tag */
+          start = strchr (end, '>');
+          start++;
+          end = start;
+        }
+      else if (c == '&')
+        {
+          gn_utils_append_string (str, start, end);
+
+          start = end;
+          end = strchr (end, ';');
+
+          gn_utils_append_unescaped (str, start, end);
+
+          /* Skip ';' */
+          end++;
+          start = end;
+        }
+      else
+        end++;
+    }
+
+  gn_utils_append_string (str, start, end);
 
   return g_string_free (str, FALSE);
 }
