@@ -62,7 +62,8 @@ static void
 gn_utils_handle_bijiben_tag (GString     *str,
                              GQueue      *tags_queue,
                              const gchar *tag_start,
-                             const gchar *tag_end)
+                             const gchar *tag_end,
+                             gboolean     last_is_div)
 {
   const gchar *start;
 
@@ -77,7 +78,8 @@ gn_utils_handle_bijiben_tag (GString     *str,
 
   if (g_str_has_prefix (tag_start, "div"))
     {
-      g_string_append (str, "\n");
+      if (!last_is_div)
+        g_string_append (str, "\n");
     }
   else if (g_str_has_prefix (tag_start, "/div") ||
            g_str_has_prefix (tag_start, "br"))
@@ -222,6 +224,7 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
   const gchar *start, *end;
   const gchar *tag_end;
   gint line = 0;
+  gboolean last_is_div = FALSE;
   gchar c;
 
   g_return_val_if_fail (xml != NULL, NULL);
@@ -241,7 +244,8 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
         {
           gn_utils_append_string (str, start, end);
           tag_end = strchr (end, '>');
-          gn_utils_handle_bijiben_tag (str, tags_queue, end, tag_end);
+          gn_utils_handle_bijiben_tag (str, tags_queue, end, tag_end,
+                                       last_is_div);
 
           /* skip '<' */
           end++;
@@ -256,8 +260,12 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
                   g_string_append_c (str, '\n');
                 }
 
-              line++;
+              if (!last_is_div)
+                line++;
+              last_is_div = TRUE;
             }
+          else
+            last_is_div = FALSE;
 
           /* Skip '>' */
           tag_end++;
@@ -266,7 +274,10 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
           start = end;
         }
       else
-        end++;
+        {
+          last_is_div = FALSE;
+          end++;
+        }
     }
 
   gn_utils_append_string (str, start, end);
