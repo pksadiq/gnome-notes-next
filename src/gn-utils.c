@@ -77,16 +77,12 @@ gn_utils_handle_bijiben_tag (GString     *str,
 
   if (g_str_has_prefix (tag_start, "div"))
     {
-      if (!g_str_has_prefix (tag_end, "><br />"))
-        g_string_append (str, "\n");
+      g_string_append (str, "\n");
     }
-  else if (g_str_has_prefix (tag_start, "/div"))
+  else if (g_str_has_prefix (tag_start, "/div") ||
+           g_str_has_prefix (tag_start, "br"))
     {
       /* Do nothing */
-    }
-  else if (g_str_has_prefix (tag_start, "br"))
-    {
-      g_string_append_c (str, '\n');
     }
   else if (g_str_has_prefix (tag_start, "strike"))
     {
