@@ -249,7 +249,7 @@ gn_local_provider_save_note (GnLocalProvider *self,
       g_autofree gchar *file_name = NULL;
 
       uuid = g_uuid_string_random ();
-      file_name = g_strconcat (uuid, ".txt", NULL);
+      file_name = g_strconcat (uuid, gn_note_get_extension (GN_NOTE (item)), NULL);
       file = g_file_new_build_filename (g_get_user_data_dir (),
                                         "gnome-notes", file_name, NULL);
       g_object_set_data_full (G_OBJECT (item), "file", file,
