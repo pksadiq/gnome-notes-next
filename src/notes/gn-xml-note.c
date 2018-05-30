@@ -450,6 +450,8 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   g_free (self->raw_content);
   self->raw_content = g_string_free (raw_content, FALSE);
+  g_clear_pointer (&self->text_content, g_free);
+  g_clear_pointer (&self->markup, g_free);
 }
 
 static void
