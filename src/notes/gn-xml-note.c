@@ -481,6 +481,16 @@ gn_xml_note_get_text_content (GnNote *note)
   return g_strdup (self->text_content);
 }
 
+static gchar *
+gn_xml_note_get_raw_content (GnNote *note)
+{
+  GnXmlNote *self = GN_XML_NOTE (note);
+
+  g_assert (GN_IS_NOTE (note));
+
+  return g_strdup (self->raw_content);
+}
+
 static void
 gn_xml_note_set_text_content (GnNote      *note,
                               const gchar *content)
@@ -555,7 +565,7 @@ gn_xml_note_class_init (GnXmlNoteClass *klass)
 
   object_class->finalize = gn_xml_note_finalize;
 
-  note_class->get_raw_content = gn_xml_note_get_text_content;
+  note_class->get_raw_content = gn_xml_note_get_raw_content;
   note_class->get_text_content = gn_xml_note_get_text_content;
   note_class->set_text_content = gn_xml_note_set_text_content;
   note_class->get_markup = gn_xml_note_get_markup;
