@@ -391,6 +391,17 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
       g_string_append_unichar (raw_content, c);
     } while (gtk_text_iter_forward_char (&iter));
 
+  for (GList *node = tags_queue->head; node != NULL; node = node->next)
+    {
+      const gchar *tag_name;
+
+      tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
+                                                  node->data);
+      g_string_append_printf (raw_content, "</%s>", tag_name);
+    }
+
+  g_queue_free (tags_queue);
+
   g_string_append (raw_content, "</body></html></text>");
 
   time_val.tv_sec = gn_item_get_modification_time (GN_ITEM (self));
