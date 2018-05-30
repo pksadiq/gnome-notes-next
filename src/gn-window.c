@@ -719,12 +719,21 @@ gn_window_set_view (GnWindow   *self,
                     GnView      view,
                     GnViewMode  mode)
 {
+  GtkWidget *child;
+
   g_return_if_fail (GN_IS_WINDOW (self));
 
   if (view != self->current_view)
     {
       g_queue_push_head (self->view_stack,
                          GINT_TO_POINTER (self->current_view));
+
+      if (self->current_view == GN_VIEW_EDITOR)
+        {
+          child = gtk_bin_get_child (GTK_BIN (self->editor_stack));
+          if (child != NULL)
+            gtk_container_remove (GTK_CONTAINER (self->editor_stack), child);
+        }
 
       if (view == GN_VIEW_NOTES ||
           view == GN_VIEW_NOTEBOOKS)
