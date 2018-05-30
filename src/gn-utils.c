@@ -235,6 +235,11 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
   tags_queue = g_queue_new ();
   start = end = xml;
 
+  end = strstr (xml, "<body");
+  end = strchr (end, '>');
+  end++;
+  start = end;
+
   g_string_append (str, "<b>");
   g_queue_push_head (tags_queue, g_strdup ("b"));
 
@@ -255,6 +260,13 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
         {
           gn_utils_append_string (str, start, end);
           tag_end = strchr (end, '>');
+
+          if (g_str_has_prefix (end, "</body"))
+            {
+              start = end;
+              break;
+            }
+
           gn_utils_handle_bijiben_tag (str, tags_queue, end, tag_end,
                                        last_is_div);
 
