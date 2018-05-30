@@ -189,7 +189,7 @@ gn_utils_append_string (GString     *str,
 }
 
 /**
- * gn_utils_get_markup_from_xml:
+ * gn_utils_get_markup_from_bijiben:
  * @xml: A valid XML string.
  * @max_line: Maximum number of lines to parse.
  *
