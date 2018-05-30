@@ -225,7 +225,6 @@ gn_local_provider_save_note (GnLocalProvider *self,
                              GCancellable    *cancellable)
 {
   GFile *file;
-  const gchar *title;
   g_autofree gchar *content = NULL;
   gchar *full_content;
   g_autoptr(GError) error = NULL;
