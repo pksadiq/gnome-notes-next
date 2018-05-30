@@ -598,6 +598,67 @@ gn_xml_note_init (GnXmlNote *self)
 {
 }
 
+static void
+gn_xml_note_update_values (GnXmlNote   *self,
+                           const gchar *str)
+{
+  gchar *value;
+  const gchar *start, *end;
+  GTimeVal time;
+  GdkRGBA rgba;
+
+  g_assert (GN_IS_XML_NOTE (self));
+  g_assert (str != NULL);
+
+  start = strstr (str, "<last-change-date>");
+
+  if (!start)
+    return;
+
+  /* Find the end of the tag */
+  start = strchr (start, '>');
+  start++;
+  end = strchr (start, '<');
+
+  g_assert (end != NULL);
+  g_assert (end > start);
+  value = g_strndup (start, end - start);
+  g_warning ("%s", value);
+  if (g_time_val_from_iso8601 (value, &time))
+    g_object_set (G_OBJECT (self), "modification-time",
+                  (gint64)time.tv_sec, NULL);
+  g_free (value);
+
+  start = strstr (end, "<create-date>");
+
+  if (!end)
+    return;
+
+  start = strchr (start, '>');
+  start++;
+  end = strchr (start, '<');
+
+  value = g_strndup (start, end - start);
+  if (g_time_val_from_iso8601 (value, &time))
+    g_object_set (G_OBJECT (self), "creation-time",
+                  (gint64)time.tv_sec, NULL);
+  g_free (value);
+
+  start = strstr (end, "<color>");
+
+  if (!start)
+    return;
+
+  start = strchr (start, '>');
+  start++;
+  end = strchr (start, '<');
+
+  value = g_strndup (start, end - start);
+  if (gdk_rgba_parse (&rgba, value))
+    gn_item_set_rgba (GN_ITEM (self), &rgba);
+  g_free (value);
+}
+
 /*
  * This is a stupid parser.  All we need to get is the
  * title, and the boundaries of note content.
@@ -682,6 +743,7 @@ gn_xml_note_create_from_data (const gchar *data)
 
   self->raw_content = g_strndup (start, end - start);
 
+  gn_xml_note_update_values (self, end);
   return self;
 }
 
