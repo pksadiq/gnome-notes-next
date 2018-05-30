@@ -132,6 +132,12 @@ gn_xml_note_get_buffer (GnNote *note)
   mark_underline = gtk_text_mark_new ("u", TRUE);
   mark_strike = gtk_text_mark_new ("s", TRUE);
 
+  /* Skip up to the content */
+  end = strstr (end, "<body");
+  end = strchr (end, '>');
+  end++;
+  start = end;
+
   while ((c = *end))
     {
       if (c == '<')
@@ -197,6 +203,11 @@ gn_xml_note_get_buffer (GnNote *note)
           else if (g_str_has_prefix (end, "/strike"))
             {
               gn_xml_note_apply_tag_at_mark (buffer, mark_strike, "strike");
+            }
+          else if (g_str_has_prefix (end, "/body"))
+            {
+              start = end;
+              break;
             }
 
           end = strchr (end, '>');
@@ -694,54 +705,17 @@ gn_xml_note_create_from_data (const gchar *data)
                        "title", title,
                        NULL);
 
-  /* Skip < in </title> */
-  end++;
-
-  /* Now skip < in the following tag (blindly assuming it's <text). */
-  start = strchr (end, '<');
-  g_return_val_if_fail (start != NULL, self);
-  start++;
-
-  /* Skip to the next tag */
-  start = strchr (start, '<');
-  g_return_val_if_fail (start != NULL, self);
-  start++;
-  end = start;
-
-  /* Jump over the tag found */
-  start = strchr (start, '>');
-  g_return_val_if_fail (start != NULL, self);
-  start++;
-
   /*
-   * The previously found tag shall either be "note-content"
+   * Check if we have a match for "note-content"
    * (if note is a tomboy note), or "html" (if note is in old
-   * bijiben format).  Handle the content accordingly.
+   * bijiben format).
    */
-  if (g_str_has_prefix (end, "html"))
-    {
-      self->is_bijiben = TRUE;
-
-      /* Skip until the end of <body> tag */
-      start = strstr (start, "<body");
-      g_return_val_if_fail (start != NULL, self);
-      start = strchr (start, '>');
-      g_return_val_if_fail (start != NULL, self);
-      start++;
-
-      end = strstr (start, "</body>");
-      g_return_val_if_fail (start != NULL, self);
-    }
+  if (strstr (end, "<html"))
+    self->is_bijiben = TRUE;
   else /* "note-content" */
-    {
-      self->is_bijiben = FALSE;
+    self->is_bijiben = FALSE;
 
-      start = strchr (start, '>');
-      g_return_val_if_fail (start != NULL, self);
-      start++;
-    }
-
-  self->raw_content = g_strndup (start, end - start);
+  self->raw_content = g_strdup (data);
 
   gn_xml_note_update_values (self, end);
   return self;
