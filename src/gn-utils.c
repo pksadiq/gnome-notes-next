@@ -240,7 +240,18 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
 
   while ((c = *end) && line < max_line)
     {
-      if (c == '<')
+      if (c == '\n')
+        {
+          if (line == 0)
+            gn_utils_append_tags_queue (str, tags_queue);
+
+          end++;
+          gn_utils_append_string (str, start, end);
+
+          line++;
+          start = end;
+        }
+      else if (c == '<')
         {
           gn_utils_append_string (str, start, end);
           tag_end = strchr (end, '>');
