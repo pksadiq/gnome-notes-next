@@ -44,6 +44,7 @@ struct _GnNoteClass
   void   (*set_content_from_buffer) (GnNote        *self,
                                      GtkTextBuffer *buffer);
   GtkTextBuffer *(*get_buffer)      (GnNote        *self);
+  const gchar   *(*get_extension)   (GnNote        *self);
 };
 
 gchar *gn_note_get_text_content        (GnNote        *self);
@@ -56,5 +57,6 @@ gchar *gn_note_get_markup              (GnNote        *self);
 void   gn_note_set_content_from_buffer (GnNote        *self,
                                         GtkTextBuffer *buffer);
 GtkTextBuffer *gn_note_get_buffer      (GnNote        *self);
+const gchar   *gn_note_get_extension   (GnNote        *self);
 
 G_END_DECLS

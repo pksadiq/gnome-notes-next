@@ -534,6 +534,12 @@ gn_xml_note_get_markup (GnNote *note)
   return g_strdup (self->markup);
 }
 
+static const gchar *
+gn_xml_note_get_extension (GnNote *note)
+{
+  return ".note";
+}
+
 gboolean
 gn_xml_note_match (GnItem      *item,
                    const gchar *needle)
@@ -576,6 +582,7 @@ gn_xml_note_class_init (GnXmlNoteClass *klass)
   note_class->get_text_content = gn_xml_note_get_text_content;
   note_class->set_text_content = gn_xml_note_set_text_content;
   note_class->get_markup = gn_xml_note_get_markup;
+  note_class->get_extension = gn_xml_note_get_extension;
 
   note_class->get_buffer = gn_xml_note_get_buffer;
   note_class->set_content_from_buffer = gn_xml_note_set_content_from_buffer;

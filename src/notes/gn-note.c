@@ -99,6 +99,12 @@ gn_note_real_get_buffer (GnNote *self)
   return buffer;
 }
 
+static const gchar *
+gn_note_real_get_extension (GnNote *self)
+{
+  return ".txt";
+}
+
 static void
 gn_note_class_init (GnNoteClass *klass)
 {
@@ -107,6 +113,7 @@ gn_note_class_init (GnNoteClass *klass)
   object_class->get_property = gn_note_get_property;
 
   klass->get_buffer = gn_note_real_get_buffer;
+  klass->get_extension = gn_note_real_get_extension;
 
   /**
    * GnNote:content:
@@ -279,4 +286,29 @@ gn_note_get_buffer (GnNote *self)
   buffer = GN_NOTE_GET_CLASS (self)->get_buffer (self);
 
   GN_RETURN (buffer);
+}
+
+/**
+ * gn_note_get_extension:
+ * @self: a #GnNote
+ *
+ * Get the commonly used file extension for the given
+ * note type.  Say for example, if @self is a #GnPlainNote
+ * ".txt" is returned.
+ *
+ * Returns: (transfer none): The file extension for the
+ * given note
+ */
+const gchar *
+gn_note_get_extension (GnNote *self)
+{
+  const gchar *extension;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_NOTE (self), ".txt");
+
+  extension = GN_NOTE_GET_CLASS (self)->get_extension (self);
+
+  GN_RETURN (extension);
 }
