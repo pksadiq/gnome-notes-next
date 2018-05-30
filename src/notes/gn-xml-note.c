@@ -55,6 +55,9 @@
  * So far the only missing feature in Tomboy XML: numbered lists
  */
 
+#define COMMON_XML_HEAD "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
+#define BIJIBEN_XML_NS "http://projects.gnome.org/bijiben"
+
 struct _GnXmlNote
 {
   GnNote parent_instance;
@@ -238,6 +241,203 @@ gn_xml_note_get_buffer (GnNote *note)
   return buffer;
 }
 
+static int
+gn_xml_note_tag_compare (gconstpointer tag1,
+                         gconstpointer tag2)
+{
+  return tag1 != tag2;
+}
+
+static void
+gn_xml_note_close_tag (GnXmlNote    *self,
+                       GnNoteBuffer *note_buffer,
+                       GString      *raw_content,
+                       GtkTextTag   *tag,
+                       GQueue       *tags_queue)
+{
+  GList *last_tag;
+  GList *node;
+  const gchar *tag_name;
+
+  g_assert (GN_IS_XML_NOTE (self));
+  g_assert (GN_IS_NOTE_BUFFER (note_buffer));
+  g_assert (raw_content != NULL);
+  g_assert (tag != NULL);
+
+  last_tag = g_queue_find (tags_queue, tag);
+
+  g_assert (last_tag != NULL);
+
+  /*
+   * First, we have to close the tags in the reverse order it is opened.
+   * Eg: If the @tags_queue has "i" as head and "s" as next, and "b"
+   * next element, and if the @tag represents "b", we have to close "i"
+   * tag first, then "s".  And then close "b" tag.  That is, the result
+   * should be the following:
+   * <b><s><i>some text</i></s></b> and not <b><s><i>some text</b>...
+   */
+  for (node = tags_queue->head; node != last_tag; node = node->next)
+    {
+      tag_name = gn_note_buffer_get_name_for_tag (note_buffer, node->data);
+      g_string_append_printf (raw_content, "</%s>", tag_name);
+    }
+
+    /* From the previous example: we are now closing </b> */
+    tag_name = gn_note_buffer_get_name_for_tag (note_buffer, last_tag->data);
+    g_string_append_printf (raw_content, "</%s>", tag_name);
+
+    /*
+     * To make the XML valid, we have to open the closed tags that aren't
+     * supposed to be closed.  Again, from the previous example: We
+     * have closed "s" and "i" tags.  We have to open them in reverse
+     * order. This results in: <b><s><i>some text</i></s></b><s><i>
+     */
+  for (node = node->prev; node && node != tags_queue->head; node = node->prev)
+    {
+      tag_name = gn_note_buffer_get_name_for_tag (note_buffer, node->data);
+      g_string_append_printf (raw_content, "<%s>", tag_name);
+    }
+
+  g_queue_delete_link (tags_queue, last_tag);
+}
+
+static void
+gn_xml_note_set_content_from_buffer (GnNote        *note,
+                                     GtkTextBuffer *buffer)
+{
+  GnXmlNote *self = GN_XML_NOTE (note);
+  GQueue *tags_queue;
+  GString *raw_content;
+  gchar *content;
+  GTimeVal time_val = {0, 0};
+  GdkRGBA rgba;
+  g_autofree gchar *color = NULL;
+  gchar *time_str;
+  GtkTextIter start, end, iter;
+  gunichar c;
+
+  g_assert (GN_IS_XML_NOTE (self));
+  g_assert (GTK_IS_TEXT_BUFFER (buffer));
+
+  tags_queue = g_queue_new ();
+  raw_content = g_string_sized_new (gtk_text_buffer_get_char_count (buffer));
+
+  gtk_text_buffer_get_start_iter (buffer, &start);
+  gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
+  content = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+
+  /*
+   * FIXME: This is really bad.  May be we should use single quotes.
+   * Or better, may be we should use libxml or e_xml_document from eds.
+   * We don't require most of the tags used here.  But for compatibility
+   * with older Bijiben, we keep those as such.  May be we can remove
+   * them after 10 years from now (2018 May).
+   */
+  g_string_append (raw_content, COMMON_XML_HEAD "\n<note version=\"1\" "
+                   "xmlns:link=\"" BIJIBEN_XML_NS "/link\" "
+                   "xmlns:size=\"" BIJIBEN_XML_NS "/size\" "
+                   "xmlns=\""BIJIBEN_XML_NS"\">\n");
+  g_string_append_printf (raw_content, "<title>%s</title>\n", content);
+  g_string_append (raw_content,
+                   "<text xml:space=\"preserve\"><html "
+                   "xmlns=\"http://www.w3.org/1999/xhtml\">"
+                   "<head><link rel=\"stylesheet\" href=\"Default.css\" "
+                   "type=\"text/css\"/><script language=\"javascript\" "
+                   "src=\"bijiben.js\"/></head><body contenteditable=\"true\" "
+                   "id=\"editable\" style=\"color: black;\">");
+
+  /* Temporarily disable "title" tag */
+  gtk_text_buffer_remove_tag_by_name (buffer, "title", &start, &end);
+  iter = start;
+
+  do
+    {
+      GSList *tags;
+      GSList *node;
+      GtkTextTag *last_tag;
+
+      c = gtk_text_iter_get_char (&iter);
+      last_tag = g_queue_peek_head (tags_queue);
+
+      if (c == '\n')
+        g_string_append (raw_content, "<br />");
+
+      /* First, we have to handle tags that are closed */
+      tags = gtk_text_iter_get_toggled_tags (&iter, FALSE);
+      while ((node = g_slist_find_custom (tags, last_tag, gn_xml_note_tag_compare)))
+        {
+          GtkTextTag *tag = node->data;
+          gn_xml_note_close_tag (self, GN_NOTE_BUFFER (buffer),
+                                 raw_content, tag, tags_queue);
+          tags = g_slist_delete_link (tags, node);
+        }
+
+      g_assert (tags == NULL);
+
+      /* Now, let's handle open tags */
+      tags = gtk_text_iter_get_toggled_tags (&iter, TRUE);
+      for (node = tags; node != NULL; node = node->next)
+        {
+          GtkTextTag *tag = node->data;
+          const gchar *tag_name;
+
+          tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
+                                                      tag);
+          g_string_append_printf (raw_content, "<%s>", tag_name);
+          g_queue_push_head (tags_queue, tag);
+        }
+
+      g_string_append_unichar (raw_content, c);
+    } while (gtk_text_iter_forward_char (&iter));
+
+  g_string_append (raw_content, "</body></html></text>");
+
+  time_val.tv_sec = gn_item_get_modification_time (GN_ITEM (self));
+  time_str = g_time_val_to_iso8601 (&time_val);
+  g_string_append_printf (raw_content,
+                          "<last-change-date>%s</last-change-date>",
+                          time_str);
+  g_free (time_str);
+
+  time_val.tv_sec = gn_item_get_modification_time (GN_ITEM (self));
+  time_str = g_time_val_to_iso8601 (&time_val);
+  g_string_append_printf (raw_content,
+                          "<last-metadata-change-date>%s"
+                          "</last-metadata-change-date>",
+                          time_str);
+  g_free (time_str);
+
+  time_val.tv_sec = gn_item_get_creation_time (GN_ITEM (self));
+  time_str = g_time_val_to_iso8601 (&time_val);
+  g_string_append_printf (raw_content,
+                          "<create-date>%s</create-date>",
+                          time_str);
+  g_free (time_str);
+
+  g_string_append (raw_content, "<cursor-position>0</cursor-position>"
+                   "<selection-bound-position>0</selection-bound-position>"
+                   "<width>0</width>"
+                   "<height>0</height>"
+                   "<x>0</x>"
+                   "<y>0</y>");
+
+  gn_item_get_rgba (GN_ITEM (self), &rgba);
+  color = gdk_rgba_to_string (&rgba);
+  g_string_append_printf (raw_content, "<color>%s</color", color);
+
+  g_string_append (raw_content, "<tags/>"
+                   "<open-on-startup>False</open-on-startup>"
+                   "</note>");
+
+  /* Add the removed "title" tag */
+  gtk_text_buffer_get_start_iter (buffer, &start);
+  gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
+  gtk_text_buffer_apply_tag_by_name (buffer, "title", &start, &end);
+
+  g_free (self->raw_content);
+  self->raw_content = g_string_free (raw_content, FALSE);
+}
+
 static void
 gn_xml_note_finalize (GObject *object)
 {
@@ -360,6 +560,7 @@ gn_xml_note_class_init (GnXmlNoteClass *klass)
   note_class->get_markup = gn_xml_note_get_markup;
 
   note_class->get_buffer = gn_xml_note_get_buffer;
+  note_class->set_content_from_buffer = gn_xml_note_set_content_from_buffer;
 
   item_class->match = gn_xml_note_match;
 }
