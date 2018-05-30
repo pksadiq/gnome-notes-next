@@ -56,6 +56,7 @@
             <property name="max-width-chars">0</property>
             <property name="lines">2</property>
             <property name="wrap">1</property>
+            <property name="wrap-mode">char</property>
             <property name="justify">center</property>
             <property name="ellipsize">end</property>
           </object>
