@@ -556,6 +556,13 @@ gn_xml_note_match (GnItem      *item,
   return FALSE;
 }
 
+static GnFeature
+gn_xml_note_get_features (GnItem *item)
+{
+  return GN_FEATURE_COLOR | GN_FEATURE_FORMAT |
+    GN_FEATURE_CREATION_DATE | GN_FEATURE_MODIFICATION_DATE;
+}
+
 static void
 gn_xml_note_class_init (GnXmlNoteClass *klass)
 {
@@ -574,6 +581,7 @@ gn_xml_note_class_init (GnXmlNoteClass *klass)
   note_class->set_content_from_buffer = gn_xml_note_set_content_from_buffer;
 
   item_class->match = gn_xml_note_match;
+  item_class->get_features = gn_xml_note_get_features;
 }
 
 static void
