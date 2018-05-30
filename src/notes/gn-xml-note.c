@@ -237,6 +237,7 @@ gn_xml_note_get_buffer (GnNote *note)
     }
 
   gn_xml_note_update_buffer (self, buffer, start, end);
+  gtk_text_buffer_set_modified (buffer, FALSE);
 
   return buffer;
 }
