@@ -211,3 +211,22 @@ gn_note_buffer_apply_tag (GnNoteBuffer *self,
 
   gn_note_buffer_toggle_tag (self, tag, &start, &end);
 }
+
+const gchar *
+gn_note_buffer_get_name_for_tag (GnNoteBuffer *self,
+                                 GtkTextTag   *tag)
+{
+  g_return_val_if_fail (GN_IS_NOTE_BUFFER (self), NULL);
+  g_return_val_if_fail (tag != NULL, NULL);
+
+  if (tag == self->tag_bold)
+    return "b";
+  else if (tag == self->tag_italic)
+    return "i";
+  else if (tag == self->tag_underline)
+    return "u";
+  else if (tag == self->tag_strike)
+    return "strike";
+  else
+    g_return_val_if_reached ("");
+}
