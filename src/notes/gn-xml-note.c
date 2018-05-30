@@ -286,7 +286,7 @@ gn_xml_note_close_tag (GnXmlNote    *self,
      * have closed "s" and "i" tags.  We have to open them in reverse
      * order. This results in: <b><s><i>some text</i></s></b><s><i>
      */
-  for (node = node->prev; node && node != tags_queue->head; node = node->prev)
+  for (node = node->prev; node != NULL; node = node->prev)
     {
       tag_name = gn_note_buffer_get_name_for_tag (note_buffer, node->data);
       g_string_append_printf (raw_content, "<%s>", tag_name);
@@ -358,15 +358,12 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
       /* First, we have to handle tags that are closed */
       tags = gtk_text_iter_get_toggled_tags (&iter, FALSE);
-      while ((node = g_slist_find (tags, last_tag)))
+      for (node = tags; node != NULL; node = node->next)
         {
           GtkTextTag *tag = node->data;
           gn_xml_note_close_tag (self, GN_NOTE_BUFFER (buffer),
                                  raw_content, tag, tags_queue);
-          tags = g_slist_delete_link (tags, node);
         }
-
-      g_assert (tags == NULL);
 
       /* Now, let's handle open tags */
       tags = gtk_text_iter_get_toggled_tags (&iter, TRUE);
