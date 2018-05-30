@@ -24,6 +24,7 @@
 
 #include <glib/gi18n.h>
 
+#include "gn-xml-note.h"
 #include "gn-plain-note.h"
 #include "gn-local-provider.h"
 #include "gn-trace.h"
@@ -163,13 +164,13 @@ gn_local_provider_load_path (GnLocalProvider  *self,
       g_autoptr(GFile) file = NULL;
       g_autofree gchar *contents = NULL;
       g_autofree gchar *file_name = NULL;
-      GnPlainNote *note;
+      GnXmlNote *note;
       const gchar *name;
       gchar *end;
 
       name = g_file_info_get_name (file_info);
 
-      if (!g_str_has_suffix (name, ".txt"))
+      if (!g_str_has_suffix (name, ".note"))
         continue;
 
       file_name = g_strdup (name);
@@ -178,7 +179,11 @@ gn_local_provider_load_path (GnLocalProvider  *self,
       file = g_file_get_child (location, name);
       g_file_load_contents (file, cancellable, &contents, NULL, NULL, NULL);
 
-      note = gn_plain_note_new_from_data (contents);
+      note = gn_xml_note_new_from_data (contents);
+
+      if (note == NULL)
+        continue;
+
       gn_item_set_uid (GN_ITEM (note), file_name);
       g_object_set_data (G_OBJECT (note), "provider", GN_PROVIDER (self));
       g_object_set_data_full (G_OBJECT (note), "file", g_steal_pointer (&file),
@@ -222,7 +227,7 @@ gn_local_provider_save_note (GnLocalProvider *self,
   GFile *file;
   const gchar *title;
   g_autofree gchar *content = NULL;
-  g_autofree gchar *full_content = NULL;
+  gchar *full_content;
   g_autoptr(GError) error = NULL;
 
   g_assert (GN_IS_LOCAL_PROVIDER (self));
@@ -231,13 +236,12 @@ gn_local_provider_save_note (GnLocalProvider *self,
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
   file = g_object_get_data (G_OBJECT (item), "file");
-  title = gn_item_get_title (item);
   content = gn_note_get_raw_content (GN_NOTE (item));
 
-  if (title != NULL) /* if title is NULL, content too will be NULL */
-    full_content = g_strconcat (title, "\n", content, NULL);
+  if (content)
+    full_content = content;
   else
-    full_content = g_strdup ("");
+    full_content = "";
 
   if (file == NULL)
     {
