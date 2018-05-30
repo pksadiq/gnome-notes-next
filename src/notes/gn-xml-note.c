@@ -158,17 +158,17 @@ gn_xml_note_get_buffer (GnNote *note)
 
               last_is_div = TRUE;
             }
-          else if (g_str_has_prefix (end, "b"))
+          else if (g_str_has_prefix (end, "b>"))
             {
               if (!gtk_text_buffer_get_mark (buffer, "b"))
                 gtk_text_buffer_add_mark (buffer, mark_bold, &end_iter);
             }
-          else if (g_str_has_prefix (end, "i"))
+          else if (g_str_has_prefix (end, "i>"))
             {
               if (!gtk_text_buffer_get_mark (buffer, "i"))
                 gtk_text_buffer_add_mark (buffer, mark_italic, &end_iter);
             }
-          else if (g_str_has_prefix (end, "u"))
+          else if (g_str_has_prefix (end, "u>"))
             {
               if (!gtk_text_buffer_get_mark (buffer, "u"))
                 gtk_text_buffer_add_mark (buffer, mark_underline, &end_iter);
@@ -183,15 +183,15 @@ gn_xml_note_get_buffer (GnNote *note)
             {
               /* Do nothing */
             }
-          else if (g_str_has_prefix (end, "/b"))
+          else if (g_str_has_prefix (end, "/b>"))
             {
               gn_xml_note_apply_tag_at_mark (buffer, mark_bold, "bold");
             }
-          else if (g_str_has_prefix (end, "/i"))
+          else if (g_str_has_prefix (end, "/i>"))
             {
               gn_xml_note_apply_tag_at_mark (buffer, mark_italic, "italic");
             }
-          else if (g_str_has_prefix (end, "/u"))
+          else if (g_str_has_prefix (end, "/u>"))
             {
               gn_xml_note_apply_tag_at_mark (buffer, mark_underline, "underline");
             }
@@ -580,6 +580,43 @@ static void
 gn_xml_note_init (GnXmlNote *self)
 {
 }
+
+
+/* static void */
+/* gn_xml_note_parse_tomboy (GnXmlNote   *self, */
+/*                           const gchar *xml) */
+/* { */
+/*   gchar *start, *end; */
+
+/*   g_assert (GN_IS_XML_NOTE (self)); */
+/*   g_assert (xml != NULL); */
+
+/*   /\* Skip "note-content" tag *\/ */
+/*   start = strchr (xml, '>'); */
+/*   start++; */
+/*   end = strchr (start, '\n'); */
+
+/*   self->title = g_strndup (start, end - start); */
+/* } */
+
+/* static void */
+/* gn_xml_note_parse_bijiben (GnXmlNote   *self, */
+/*                            const gchar *xml) */
+/* { */
+/*   GQueue *tags; */
+/*   gchar *start, *end; */
+
+/*   g_assert (GN_IS_XML_NOTE (self)); */
+/*   g_assert (xml != NULL); */
+
+/*   tags = g_queue_new (); */
+/*   /\* Skip "body" tag *\/ */
+/*   start = strchr (xml, '>'); */
+/*   start++; */
+/*   end = strchr (start, '<'); */
+
+/*   self->title = g_strndup (start, end - start); */
+/* } */
 
 /*
  * This is a stupid parser.  All we need to get is the
