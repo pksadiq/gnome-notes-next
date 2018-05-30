@@ -279,7 +279,7 @@ gn_item_class_init (GnItemClass *klass)
                         "Modification Time",
                         "The Unix time in seconds the item was last modified",
                         0, G_MAXINT64, 0,
-                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   /**
    * GnItem:creation-time:
@@ -297,7 +297,7 @@ gn_item_class_init (GnItemClass *klass)
                         "Creation Time",
                         "The Unix time in seconds the item was created",
                         0, G_MAXINT64, 0,
-                        G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS);
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   /**
    * GnItem:modified:
