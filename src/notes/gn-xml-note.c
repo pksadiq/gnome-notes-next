@@ -309,7 +309,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   GnXmlNote *self = GN_XML_NOTE (note);
   GQueue *tags_queue;
   GString *raw_content;
-  gchar *content;
+  g_autofree gchar *content = NULL;
   GTimeVal time_val = {0, 0};
   GdkRGBA rgba;
   g_autofree gchar *color = NULL;
