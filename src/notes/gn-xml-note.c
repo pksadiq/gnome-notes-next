@@ -111,10 +111,9 @@ gn_xml_note_get_buffer (GnNote *note)
 {
   GtkTextMark *mark_bold, *mark_italic;
   GtkTextMark *mark_underline, *mark_strike;
-  GHashTable *tags_list;
   GtkTextBuffer *buffer;
   gchar *start, *end;
-  GtkTextIter start_iter, end_iter;
+  GtkTextIter end_iter;
   gboolean last_is_div = FALSE;
   gchar c;
 
@@ -348,10 +347,8 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
     {
       GSList *tags;
       GSList *node;
-      GtkTextTag *last_tag;
 
       c = gtk_text_iter_get_char (&iter);
-      last_tag = g_queue_peek_head (tags_queue);
 
       if (c == '\n')
         g_string_append (raw_content, "<br />");
@@ -644,7 +641,7 @@ gn_xml_note_create_from_data (const gchar *data)
 {
   g_autofree gchar *title = NULL;
   g_autofree gchar *content = NULL;
-  gchar *start, *end, *p;
+  gchar *start, *end;
   GnXmlNote *self;
 
   g_assert (data != NULL);
