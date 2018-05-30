@@ -424,7 +424,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   gn_item_get_rgba (GN_ITEM (self), &rgba);
   color = gdk_rgba_to_string (&rgba);
-  g_string_append_printf (raw_content, "<color>%s</color", color);
+  g_string_append_printf (raw_content, "<color>%s</color>", color);
 
   g_string_append (raw_content, "<tags/>"
                    "<open-on-startup>False</open-on-startup>"
