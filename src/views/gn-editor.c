@@ -122,6 +122,7 @@ gn_editor_format_clicked (GnEditor  *self,
     tag_name = "strikethrough";
 
   gn_note_buffer_apply_tag (GN_NOTE_BUFFER (self->note_buffer), tag_name);
+  gtk_text_buffer_set_modified (self->note_buffer, TRUE);
 }
 
 static gboolean
