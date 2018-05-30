@@ -636,7 +636,6 @@ gn_xml_note_update_values (GnXmlNote   *self,
   g_assert (end != NULL);
   g_assert (end > start);
   value = g_strndup (start, end - start);
-  g_warning ("%s", value);
   if (g_time_val_from_iso8601 (value, &time))
     g_object_set (G_OBJECT (self), "modification-time",
                   (gint64)time.tv_sec, NULL);
