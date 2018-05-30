@@ -242,13 +242,6 @@ gn_xml_note_get_buffer (GnNote *note)
   return buffer;
 }
 
-static int
-gn_xml_note_tag_compare (gconstpointer tag1,
-                         gconstpointer tag2)
-{
-  return tag1 != tag2;
-}
-
 static void
 gn_xml_note_close_tag (GnXmlNote    *self,
                        GnNoteBuffer *note_buffer,
@@ -365,7 +358,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
       /* First, we have to handle tags that are closed */
       tags = gtk_text_iter_get_toggled_tags (&iter, FALSE);
-      while ((node = g_slist_find_custom (tags, last_tag, gn_xml_note_tag_compare)))
+      while ((node = g_slist_find (tags, last_tag)))
         {
           GtkTextTag *tag = node->data;
           gn_xml_note_close_tag (self, GN_NOTE_BUFFER (buffer),
