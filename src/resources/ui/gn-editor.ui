@@ -10,7 +10,7 @@
         <child>
           <object class="GtkTextView" id="editor_view">
             <property name="has-focus">1</property>
-            <property name="wrap-mode">word</property>
+            <property name="wrap-mode">word-char</property>
           </object>
         </child>
       </object>
