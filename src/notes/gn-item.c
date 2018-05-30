@@ -199,7 +199,6 @@ static gboolean
 gn_item_real_match (GnItem      *self,
                     const gchar *needle)
 {
-  GnItemPrivate *priv = gn_item_get_instance_private (self);
   g_autofree gchar *title = NULL;
 
   g_assert (GN_IS_ITEM (self));
