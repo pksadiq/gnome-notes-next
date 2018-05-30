@@ -362,6 +362,8 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
                                  raw_content, tag, tags_queue);
         }
 
+      g_slist_free (tags);
+
       /* Now, let's handle open tags */
       tags = gtk_text_iter_get_toggled_tags (&iter, TRUE);
       for (node = tags; node != NULL; node = node->next)
@@ -374,6 +376,8 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
           g_string_append_printf (raw_content, "<%s>", tag_name);
           g_queue_push_head (tags_queue, tag);
         }
+
+      g_slist_free (tags);
 
       g_string_append_unichar (raw_content, c);
     } while (gtk_text_iter_forward_char (&iter));
