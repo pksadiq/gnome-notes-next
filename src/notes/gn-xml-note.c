@@ -598,43 +598,6 @@ gn_xml_note_init (GnXmlNote *self)
 {
 }
 
-
-/* static void */
-/* gn_xml_note_parse_tomboy (GnXmlNote   *self, */
-/*                           const gchar *xml) */
-/* { */
-/*   gchar *start, *end; */
-
-/*   g_assert (GN_IS_XML_NOTE (self)); */
-/*   g_assert (xml != NULL); */
-
-/*   /\* Skip "note-content" tag *\/ */
-/*   start = strchr (xml, '>'); */
-/*   start++; */
-/*   end = strchr (start, '\n'); */
-
-/*   self->title = g_strndup (start, end - start); */
-/* } */
-
-/* static void */
-/* gn_xml_note_parse_bijiben (GnXmlNote   *self, */
-/*                            const gchar *xml) */
-/* { */
-/*   GQueue *tags; */
-/*   gchar *start, *end; */
-
-/*   g_assert (GN_IS_XML_NOTE (self)); */
-/*   g_assert (xml != NULL); */
-
-/*   tags = g_queue_new (); */
-/*   /\* Skip "body" tag *\/ */
-/*   start = strchr (xml, '>'); */
-/*   start++; */
-/*   end = strchr (start, '<'); */
-
-/*   self->title = g_strndup (start, end - start); */
-/* } */
-
 /*
  * This is a stupid parser.  All we need to get is the
  * title, and the boundaries of note content.
