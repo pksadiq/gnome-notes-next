@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include "gn-plain-note.h"
+#include "gn-xml-note.h"
 #include "gn-goa-provider.h"
 #include "gn-memo-provider.h"
 #include "gn-local-provider.h"
@@ -860,8 +861,11 @@ gn_manager_new_note (GnManager *self)
 
   provider = gn_manager_get_default_provider (self);
 
-  /* TODO: set note type based on provider */
-  item = GN_ITEM (gn_plain_note_new_from_data (NULL));
+  if (GN_IS_LOCAL_PROVIDER (provider))
+    item = GN_ITEM (gn_xml_note_new_from_data (NULL));
+  else
+    item = GN_ITEM (gn_plain_note_new_from_data (NULL));
+
   g_object_set_data (G_OBJECT (item), "provider", provider);
 
   return item;
