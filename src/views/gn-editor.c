@@ -42,6 +42,8 @@ struct _GnEditor
 {
   GtkGrid parent_instance;
 
+  GnSettings *settings;
+
   GnItem        *item;
   GtkTextBuffer *note_buffer;
 
@@ -218,6 +220,10 @@ gn_editor_set_item (GnEditor *self,
                     GnItem   *item)
 {
   g_autoptr(GtkTextBuffer) buffer = NULL;
+  GnManager *manager;
+  GtkTextTag *font_tag;
+  GtkTextTagTable *tag_table;
+  GtkTextIter start, end
 
   GN_ENTRY;
 
@@ -228,9 +234,11 @@ gn_editor_set_item (GnEditor *self,
     GN_EXIT;
 
   buffer = gn_note_get_buffer (GN_NOTE (item));
+  manager = gn_manager_get_default ();
 
   self->item = item;
   self->note_buffer = buffer;
+  self->settings = gn_manager_get_settings (manager);
 
   gtk_text_view_set_buffer (GTK_TEXT_VIEW (self->editor_view), buffer);
   g_signal_connect_object (buffer, "notify::has-selection",
@@ -244,6 +252,16 @@ gn_editor_set_item (GnEditor *self,
   g_signal_connect_object (buffer, "modified-changed",
                            G_CALLBACK (gn_editor_buffer_modified_cb),
                            self, G_CONNECT_SWAPPED);
+
+  tag_table = gtk_text_buffer_get_tag_table (buffer);
+  font_tag = gtk_text_tag_table_lookup (tag_table, "font");
+
+  g_object_bind_property (self->settings, "font",
+                          font_tag, "font",
+                          G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
+
+  gtk_text_buffer_get_bounds (buffer, &start, &end);
+  gtk_text_buffer_apply_tag (buffer, font_tag, &start, &end);
 
   GN_EXIT;
 }
