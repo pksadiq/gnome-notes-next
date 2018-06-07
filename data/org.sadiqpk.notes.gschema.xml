@@ -2,6 +2,14 @@
 <schemalist gettext-domain="gnome-notes">
   <schema id="org.sadiqpk.notes" path="/org/sadiqpk/notes/">
 
+    <key type="s" name="font">
+      <default>'Cantarell 14'</default>
+      <summary>Default font name.</summary>
+      <description>
+        The default font of the editor
+      </description>
+    </key>
+
     <key type="s" name="provider">
       <default>'local'</default>
       <summary>Default provider name.</summary>
