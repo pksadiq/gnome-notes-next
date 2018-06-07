@@ -39,6 +39,7 @@ struct _GnNoteBuffer
 {
   GtkTextBuffer parent_instance;
 
+  GtkTextTag *tag_font;
   GtkTextTag *tag_bold;
   GtkTextTag *tag_italic;
   GtkTextTag *tag_underline;
@@ -85,8 +86,10 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
                               const gchar   *text,
                               gint           text_len)
 {
+  GnNoteBuffer *self = (GnNoteBuffer *)buffer;
   GtkTextIter end, start;
   gboolean is_title;
+  gboolean reset_font;
 
   /*
    * TODO: Pasting title to content area may keep the boldness property,
@@ -96,6 +99,13 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
   GN_ENTRY;
 
   is_title = gtk_text_iter_get_line (pos) == 0;
+
+  /*
+   * If @pos doesn't have the tag tag_font, that means the newly
+   * inserted text is either appended or prepended to the buffer.
+   * If that's the case, we have to reapply default font.
+   */
+  reset_font = !gtk_text_iter_has_tag (pos, self->tag_font);
 
   if (is_title)
     {
@@ -112,6 +122,16 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
       gtk_text_buffer_get_start_iter (buffer, &start);
       gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
       gtk_text_buffer_apply_tag_by_name (buffer, "title", &start, &end);
+      gtk_text_buffer_apply_tag_by_name (buffer, "font", &start, &end);
+    }
+
+  if (reset_font && !is_title)
+    {
+      gtk_text_buffer_get_end_iter (buffer, &end);
+      start = end;
+
+      if (gtk_text_iter_backward_to_tag_toggle (&start, self->tag_font))
+        gtk_text_buffer_apply_tag_by_name (buffer, "font", &start, &end);
     }
 
   GN_EXIT;
@@ -129,6 +149,9 @@ gn_note_buffer_constructed (GObject *object)
                               "pixels-below-lines", TITLE_SPACING,
                               "scale", TITLE_SCALE,
                               NULL);
+
+  tag = gtk_text_buffer_create_tag (buffer, "font", NULL);
+  self->tag_font = g_object_ref (tag);
 
   tag = gtk_text_buffer_create_tag (buffer, "bold",
                                     "weight", PANGO_WEIGHT_BOLD,
