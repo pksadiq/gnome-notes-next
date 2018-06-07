@@ -52,5 +52,8 @@ void        gn_settings_set_rgba             (GnSettings    *self,
 const gchar *gn_settings_get_provider_name   (GnSettings    *self);
 gboolean     gn_settings_set_provider_name   (GnSettings    *self,
                                               const gchar   *name);
+const gchar *gn_settings_get_font_name       (GnSettings    *self);
+gboolean     gn_settings_set_font_name       (GnSettings    *self,
+                                              const gchar   *name);
 
 G_END_DECLS

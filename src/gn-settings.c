@@ -40,6 +40,7 @@ struct _GnSettings
   gchar *color;
   GdkRGBA rgba;
 
+  gchar *font_name;
   gchar *provider;
 
   /* Window states */
@@ -52,6 +53,7 @@ G_DEFINE_TYPE (GnSettings, gn_settings, G_TYPE_SETTINGS)
 
 enum {
   PROP_0,
+  PROP_FONT,
   PROP_COLOR,
   PROP_PROVIDER,
   N_PROPS
@@ -70,6 +72,10 @@ gn_settings_get_property (GObject    *object,
 
   switch (prop_id)
     {
+    case PROP_FONT:
+      g_value_set_string (value, self->font_name);
+      break;
+
     case PROP_COLOR:
       gn_settings_get_rgba (self, &rgba);
       g_value_set_boxed (value, &rgba);
@@ -94,6 +100,10 @@ gn_settings_set_property (GObject      *object,
 
   switch (prop_id)
     {
+    case PROP_FONT:
+      gn_settings_set_font_name (self, g_value_get_string (value));
+      break;
+
     case PROP_COLOR:
       gn_settings_set_rgba (self, g_value_get_boxed (value));
       break;
@@ -124,6 +134,7 @@ gn_settings_constructed (GObject *object)
     g_critical ("Color %s is an invalid color", self->color);
 
   self->provider = g_settings_get_string (settings, "provider");
+  self->font_name = g_settings_get_string (settings, "font");
 }
 
 static void
@@ -133,6 +144,7 @@ gn_settings_finalize (GObject *object)
 
   GN_ENTRY;
 
+  g_free (self->font_name);
   g_free (self->color);
   g_free (self->provider);
 
@@ -150,6 +162,14 @@ gn_settings_class_init (GnSettingsClass *klass)
   object_class->set_property = gn_settings_set_property;
   object_class->constructed = gn_settings_constructed;
   object_class->finalize = gn_settings_finalize;
+
+  properties[PROP_FONT] =
+    g_param_spec_string ("font",
+                         "Font name",
+                         "The default font name for notes",
+                         NULL,
+                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+                         G_PARAM_EXPLICIT_NOTIFY);
 
   properties[PROP_COLOR] =
     g_param_spec_string ("color",
@@ -280,6 +300,35 @@ gn_settings_set_provider_name (GnSettings  *self,
   g_free (self->provider);
   self->provider = g_strdup (name);
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PROVIDER]);
+
+  return TRUE;
+}
+
+const gchar *
+gn_settings_get_font_name (GnSettings *self)
+{
+  g_return_val_if_fail (GN_IS_SETTINGS (self), NULL);
+
+  return self->font_name;
+}
+
+gboolean
+gn_settings_set_font_name (GnSettings  *self,
+                           const gchar *name)
+{
+  GSettings *settings = G_SETTINGS (self);
+
+  g_return_val_if_fail (GN_IS_SETTINGS (self), FALSE);
+  g_return_val_if_fail (name != NULL, FALSE);
+
+  if (g_strcmp0 (self->font_name, name) == 0)
+    return FALSE;
+
+  g_free (self->font_name);
+  self->font_name = g_strdup (name);
+
+  g_settings_set_string (settings, "font", name);
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FONT]);
 
   return TRUE;
 }
