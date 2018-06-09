@@ -211,7 +211,8 @@ gn_settings_class_init (GnSettingsClass *klass)
                           "Use System Font",
                           "Use default system font as the font for notes",
                           TRUE,
-                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+                          G_PARAM_EXPLICIT_NOTIFY);
 
   properties[PROP_COLOR] =
     g_param_spec_string ("color",
