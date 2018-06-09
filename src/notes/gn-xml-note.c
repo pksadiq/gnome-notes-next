@@ -610,6 +610,7 @@ gn_xml_note_class_init (GnXmlNoteClass *klass)
 static void
 gn_xml_note_init (GnXmlNote *self)
 {
+  self->is_bijiben = TRUE;
 }
 
 static void
