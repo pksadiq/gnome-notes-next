@@ -26,6 +26,23 @@
 #include "gn-trace.h"
 
 /*
+ * Not an efficient way.  But we require
+ * only simple uses.
+ */
+static GQueue *
+gn_utils_copy_string_queue (GQueue *queue)
+{
+  GQueue *new_queue;
+
+  new_queue = g_queue_copy (queue);
+
+  for (GList *list = queue->head; list != NULL; list = list->next)
+    list->data = g_strdup (list->data);
+
+  return new_queue;
+}
+
+/*
  * gn_utils_append_tags_queue:
  *
  * Add closing tags for items in @tags_queue to the string
