@@ -34,8 +34,9 @@
  * and "b" will be popped from the @tags_queue.
  */
 static void
-gn_utils_append_tags_queue (GString *str,
-                            GQueue  *tags_queue)
+gn_utils_append_tags_queue (GString  *str,
+                            GQueue   *tags_queue,
+                            gboolean  open_tag)
 {
   g_assert (str != NULL);
 
@@ -46,7 +47,11 @@ gn_utils_append_tags_queue (GString *str,
     {
       g_autofree gchar *tag = g_queue_pop_head (tags_queue);
 
-      g_string_append (str, "</");
+      if (open_tag)
+              g_string_append (str, "<");
+      else
+        g_string_append (str, "</");
+
       g_string_append (str, tag);
       g_string_append_c (str, '>');
     }
@@ -248,7 +253,7 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
       if (c == '\n')
         {
           if (line == 0)
-            gn_utils_append_tags_queue (str, tags_queue);
+            gn_utils_append_tags_queue (str, tags_queue, FALSE);
 
           end++;
           gn_utils_append_string (str, start, end);
@@ -279,7 +284,7 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
                do some fancy things. */
               if (line == 0)
                 {
-                  gn_utils_append_tags_queue (str, tags_queue);
+                  gn_utils_append_tags_queue (str, tags_queue, FALSE);
                   g_string_append_c (str, '\n');
                 }
 
@@ -304,7 +309,7 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
     }
 
   gn_utils_append_string (str, start, end);
-  gn_utils_append_tags_queue (str, tags_queue);
+  gn_utils_append_tags_queue (str, tags_queue, FALSE);
   g_queue_free (tags_queue);
 
   return g_string_free (str, FALSE);
