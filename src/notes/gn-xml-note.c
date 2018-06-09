@@ -329,6 +329,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   gtk_text_buffer_get_start_iter (buffer, &start);
   gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
   content = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+  gn_item_set_title (GN_ITEM (note), content);
 
   /*
    * FIXME: This is really bad.  May be we should use single quotes.
