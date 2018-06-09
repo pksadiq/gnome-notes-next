@@ -270,7 +270,33 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
       if (c == '\n')
         {
           if (line == 0)
-            gn_utils_append_tags_queue (str, tags_queue, FALSE);
+            {
+              GQueue *queue = NULL;
+
+              if (tags_queue->length > 1)
+                queue = gn_utils_copy_string_queue (tags_queue);
+
+              gn_utils_append_tags_queue (str, tags_queue, FALSE);
+
+              /*
+               * Sometimes the title may have extra tags applied.
+               * So we have to readd all the tags we have removed
+               * to not break the markup, except the last tag
+               * which is "b", which we added ourself.
+               */
+              if (queue)
+                {
+                  gchar *tag;
+
+                  tag = g_queue_pop_tail (queue);
+                  g_free (tag);
+
+                  g_queue_reverse (queue);
+                  gn_utils_append_tags_queue (str, queue, TRUE);
+                }
+
+              g_string_append_c (str, '\n');
+            }
 
           end++;
           gn_utils_append_string (str, start, end);
@@ -301,7 +327,23 @@ gn_utils_get_markup_from_bijiben (const gchar *xml,
                do some fancy things. */
               if (line == 0)
                 {
+                  GQueue *queue = NULL;
+
+                  if (tags_queue->length > 1)
+                    queue = gn_utils_copy_string_queue (tags_queue);
+
                   gn_utils_append_tags_queue (str, tags_queue, FALSE);
+
+                  if (queue)
+                    {
+                      gchar *tag;
+
+                      tag = g_queue_pop_tail (queue);
+                      g_free (tag);
+                      g_queue_reverse (queue);
+                      gn_utils_append_tags_queue (str, queue, TRUE);
+                    }
+
                   g_string_append_c (str, '\n');
                 }
 
