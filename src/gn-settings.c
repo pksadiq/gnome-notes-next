@@ -22,9 +22,8 @@
 
 #include "config.h"
 
-#include "gn-trace.h"
-
 #include "gn-settings.h"
+#include "gn-trace.h"
 
 /**
  * SECTION: gn-settings
