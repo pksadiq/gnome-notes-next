@@ -25,6 +25,7 @@
 #include <glib/gi18n.h>
 
 #include "gn-settings.h"
+#include "gn-settings-dialog.h"
 #include "gn-manager.h"
 #include "gn-utils.h"
 #include "gn-window.h"
@@ -87,6 +88,21 @@ gn_application_show_trash (GSimpleAction *action,
 }
 
 static void
+gn_application_show_settings (GSimpleAction *action,
+                              GVariant      *parameter,
+                              gpointer       user_data)
+{
+  GtkWindow *window;
+  GtkWidget *dialog;
+
+  window = gtk_application_get_active_window (user_data);
+  dialog = gn_settings_dialog_new (window);
+
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
+}
+
+static void
 gn_application_show_about (GSimpleAction *action,
                            GVariant      *parameter,
                            gpointer       user_data)
@@ -126,6 +142,7 @@ gn_application_quit (GSimpleAction *action,
 
 static const GActionEntry application_entries[] = {
   { "trash", gn_application_show_trash },
+  { "settings", gn_application_show_settings },
   { "about", gn_application_show_about },
   { "quit",  gn_application_quit       },
 };

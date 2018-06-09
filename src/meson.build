@@ -24,6 +24,7 @@ src += [
   'gn-utils.c',
   'gn-window.c',
   'gn-action-bar.c',
+  'gn-settings-dialog.c',
   'notes/gn-item.c',
   'notes/gn-note.c',
   'notes/gn-note-buffer.c',

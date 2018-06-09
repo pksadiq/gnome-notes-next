@@ -11,6 +11,7 @@
     <file preprocess="xml-stripblanks">ui/gn-grid-view-item.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-list-view-item.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-item-thumbnail.ui</file>
+    <file preprocess="xml-stripblanks">ui/gn-settings-dialog.ui</file>
   </gresource>
 </gresources>
 
