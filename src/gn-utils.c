@@ -36,7 +36,7 @@ gn_utils_copy_string_queue (GQueue *queue)
 
   new_queue = g_queue_copy (queue);
 
-  for (GList *list = queue->head; list != NULL; list = list->next)
+  for (GList *list = new_queue->head; list != NULL; list = list->next)
     list->data = g_strdup (list->data);
 
   return new_queue;
