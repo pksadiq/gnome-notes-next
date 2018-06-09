@@ -322,6 +322,7 @@ gn_settings_set_rgba (GnSettings    *self,
   self->rgba.blue  = rgba->blue;
   self->rgba.alpha = rgba->alpha;
 
+  g_settings_set_string (G_SETTINGS (self), "color", self->color);
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLOR]);
 }
 
