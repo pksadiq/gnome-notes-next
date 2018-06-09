@@ -314,7 +314,39 @@ gn_local_provider_save_item_finish (GnProvider   *self,
                                     GAsyncResult *result,
                                     GError       **error)
 {
-  return g_task_propagate_boolean (G_TASK (result), error);
+  GnItem *item;
+  gboolean ret;
+
+  ret = g_task_propagate_boolean (G_TASK (result), error);
+
+  if (!ret)
+    return ret;
+
+  item = g_task_get_task_data (G_TASK (result));
+  g_signal_emit_by_name (self, "item-added", item);
+
+  if (gn_item_is_new (item))
+    {
+      GFile *file;
+      g_autofree gchar *file_name = NULL;
+      gchar *end;
+
+      if (GN_IS_NOTE (item))
+        {
+          file = g_object_get_data (G_OBJECT (item), "file");
+          g_assert (file != NULL);
+          file_name = g_file_get_basename (file);
+          end = g_strrstr (file_name, ".");
+
+          /* strip the extension to get the uid */
+          if (end != NULL)
+            *end = '\0';
+
+          gn_item_set_uid (item, file_name);
+        }
+    }
+
+  return ret;
 }
 
 static gboolean

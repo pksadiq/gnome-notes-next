@@ -55,7 +55,6 @@ enum {
   ITEM_DELETED,
   ITEM_TRASHED,
   ITEM_RESTORED,
-  ITEM_UPDATED,
   N_SIGNALS
 };
 
@@ -393,23 +392,6 @@ gn_provider_class_init (GnProviderClass *klass)
                   0, NULL, NULL,
                   g_cclosure_marshal_VOID__OBJECT,
                   G_TYPE_NONE, 1, GN_TYPE_ITEM);
-
-  /**
-   * GnProvider::item-updated:
-   * @self: a #GnProvider
-   * @item: a #GnItem
-   *
-   * item-updated signal is emitted when an item is updated
-   * in the provider.
-   */
-  signals [ITEM_UPDATED] =
-    g_signal_new ("item-updated",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  0, NULL, NULL,
-                  g_cclosure_marshal_VOID__OBJECT,
-                  G_TYPE_NONE, 1, GN_TYPE_ITEM);
-
 }
 
 static void
@@ -678,7 +660,6 @@ gn_provider_save_item_finish (GnProvider    *self,
                               GAsyncResult  *result,
                               GError       **error)
 {
-  GnItem *item;
   gboolean ret;
 
   GN_ENTRY;
@@ -689,37 +670,6 @@ gn_provider_save_item_finish (GnProvider    *self,
   ret = GN_PROVIDER_GET_CLASS (self)->save_item_finish (self, result, error);
 
   g_application_release (g_application_get_default ());
-
-  if (!ret)
-    GN_RETURN (ret);
-
-  item = g_task_get_task_data (G_TASK (result));
-
-  if (gn_item_is_new (item))
-    {
-      GFile *file;
-      g_autofree gchar *file_name = NULL;
-      gchar *end;
-
-      g_signal_emit (self, signals[ITEM_ADDED], 0, item);
-
-      if (GN_IS_NOTE (item))
-        {
-          file = g_object_get_data (G_OBJECT (item), "file");
-          file_name = g_file_get_basename (file);
-          end = g_strrstr (file_name, ".");
-
-          /* strip the extension to get the uid */
-          if (end != NULL)
-            *end = '\0';
-
-          gn_item_set_uid (item, file_name);
-        }
-    }
-  else
-    {
-      g_signal_emit (self, signals[ITEM_UPDATED], 0, item);
-    }
 
   GN_RETURN (ret);
 }

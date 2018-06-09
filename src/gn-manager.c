@@ -135,35 +135,31 @@ gn_manager_item_added_cb (GnManager *self,
   provider = g_object_get_data (G_OBJECT (item), "provider");
 
   if (GN_IS_NOTE (item))
-    g_list_store_insert_sorted (self->notes_store, item,
-                                gn_item_compare, NULL);
-
-  /* FIXME: A temporary hack before we settle on the design */
-  g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider);
-}
-
-static void
-gn_manager_item_updated_cb (GnManager *self,
-                            GnItem    *item)
-{
-  GListModel *model;
-  guint position;
-
-  g_assert (GN_IS_MANAGER (self));
-  g_assert (GN_IS_ITEM (item));
-
-  /*
-   * FIXME: The item title may have changed. Should we actually
-   * remove the item and insert sorted? What if the note is being
-   * edited in non-main window (where is the user also have a main
-   * window with the note list)?
-   */
-  if (GN_IS_NOTE (item))
     {
-      model = G_LIST_MODEL (self->notes_store);
+      if (gn_item_is_new (item))
+        {
+          g_list_store_insert_sorted (self->notes_store, item,
+                                      gn_item_compare, NULL);
 
-      if (gn_manager_get_item_position (self, model, item, &position))
-        g_list_model_items_changed (model, position, 1, 1);
+          /* FIXME: A temporary hack before we settle on the design */
+          g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider);
+        }
+      else
+        {
+          GListModel *model;
+          guint position;
+
+          model = G_LIST_MODEL (self->notes_store);
+
+          /*
+           * FIXME: The item title may have changed. Should we actually
+           * remove the item and insert sorted? What if the note is being
+           * edited in non-main window (where is the user also have a main
+           * window with the note list)?
+           */
+          if (gn_manager_get_item_position (self, model, item, &position))
+            g_list_model_items_changed (model, position, 1, 1);
+        }
     }
 }
 
@@ -550,9 +546,6 @@ gn_manager_load_local_providers_cb (GObject      *object,
     {
       g_signal_connect_object (node->data, "item-added",
                                G_CALLBACK (gn_manager_item_added_cb),
-                               self, G_CONNECT_SWAPPED);
-      g_signal_connect_object (node->data, "item-updated",
-                               G_CALLBACK (gn_manager_item_updated_cb),
                                self, G_CONNECT_SWAPPED);
       g_signal_connect_object (node->data, "item-trashed",
                                G_CALLBACK (gn_manager_item_trashed_cb),
