@@ -42,6 +42,7 @@ struct _GnSettings
 
   gchar *font_name;
   gchar *provider;
+  gboolean use_system_font;
 
   /* Window states */
   gboolean maximized;
@@ -54,12 +55,38 @@ G_DEFINE_TYPE (GnSettings, gn_settings, G_TYPE_SETTINGS)
 enum {
   PROP_0,
   PROP_FONT,
+  PROP_USE_SYSTEM_FONT,
   PROP_COLOR,
   PROP_PROVIDER,
   N_PROPS
 };
 
 static GParamSpec *properties[N_PROPS];
+
+static void
+gn_settings_set_use_system_font (GnSettings *self,
+                                 gboolean    use_system_font)
+{
+  GSettings *desktop_settings;
+  g_autofree gchar *font_name;
+
+  g_assert (GN_IS_SETTINGS (self));
+
+  use_system_font = !!use_system_font;
+
+  if (self->use_system_font == use_system_font)
+    return;
+
+  self->use_system_font = use_system_font;
+
+  desktop_settings = g_settings_new ("org.gnome.desktop.interface");
+  font_name = g_settings_get_string (desktop_settings, "document-font-name");
+
+  g_settings_set_boolean (G_SETTINGS (self),
+                          "use-system-font", self->use_system_font);
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USE_SYSTEM_FONT]);
+  gn_settings_set_font_name (self, font_name);
+}
 
 static void
 gn_settings_get_property (GObject    *object,
@@ -74,6 +101,10 @@ gn_settings_get_property (GObject    *object,
     {
     case PROP_FONT:
       g_value_set_string (value, self->font_name);
+      break;
+
+    case PROP_USE_SYSTEM_FONT:
+      g_value_set_boolean (value, self->use_system_font);
       break;
 
     case PROP_COLOR:
@@ -102,6 +133,10 @@ gn_settings_set_property (GObject      *object,
     {
     case PROP_FONT:
       gn_settings_set_font_name (self, g_value_get_string (value));
+      break;
+
+    case PROP_USE_SYSTEM_FONT:
+      gn_settings_set_use_system_font (self, g_value_get_boolean (value));
       break;
 
     case PROP_COLOR:
@@ -135,6 +170,7 @@ gn_settings_constructed (GObject *object)
 
   self->provider = g_settings_get_string (settings, "provider");
   self->font_name = g_settings_get_string (settings, "font");
+  self->use_system_font = g_settings_get_boolean (settings, "use-system-font");
 }
 
 static void
@@ -170,6 +206,13 @@ gn_settings_class_init (GnSettingsClass *klass)
                          NULL,
                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
                          G_PARAM_EXPLICIT_NOTIFY);
+
+  properties[PROP_USE_SYSTEM_FONT] =
+    g_param_spec_boolean ("use-system-font",
+                          "Use System Font",
+                          "Use default system font as the font for notes",
+                          TRUE,
+                          G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
   properties[PROP_COLOR] =
     g_param_spec_string ("color",

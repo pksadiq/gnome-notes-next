@@ -2,6 +2,14 @@
 <schemalist gettext-domain="gnome-notes">
   <schema id="org.sadiqpk.notes" path="/org/sadiqpk/notes/">
 
+    <key type="b" name="use-system-font">
+      <default>true</default>
+      <summary>Whether to use system font for notes</summary>
+      <description>
+        Whether to use the default system font for notes
+      </description>
+    </key>
+
     <key type="s" name="font">
       <default>'Cantarell 14'</default>
       <summary>Default font name.</summary>
