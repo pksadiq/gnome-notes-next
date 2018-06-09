@@ -241,6 +241,80 @@ gn_memo_provider_load_items_async (GnProvider          *provider,
 }
 
 static void
+gn_memo_provider_save_cb (GObject      *object,
+                          GAsyncResult *result,
+                          gpointer      user_data)
+{
+  ECalClient *client = (ECalClient *)object;
+  g_autoptr(GError) error = NULL;
+  g_autoptr(GTask) task = user_data;
+
+  g_assert (E_IS_CAL_CLIENT (client));
+  g_assert (G_IS_ASYNC_RESULT (result));
+  g_assert (G_IS_TASK (task));
+
+  if (e_cal_client_modify_object_finish (client, result, &error))
+    g_task_return_boolean (task, TRUE);
+  else
+    g_task_return_error (task, g_steal_pointer (&error));
+}
+
+static void
+gn_memo_provider_save_item_async (GnProvider          *provider,
+                                  GnItem              *item,
+                                  GCancellable        *cancellable,
+                                  GAsyncReadyCallback  callback,
+                                  gpointer             user_data)
+{
+  GnMemoProvider *self = (GnMemoProvider *)provider;
+  g_autoptr(GTask) task = NULL;
+  ECalComponent *component;
+  ECalComponentText text;
+  GSList list;
+
+  GN_ENTRY;
+
+  g_assert (GN_IS_MEMO_PROVIDER (self));
+  g_assert (GN_IS_ITEM (item));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, gn_memo_provider_save_item_async);
+  g_task_set_task_data (task, g_object_ref (item), g_object_unref);
+
+  component = g_object_get_data (G_OBJECT (item), "component");
+  g_assert (E_IS_CAL_COMPONENT (component));
+
+  text.value = gn_item_get_title (item);
+  text.altrep = NULL;
+  e_cal_component_set_summary (component, &text);
+
+  text.value = gn_note_get_text_content (GN_NOTE (item));
+  text.altrep = NULL;
+  list.data = &text;
+  list.next = NULL;
+  e_cal_component_set_description_list (component, &list);
+
+  e_cal_component_commit_sequence (component);
+
+  e_cal_client_modify_object (self->client,
+                              e_cal_component_get_icalcomponent (component),
+                              E_CAL_OBJ_MOD_THIS,
+                              cancellable,
+                              gn_memo_provider_save_cb,
+                              g_steal_pointer (&task));
+  GN_EXIT;
+}
+
+static gboolean
+gn_memo_provider_save_item_finish (GnProvider    *self,
+                                   GAsyncResult  *result,
+                                   GError       **error)
+{
+  return g_task_propagate_boolean (G_TASK (result), error);
+}
+
+static void
 gn_memo_provider_class_init (GnMemoProviderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -253,6 +327,8 @@ gn_memo_provider_class_init (GnMemoProviderClass *klass)
   provider_class->get_notes = gn_memo_provider_get_notes;
 
   provider_class->load_items_async = gn_memo_provider_load_items_async;
+  provider_class->save_item_async = gn_memo_provider_save_item_async;
+  provider_class->save_item_finish = gn_memo_provider_save_item_finish;
 }
 
 static void
