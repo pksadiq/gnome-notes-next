@@ -219,7 +219,8 @@ gn_settings_class_init (GnSettingsClass *klass)
                          "Color",
                          "The default color of new items",
                          NULL,
-                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+                         G_PARAM_EXPLICIT_NOTIFY);
 
   properties[PROP_PROVIDER] =
     g_param_spec_string ("provider",
@@ -320,6 +321,8 @@ gn_settings_set_rgba (GnSettings    *self,
   self->rgba.green = rgba->green;
   self->rgba.blue  = rgba->blue;
   self->rgba.alpha = rgba->alpha;
+
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLOR]);
 }
 
 const gchar *
