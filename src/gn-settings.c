@@ -215,12 +215,12 @@ gn_settings_class_init (GnSettingsClass *klass)
                           G_PARAM_EXPLICIT_NOTIFY);
 
   properties[PROP_COLOR] =
-    g_param_spec_string ("color",
-                         "Color",
-                         "The default color of new items",
-                         NULL,
-                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
-                         G_PARAM_EXPLICIT_NOTIFY);
+    g_param_spec_boxed ("color",
+                        "Color",
+                        "The default color of new items",
+                        GDK_TYPE_RGBA,
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS |
+                        G_PARAM_EXPLICIT_NOTIFY);
 
   properties[PROP_PROVIDER] =
     g_param_spec_string ("provider",
