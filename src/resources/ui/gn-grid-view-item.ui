@@ -32,6 +32,9 @@
                       </object>
                     </child>
                   </object>
+                  <packing>
+                    <property name="clip-overlay">1</property>
+                  </packing>
                 </child>
                 <child type="overlay">
                   <object class="GtkCheckButton" id="check_box">
