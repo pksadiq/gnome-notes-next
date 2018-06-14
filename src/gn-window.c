@@ -576,16 +576,17 @@ gn_window_size_allocate_cb (GnWindow *self)
 }
 
 static gboolean
-gn_window_key_press_cb (GnWindow *self,
-                        GdkEvent *event)
+gn_window_key_press_cb (GtkEventController *controller,
+                        guint               keyval,
+                        guint               keycode,
+                        GdkModifierType     state,
+                        GtkSearchBar       *search_bar)
 {
-  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_EVENT_CONTROLLER (controller));
+  g_assert (GTK_IS_SEARCH_BAR (search_bar));
 
-  if (self->current_view != GN_VIEW_EDITOR)
-    return gtk_search_bar_handle_event (GTK_SEARCH_BAR (self->search_bar),
-                                        event);
-
-  return GDK_EVENT_PROPAGATE;
+  return gtk_search_bar_handle_event (search_bar,
+                                      gtk_get_current_event ());
 }
 
 static void
@@ -671,7 +672,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_destroy_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_size_allocate_cb);
-  gtk_widget_class_bind_template_callback (widget_class, gn_window_key_press_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_mode_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
@@ -686,7 +686,17 @@ gn_window_class_init (GnWindowClass *klass)
 static void
 gn_window_init (GnWindow *self)
 {
+  GtkEventController *controller;
+
   gtk_widget_init_template (GTK_WIDGET (self));
+
+  controller = gtk_event_controller_key_new ();
+  g_object_set_data_full (G_OBJECT (self), "controller",
+                          controller, g_object_unref);
+  g_signal_connect (controller, "key-pressed",
+                    G_CALLBACK (gn_window_key_press_cb),
+                    GTK_SEARCH_BAR (self->search_bar));
+  gtk_widget_add_controller (GTK_WIDGET (self), controller);
 
   self->view_stack = g_queue_new ();
   g_signal_connect_object (gn_manager_get_default (),
