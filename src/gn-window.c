@@ -691,8 +691,6 @@ gn_window_init (GnWindow *self)
   gtk_widget_init_template (GTK_WIDGET (self));
 
   controller = gtk_event_controller_key_new ();
-  g_object_set_data_full (G_OBJECT (self), "controller",
-                          controller, g_object_unref);
   g_signal_connect (controller, "key-pressed",
                     G_CALLBACK (gn_window_key_press_cb),
                     GTK_SEARCH_BAR (self->search_bar));
