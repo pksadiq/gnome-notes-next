@@ -465,8 +465,8 @@ gn_manager_goa_connect_cb (GObject      *object,
                          gn_provider_get_uid (provider),
                          provider);
 
-  /* gn_provider_load_items_async (provider, self->provider_cancellable, */
-  /*                               gn_manager_items_loaded_cb, self); */
+  gn_provider_load_items_async (provider, self->provider_cancellable,
+                                gn_manager_items_loaded_cb, self);
 }
 
 static void

@@ -147,6 +147,10 @@ gn_goa_provider_volume_mount_cb (GObject      *object,
   g_task_run_in_thread (task, gn_goa_provider_check_note_dir);
 }
 
+/*
+ * This is pretty much a copy from gn-local-provider. May be we
+ * can merge the code someday.
+ */
 static void
 gn_goa_provider_load_items (GTask        *task,
                             gpointer      source_object,
@@ -154,12 +158,59 @@ gn_goa_provider_load_items (GTask        *task,
                             GCancellable *cancellable)
 {
   GnGoaProvider *self = source_object;
+  g_autoptr(GFileEnumerator) enumerator = NULL;
+  g_autoptr(GError) error = NULL;
+  gpointer file_info_ptr;
 
   GN_ENTRY;
 
   g_assert (G_IS_TASK (task));
   g_assert (GN_IS_GOA_PROVIDER (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  enumerator = g_file_enumerate_children (self->note_dir,
+                                          G_FILE_ATTRIBUTE_STANDARD_NAME","
+                                          G_FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
+                                          G_FILE_QUERY_INFO_NONE,
+                                          cancellable,
+                                          &error);
+  if (error != NULL)
+    g_task_return_error (task, g_steal_pointer (&error));
+
+  while ((file_info_ptr = g_file_enumerator_next_file (enumerator, cancellable, NULL)))
+    {
+      g_autoptr(GFileInfo) file_info = file_info_ptr;
+      g_autoptr(GFile) file = NULL;
+      g_autofree gchar *contents = NULL;
+      g_autofree gchar *file_name = NULL;
+      GnPlainNote *note;
+      const gchar *name;
+      gchar *end;
+
+      name = g_file_info_get_name (file_info);
+
+      if (!g_str_has_suffix (name, ".txt"))
+        continue;
+
+      file_name = g_strdup (name);
+      end = g_strrstr (file_name, ".");
+      *end = '\0';
+      file = g_file_get_child (self->note_dir, name);
+      g_file_load_contents (file, cancellable, &contents, NULL, NULL, NULL);
+
+      note = gn_plain_note_new_from_data (contents);
+
+      if (note == NULL)
+        continue;
+
+      gn_item_set_uid (GN_ITEM (note), file_name);
+      g_object_set_data (G_OBJECT (note), "provider", GN_PROVIDER (self));
+      g_object_set_data_full (G_OBJECT (note), "file", g_steal_pointer (&file),
+                              g_object_unref);
+      self->notes = g_list_prepend (self->notes, note);
+    }
+
+  g_task_return_boolean (task, TRUE);
 
   GN_EXIT;
 }
