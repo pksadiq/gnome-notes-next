@@ -233,6 +233,92 @@ gn_goa_provider_load_items_async (GnProvider          *provider,
 }
 
 static void
+gn_goa_provider_save_item (GTask        *task,
+                           gpointer      source_object,
+                           gpointer      task_data,
+                           GCancellable *cancellable)
+{
+  GnGoaProvider *self = source_object;
+  GnItem *item = task_data;
+  const gchar *title;
+  g_autofree gchar *content = NULL;
+  g_autofree gchar *old_basename = NULL;
+  g_autofree gchar *new_basename = NULL;
+  gchar *full_content;
+  g_autoptr(GError) error = NULL;
+  GFile *file;
+
+  g_assert (G_IS_TASK (task));
+  g_assert (GN_IS_GOA_PROVIDER (self));
+  g_assert (GN_IS_ITEM (item));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  title = gn_item_get_title (item);
+  content = gn_note_get_raw_content (GN_NOTE (item));
+  full_content = g_strconcat (title, "\n", content, NULL);
+  file = g_object_get_data (G_OBJECT (item), "file");
+
+  if (file != NULL)
+    old_basename = g_file_get_basename (file);
+
+  new_basename = g_strconcat (gn_item_get_title (item),
+                              gn_note_get_extension (GN_NOTE (item)),
+                              NULL);
+  if (g_strcmp0 (old_basename, new_basename) != 0)
+    {
+      file = g_file_set_display_name (file, new_basename, cancellable, &error);
+
+      if (error)
+        {
+          g_task_return_error (task, g_steal_pointer (&error));
+          return;
+        }
+
+      g_object_set_data_full (G_OBJECT (item), "file", file, g_object_unref);
+    }
+
+  g_file_replace_contents (file, full_content, strlen (full_content),
+                           NULL, FALSE, 0, NULL, cancellable, &error);
+  if (error)
+    g_task_return_error (task, g_steal_pointer (&error));
+  else
+    g_task_return_boolean (task, TRUE);
+}
+
+static void
+gn_goa_provider_save_item_async (GnProvider          *provider,
+                                 GnItem              *item,
+                                 GCancellable        *cancellable,
+                                 GAsyncReadyCallback  callback,
+                                 gpointer             user_data)
+{
+  GnGoaProvider *self = (GnGoaProvider *)provider;
+  g_autoptr(GTask) task = NULL;
+  GFile *file;
+
+  g_assert (GN_IS_GOA_PROVIDER (self));
+  g_assert (GN_IS_ITEM (item));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+  file = g_object_get_data (G_OBJECT (item), "file");
+
+  if (file == NULL)
+    {
+      g_autofree gchar *file_name = NULL;
+
+      file_name = g_strconcat (gn_item_get_title (item),
+                               gn_note_get_extension (GN_NOTE (item)), NULL);
+      file = g_file_get_child (self->note_dir, file_name);
+      g_object_set_data_full (G_OBJECT (item), "file", g_steal_pointer (&file),
+                              g_object_unref);
+    }
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, gn_goa_provider_save_item_async);
+  g_task_set_task_data (task, g_object_ref (item), g_object_unref);
+  g_task_run_in_thread (task, gn_goa_provider_save_item);
+}
+
+static void
 gn_goa_provider_class_init (GnGoaProviderClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
@@ -245,6 +331,7 @@ gn_goa_provider_class_init (GnGoaProviderClass *klass)
   provider_class->get_notes = gn_goa_provider_get_notes;
 
   provider_class->load_items_async = gn_goa_provider_load_items_async;
+  provider_class->save_item_async = gn_goa_provider_save_item_async;
 }
 
 static void
