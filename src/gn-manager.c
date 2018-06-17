@@ -457,16 +457,17 @@ gn_manager_goa_connect_cb (GObject      *object,
   g_assert (G_IS_ASYNC_RESULT (result));
 
    /* TODO: Check how severe the error is before adding to hashtable */
-  if (!gn_goa_provider_connect_finish (GN_GOA_PROVIDER (provider),
-                                       result, &error))
-    g_warning ("Failed to Load GOA: %s", error->message);
+  if (gn_goa_provider_connect_finish (GN_GOA_PROVIDER (provider),
+                                      result, &error))
+    {
+      g_hash_table_insert (self->providers,
+                           gn_provider_get_uid (provider),
+                           provider);
+      gn_provider_load_items_async (provider, self->provider_cancellable,
+                                    gn_manager_items_loaded_cb, self);
+    }
   else
-    g_hash_table_insert (self->providers,
-                         gn_provider_get_uid (provider),
-                         provider);
-
-  gn_provider_load_items_async (provider, self->provider_cancellable,
-                                gn_manager_items_loaded_cb, self);
+    g_warning ("Failed to Load GOA: %s", error->message);
 }
 
 static void
