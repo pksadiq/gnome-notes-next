@@ -79,10 +79,12 @@ gn_goa_provider_get_uid (GnProvider *provider)
   return g_strdup (GN_GOA_PROVIDER (provider)->uid);
 }
 
-static gchar *
+static const gchar *
 gn_goa_provider_get_name (GnProvider *provider)
 {
-  return g_strdup (GN_GOA_PROVIDER (provider)->name);
+  GnGoaProvider *self = GN_GOA_PROVIDER (provider);
+
+  return self->name ? self->name : "";
 }
 
 static GList *

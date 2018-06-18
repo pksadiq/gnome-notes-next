@@ -86,10 +86,12 @@ gn_memo_provider_get_uid (GnProvider *provider)
   return g_strdup (GN_MEMO_PROVIDER (provider)->uid);
 }
 
-static gchar *
+static const gchar *
 gn_memo_provider_get_name (GnProvider *provider)
 {
-  return g_strdup (GN_MEMO_PROVIDER (provider)->name);
+  GnMemoProvider *self = GN_MEMO_PROVIDER (provider);
+
+  return self->name ? self->name : "";
 }
 
 static GList *

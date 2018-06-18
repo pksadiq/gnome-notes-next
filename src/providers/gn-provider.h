@@ -91,7 +91,7 @@ struct _GnProviderClass
   GList      *(*get_notebooks)         (GnProvider           *self);
 
   gchar      *(*get_uid)               (GnProvider           *self);
-  gchar      *(*get_name)              (GnProvider           *self);
+  const gchar *(*get_name)             (GnProvider           *self);
   gchar      *(*get_icon)              (GnProvider           *self);
   gchar      *(*get_domain)            (GnProvider           *self);
   gchar      *(*get_user_name)         (GnProvider           *self);
@@ -100,7 +100,7 @@ struct _GnProviderClass
 };
 
 gchar      *gn_provider_get_uid               (GnProvider           *self);
-gchar      *gn_provider_get_name              (GnProvider           *self);
+const gchar *gn_provider_get_name             (GnProvider           *self);
 gchar      *gn_provider_get_icon              (GnProvider           *self);
 gchar      *gn_provider_get_domain            (GnProvider           *self);
 gchar      *gn_provider_get_user_name         (GnProvider           *self);

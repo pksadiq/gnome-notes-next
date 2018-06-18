@@ -107,10 +107,12 @@ gn_local_provider_get_uid (GnProvider *provider)
   return g_strdup (GN_LOCAL_PROVIDER (provider)->uid);
 }
 
-static gchar *
+static const gchar *
 gn_local_provider_get_name (GnProvider *provider)
 {
-  return g_strdup (GN_LOCAL_PROVIDER (provider)->name);
+  GnLocalProvider *self = GN_LOCAL_PROVIDER (provider);
+
+  return self->name ? self->name : "";
 }
 
 static gchar *

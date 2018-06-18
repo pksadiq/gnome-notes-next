@@ -106,6 +106,15 @@ gn_provider_finalize (GObject *object)
   GN_EXIT;
 }
 
+static gchar *
+gn_provider_real_get_name (GnProvider *self)
+{
+  g_assert (GN_IS_PROVIDER (self));
+
+  /* Derived classes should implement this, if supported */
+  return "";
+}
+
 static GList *
 gn_provider_real_get_notes (GnProvider *self)
 {
@@ -275,6 +284,7 @@ gn_provider_class_init (GnProviderClass *klass)
   object_class->get_property = gn_provider_get_property;
   object_class->finalize = gn_provider_finalize;
 
+  klass->get_name = gn_provider_real_get_name;
   klass->get_notes = gn_provider_real_get_notes;
   klass->get_trash_notes = gn_provider_real_get_trash_notes;
   klass->get_notebooks = gn_provider_real_get_notebooks;
@@ -428,10 +438,9 @@ gn_provider_get_uid (GnProvider *self)
  *
  * Get the name of the provider
  *
- * Returns: (transfer full) (nullable): the name
- * of the provider. Free with g_free().
+ * Returns: (transfer none): the name of the provider.
  */
-gchar *
+const gchar *
 gn_provider_get_name (GnProvider *self)
 {
   gchar *name;
