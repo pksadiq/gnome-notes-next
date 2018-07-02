@@ -135,6 +135,12 @@ gn_local_provider_get_user_name (GnProvider *provider)
   return self->user_name ? g_strdup (self->user_name) : g_strdup ("");
 }
 
+static const gchar *
+gn_local_provider_get_location_name (GnProvider *provider)
+{
+  return _("On This Computer");
+}
+
 static void
 gn_local_provider_load_path (GnLocalProvider  *self,
                              const gchar      *path,
@@ -426,6 +432,7 @@ gn_local_provider_class_init (GnLocalProviderClass *klass)
   provider_class->get_icon = gn_local_provider_get_icon;
   provider_class->get_domain = gn_local_provider_get_domain;
   provider_class->get_user_name = gn_local_provider_get_user_name;
+  provider_class->get_location_name = gn_local_provider_get_location_name;
   provider_class->get_notes = gn_local_provider_get_notes;
   provider_class->get_trash_notes = gn_local_provider_get_trash_notes;
 

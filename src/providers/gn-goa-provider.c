@@ -45,6 +45,7 @@ struct _GnGoaProvider
 
   gchar *domain_name;
   gchar *user_name;
+  gchar *location_name;
 
   GoaObject *goa_object;
   GVolume          *volume;
@@ -67,6 +68,7 @@ gn_goa_provider_finalize (GObject *object)
 
   g_clear_pointer (&self->uid, g_free);
   g_clear_pointer (&self->name, g_free);
+  g_clear_pointer (&self->location_name, g_free);
 
   G_OBJECT_CLASS (gn_goa_provider_parent_class)->finalize (object);
 
@@ -85,6 +87,14 @@ gn_goa_provider_get_name (GnProvider *provider)
   GnGoaProvider *self = GN_GOA_PROVIDER (provider);
 
   return self->name ? self->name : "";
+}
+
+static const gchar *
+gn_goa_provider_get_location_name (GnProvider *provider)
+{
+  GnGoaProvider *self = GN_GOA_PROVIDER (provider);
+
+  return self->location_name;
 }
 
 static GList *
@@ -330,6 +340,7 @@ gn_goa_provider_class_init (GnGoaProviderClass *klass)
 
   provider_class->get_uid = gn_goa_provider_get_uid;
   provider_class->get_name = gn_goa_provider_get_name;
+  provider_class->get_location_name = gn_goa_provider_get_location_name;
   provider_class->get_notes = gn_goa_provider_get_notes;
 
   provider_class->load_items_async = gn_goa_provider_load_items_async;
@@ -361,6 +372,7 @@ gn_goa_provider_new (GoaObject *object)
   self->name = g_strconcat ("Goa: ",
                             goa_account_get_provider_name (account),
                             NULL);
+  self->location_name = goa_account_dup_presentation_identity (account);
 
   return self;
 }
