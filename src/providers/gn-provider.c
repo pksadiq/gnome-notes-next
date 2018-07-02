@@ -115,6 +115,15 @@ gn_provider_real_get_name (GnProvider *self)
   return "";
 }
 
+static const gchar *
+gn_provider_real_get_location_name (GnProvider *self)
+{
+  g_assert (GN_IS_PROVIDER (self));
+
+  /* Derived classes should implement this, if supported */
+  return "";
+}
+
 static GList *
 gn_provider_real_get_notes (GnProvider *self)
 {
@@ -285,6 +294,7 @@ gn_provider_class_init (GnProviderClass *klass)
   object_class->finalize = gn_provider_finalize;
 
   klass->get_name = gn_provider_real_get_name;
+  klass->get_location_name = gn_provider_real_get_location_name;
   klass->get_notes = gn_provider_real_get_notes;
   klass->get_trash_notes = gn_provider_real_get_trash_notes;
   klass->get_notebooks = gn_provider_real_get_notebooks;
@@ -521,6 +531,32 @@ gn_provider_get_user_name (GnProvider *self)
   user_name = GN_PROVIDER_GET_CLASS (self)->get_user_name (self);
 
   GN_RETURN (user_name);
+}
+
+/**
+ * gn_provider_get_location_name:
+ * @self: a #GnProvider
+ *
+ * Get a human readable location name that represents the provider
+ * location.
+ *
+ * Say for example: A local provider shall return "On this computer"
+ *
+ * Returns: (transfer none) : A string reperesenting the location
+ * of the provider.
+ */
+const gchar *
+gn_provider_get_location_name (GnProvider *self)
+{
+  gchar *location_name;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), "");
+
+  location_name = GN_PROVIDER_GET_CLASS (self)->get_location_name (self);
+
+  GN_RETURN (location_name);
 }
 
 /**

@@ -95,6 +95,7 @@ struct _GnProviderClass
   gchar      *(*get_icon)              (GnProvider           *self);
   gchar      *(*get_domain)            (GnProvider           *self);
   gchar      *(*get_user_name)         (GnProvider           *self);
+  gchar      *(*get_location_name)     (GnProvider           *self);
 
   void        (*ready)                 (GnProvider           *self);
 };
@@ -104,6 +105,7 @@ const gchar *gn_provider_get_name             (GnProvider           *self);
 gchar      *gn_provider_get_icon              (GnProvider           *self);
 gchar      *gn_provider_get_domain            (GnProvider           *self);
 gchar      *gn_provider_get_user_name         (GnProvider           *self);
+const gchar *gn_provider_get_location_name    (GnProvider           *self);
 
 gboolean    gn_provider_load_items            (GnProvider           *self,
                                                GCancellable         *cancellable,
