@@ -130,7 +130,9 @@ gn_local_provider_get_domain (GnProvider *provider)
 static gchar *
 gn_local_provider_get_user_name (GnProvider *provider)
 {
-  return g_strdup (GN_LOCAL_PROVIDER (provider)->user_name);
+  GnLocalProvider *self = GN_LOCAL_PROVIDER (provider);
+
+  return self->user_name ? g_strdup (self->user_name) : g_strdup ("");
 }
 
 static void
