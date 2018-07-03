@@ -106,7 +106,7 @@ gn_provider_finalize (GObject *object)
   GN_EXIT;
 }
 
-static gchar *
+static const gchar *
 gn_provider_real_get_name (GnProvider *self)
 {
   g_assert (GN_IS_PROVIDER (self));
@@ -474,7 +474,7 @@ gn_provider_get_uid (GnProvider *self)
 const gchar *
 gn_provider_get_name (GnProvider *self)
 {
-  gchar *name;
+  const gchar *name;
 
   GN_ENTRY;
 
@@ -596,7 +596,7 @@ gn_provider_get_user_name (GnProvider *self)
 const gchar *
 gn_provider_get_location_name (GnProvider *self)
 {
-  gchar *location_name;
+  const gchar *location_name;
 
   GN_ENTRY;
 

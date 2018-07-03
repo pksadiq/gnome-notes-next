@@ -97,7 +97,7 @@ struct _GnProviderClass
                                         GdkRGBA              *rgba);
   gchar      *(*get_domain)            (GnProvider           *self);
   gchar      *(*get_user_name)         (GnProvider           *self);
-  gchar      *(*get_location_name)     (GnProvider           *self);
+  const gchar *(*get_location_name)     (GnProvider           *self);
 
   void        (*ready)                 (GnProvider           *self);
 };
