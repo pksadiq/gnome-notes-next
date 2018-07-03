@@ -115,6 +115,15 @@ gn_provider_real_get_name (GnProvider *self)
   return "";
 }
 
+static gchar *
+gn_provider_real_get_icon (GnProvider *self)
+{
+  g_assert (GN_IS_PROVIDER (self));
+
+  /* Derived classes should implement this, if supported */
+  return g_strdup ("");
+}
+
 static gboolean
 gn_provider_real_get_rgba (GnProvider *self,
                            GdkRGBA    *rgba)
@@ -304,6 +313,7 @@ gn_provider_class_init (GnProviderClass *klass)
   object_class->finalize = gn_provider_finalize;
 
   klass->get_name = gn_provider_real_get_name;
+  klass->get_icon = gn_provider_real_get_icon;
   klass->get_rgba = gn_provider_real_get_rgba;
   klass->get_location_name = gn_provider_real_get_location_name;
   klass->get_notes = gn_provider_real_get_notes;
