@@ -115,6 +115,16 @@ gn_provider_real_get_name (GnProvider *self)
   return "";
 }
 
+static gboolean
+gn_provider_real_get_rgba (GnProvider *self,
+                           GdkRGBA    *rgba)
+{
+  g_assert (GN_IS_PROVIDER (self));
+
+  /* Derived classes should implement this, if supported */
+  return FALSE;
+}
+
 static const gchar *
 gn_provider_real_get_location_name (GnProvider *self)
 {
@@ -294,6 +304,7 @@ gn_provider_class_init (GnProviderClass *klass)
   object_class->finalize = gn_provider_finalize;
 
   klass->get_name = gn_provider_real_get_name;
+  klass->get_rgba = gn_provider_real_get_rgba;
   klass->get_location_name = gn_provider_real_get_location_name;
   klass->get_notes = gn_provider_real_get_notes;
   klass->get_trash_notes = gn_provider_real_get_trash_notes;
@@ -485,6 +496,33 @@ gn_provider_get_icon (GnProvider *self)
   icon = GN_PROVIDER_GET_CLASS (self)->get_icon (self);
 
   GN_RETURN (icon);
+}
+
+/**
+ * gn_item_get_rgba:
+ * @self: a #GnProvider
+ * @rgba: (out): A #GdkRGBA
+ *
+ * Get the #GdkRGBA color for the @provider.  If @provider
+ * has an icon set, the provider may not have any #GdkRGBA
+ * set.  See gn_provider_get_icon().
+ *
+ * Returns: %TRUE if @rgba is set.  %FALSE otherwise.
+ */
+gboolean
+gn_provider_get_rgba (GnProvider *self,
+                      GdkRGBA    *rgba)
+{
+  gboolean ret;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
+  g_return_val_if_fail (rgba != NULL, FALSE);
+
+  ret = GN_PROVIDER_GET_CLASS (self)->get_rgba (self, rgba);
+
+  GN_RETURN (ret);
 }
 
 /**
