@@ -54,5 +54,6 @@ gboolean    gn_manager_dequeue_delete         (GnManager  *self);
 void        gn_manager_trash_queue_items      (GnManager  *self);
 void        gn_manager_search                 (GnManager  *self,
                                                const gchar **terms);
+GList      *gn_manager_get_providers          (GnManager  *self);
 
 G_END_DECLS

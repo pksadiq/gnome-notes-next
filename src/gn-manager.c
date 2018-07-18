@@ -1023,3 +1023,20 @@ gn_manager_search (GnManager    *self,
   gn_manager_do_search_async (self, self->search_cancellable,
                               gn_manager_search_complete_cb, self);
 }
+
+/**
+ * gn_manager_get_providers:
+ * @self: A #GnManager
+ *
+ * Get the list of providers in #GnManager
+ *
+ * Returns: (transfer container): A #GList of #GnProvider
+ * Free with g_list_free().
+ */
+GList *
+gn_manager_get_providers (GnManager *self)
+{
+  g_return_val_if_fail (GN_IS_MANAGER (self), NULL);
+
+  return g_hash_table_get_values (self->providers);
+}
