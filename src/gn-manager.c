@@ -462,11 +462,8 @@ gn_manager_load_memo_providers (GnManager *self)
 
   for (GList *node = sources; node != NULL; node = node->next)
     {
-      if (e_source_has_extension (node->data, E_SOURCE_EXTENSION_MEMO_LIST))
-        {
-          provider = gn_memo_provider_new (node->data);
-          gn_manager_load_and_save_provider (self, provider);
-        }
+      provider = gn_memo_provider_new (node->data);
+      gn_manager_load_and_save_provider (self, provider);
     }
 }
 
