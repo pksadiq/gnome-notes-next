@@ -121,7 +121,6 @@ gn_manager_increment_pending_providers (GnManager *self)
   if (self->providers_to_load == 1)
     g_object_notify_by_pspec (G_OBJECT (self),
                               properties[PROP_PROVIDERS_LOADING]);
-  g_print ("loading count++: %d\n", self->providers_to_load);
 }
 
 void
@@ -141,7 +140,6 @@ gn_manager_decrement_pending_providers (GnManager *self)
   if (self->providers_to_load == 0)
     g_object_notify_by_pspec (G_OBJECT (self),
                               properties[PROP_PROVIDERS_LOADING]);
-  g_print ("loading count--: %d\n", self->providers_to_load);
 }
 
 static gboolean
@@ -637,7 +635,6 @@ gn_manager_get_property (GObject    *object,
   GnManager *self = (GnManager *)object;
   gboolean providers_loading = self->providers_to_load > 0;
 
-  g_print ("Loading: %d\n", providers_loading);
   switch (prop_id)
     {
     case PROP_PROVIDERS_LOADING:
