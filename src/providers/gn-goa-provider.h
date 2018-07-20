@@ -31,13 +31,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GnGoaProvider, gn_goa_provider, GN, GOA_PROVIDER, GnProvider)
 
-GnGoaProvider *gn_goa_provider_new           (GoaObject *object);
-void           gn_goa_provider_connect_async (GnGoaProvider       *self,
-                                              GCancellable        *cancellable,
-                                              GAsyncReadyCallback  callback,
-                                              gpointer             user_data);
-gboolean      gn_goa_provider_connect_finish (GnGoaProvider       *self,
-                                              GAsyncResult        *result,
-                                              GError             **error);
+GnGoaProvider *gn_goa_provider_new (GoaObject *object);
 
 G_END_DECLS

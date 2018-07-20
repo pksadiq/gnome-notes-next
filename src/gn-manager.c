@@ -466,35 +466,6 @@ gn_manager_load_memo_providers (GnManager *self)
 }
 
 static void
-gn_manager_goa_connect_cb (GObject      *object,
-                           GAsyncResult *result,
-                           gpointer      user_data)
-{
-  GnProvider *provider = (GnProvider *)object;
-  GnManager *self = user_data;
-  g_autoptr(GError) error = NULL;
-
-  g_assert (GN_IS_MANAGER (self));
-  g_assert (GN_IS_PROVIDER (provider));
-  g_assert (G_IS_ASYNC_RESULT (result));
-
-   /* TODO: Check how severe the error is before adding to hashtable */
-  if (gn_goa_provider_connect_finish (GN_GOA_PROVIDER (provider),
-                                      result, &error))
-    {
-      g_hash_table_insert (self->providers,
-                           gn_provider_get_uid (provider),
-                           provider);
-      gn_provider_load_items_async (provider, self->provider_cancellable,
-                                    gn_manager_items_loaded_cb, self);
-    }
-  else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
-    g_warning ("Failed to Load GOA: %s", error->message);
-
-  gn_manager_decrement_pending_providers (self);
-}
-
-static void
 gn_manager_load_goa_providers (GnManager *self)
 {
   GList *accounts;
@@ -515,10 +486,10 @@ gn_manager_load_goa_providers (GnManager *self)
         continue;
 
       provider = gn_goa_provider_new (object);
-      gn_goa_provider_connect_async (GN_GOA_PROVIDER (provider),
-                                     self->provider_cancellable,
-                                     gn_manager_goa_connect_cb,
-                                     self);
+      gn_manager_increment_pending_providers (self);
+      gn_provider_load_items_async (GN_PROVIDER (provider),
+                                    self->provider_cancellable,
+                                    gn_manager_items_loaded_cb, self);
     }
 
   g_list_free_full (accounts, g_object_unref);
@@ -632,8 +603,6 @@ gn_manager_load_providers (GnManager *self)
 
   if (error)
     g_warning ("Error loading GNOME Online accounts: %s", error->message);
-  else
-    gn_manager_increment_pending_providers (self);
 
   GN_EXIT;
 }

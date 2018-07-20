@@ -57,6 +57,10 @@ struct _GnGoaProvider
 
 G_DEFINE_TYPE (GnGoaProvider, gn_goa_provider, GN_TYPE_PROVIDER)
 
+static void gn_goa_provider_load_items (GnGoaProvider *self,
+                                        GTask         *task,
+                                        GCancellable  *cancellable);
+
 static void
 gn_goa_provider_finalize (GObject *object)
 {
@@ -131,7 +135,7 @@ gn_goa_provider_check_note_dir (GTask        *task,
   if (error)
     g_task_return_error (task, g_steal_pointer (&error));
   else
-    g_task_return_boolean (task, TRUE);
+    gn_goa_provider_load_items (self, task, cancellable);
 
   GN_EXIT;
 }
@@ -164,12 +168,10 @@ gn_goa_provider_volume_mount_cb (GObject      *object,
  * can merge the code someday.
  */
 static void
-gn_goa_provider_load_items (GTask        *task,
-                            gpointer      source_object,
-                            gpointer      task_data,
-                            GCancellable *cancellable)
+gn_goa_provider_load_items (GnGoaProvider *self,
+                            GTask         *task,
+                            GCancellable  *cancellable)
 {
-  GnGoaProvider *self = source_object;
   g_autoptr(GFileEnumerator) enumerator = NULL;
   g_autoptr(GError) error = NULL;
   gpointer file_info_ptr;
@@ -235,13 +237,26 @@ gn_goa_provider_load_items_async (GnProvider          *provider,
 {
   GnGoaProvider *self = (GnGoaProvider *)provider;
   g_autoptr(GTask) task = NULL;
+  g_autoptr(GVolumeMonitor) monitor = NULL;
+  GoaFiles *goa_files;
+  const gchar *uri;
 
   g_assert (GN_IS_GOA_PROVIDER (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
+  monitor = g_volume_monitor_get ();
+  goa_files = goa_object_peek_files (self->goa_object);
+  uri = goa_files_get_uri (goa_files);
+  self->volume = g_volume_monitor_get_volume_for_uuid (monitor, uri);
+
   task = g_task_new (self, cancellable, callback, user_data);
   g_task_set_source_tag (task, gn_goa_provider_load_items_async);
-  g_task_run_in_thread (task, gn_goa_provider_load_items);
+  g_volume_mount (self->volume,
+                  G_MOUNT_MOUNT_NONE,
+                  NULL,
+                  cancellable,
+                  gn_goa_provider_volume_mount_cb,
+                  g_steal_pointer (&task));
 }
 
 static void
@@ -375,43 +390,4 @@ gn_goa_provider_new (GoaObject *object)
   self->location_name = goa_account_dup_presentation_identity (account);
 
   return self;
-}
-
-void
-gn_goa_provider_connect_async (GnGoaProvider       *self,
-                               GCancellable        *cancellable,
-                               GAsyncReadyCallback  callback,
-                               gpointer             user_data)
-{
-  g_autoptr(GTask) task = NULL;
-  g_autoptr(GVolumeMonitor) monitor = NULL;
-  GoaFiles *goa_files;
-  const gchar *uri;
-
-  g_return_if_fail (GN_IS_GOA_PROVIDER (self));
-  g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
-
-  monitor = g_volume_monitor_get ();
-  goa_files = goa_object_peek_files (self->goa_object);
-  uri = goa_files_get_uri (goa_files);
-  self->volume = g_volume_monitor_get_volume_for_uuid (monitor, uri);
-
-  task = g_task_new (self, cancellable, callback, user_data);
-  g_task_set_source_tag (task, gn_goa_provider_connect_async);
-
-  g_volume_mount (self->volume,
-                  G_MOUNT_MOUNT_NONE,
-                  NULL,
-                  cancellable,
-                  gn_goa_provider_volume_mount_cb,
-                  g_steal_pointer (&task));
-
-}
-
-gboolean
-gn_goa_provider_connect_finish (GnGoaProvider  *self,
-                                GAsyncResult   *result,
-                                GError        **error)
-{
-  return g_task_propagate_boolean (G_TASK (result), error);
 }
