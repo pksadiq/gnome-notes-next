@@ -202,30 +202,52 @@ gn_local_provider_load_path (GnLocalProvider  *self,
     }
 }
 
-static gboolean
-gn_local_provider_load_items (GnProvider    *provider,
-                              GCancellable  *cancellable,
-                              GError       **error)
+static void
+gn_local_provider_load_notes (GTask        *task,
+                              gpointer      source_object,
+                              gpointer      task_data,
+                              GCancellable *cancellable)
 {
-  GnLocalProvider *self = (GnLocalProvider *)provider;
+  GnLocalProvider *self = source_object;
+  GError *error = NULL;
 
-  GN_ENTRY;
-
+  g_assert (G_IS_TASK (task));
   g_assert (GN_IS_LOCAL_PROVIDER (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
   gn_local_provider_load_path (self, self->location, &self->notes,
-                               cancellable, error);
-  if (*error != NULL)
-    GN_RETURN (FALSE);
+                               cancellable, &error);
+
+  if (error)
+    {
+      g_task_return_error (task, error);
+      return;
+    }
 
   gn_local_provider_load_path (self, self->trash_location,
                                &self->trash_notes,
-                               cancellable, error);
-  if (*error != NULL)
-    GN_RETURN (FALSE);
+                               cancellable, &error);
+  if (error)
+    g_task_return_error (task, error);
+  else
+    g_task_return_boolean (task, TRUE);
+}
 
-  GN_RETURN (TRUE);
+static void
+gn_local_provider_load_items_async (GnProvider          *provider,
+                                    GCancellable        *cancellable,
+                                    GAsyncReadyCallback  callback,
+                                    gpointer             user_data)
+{
+  GnLocalProvider *self = (GnLocalProvider *)provider;
+  g_autoptr(GTask) task = NULL;
+
+  g_assert (GN_IS_LOCAL_PROVIDER (self));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  task = g_task_new (self, cancellable, callback, user_data);
+  g_task_set_source_tag (task, gn_local_provider_load_items_async);
+  g_task_run_in_thread (task, gn_local_provider_load_notes);
 }
 
 static void
@@ -436,7 +458,7 @@ gn_local_provider_class_init (GnLocalProviderClass *klass)
   provider_class->get_notes = gn_local_provider_get_notes;
   provider_class->get_trash_notes = gn_local_provider_get_trash_notes;
 
-  provider_class->load_items = gn_local_provider_load_items;
+  provider_class->load_items_async = gn_local_provider_load_items_async;
   provider_class->save_item_async = gn_local_provider_save_item_async;
   provider_class->save_item_finish = gn_local_provider_save_item_finish;
   provider_class->trash_item = gn_local_provider_trash_item;
