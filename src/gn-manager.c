@@ -552,12 +552,6 @@ gn_manager_load_providers (GnManager *self)
   provider = gn_local_provider_new ();
   gn_manager_load_and_save_provider (self, provider);
 
-  /*
-   * Setup Evolution.  We are not actually loading any memos here.
-   * But simply trying to connect to the evolution data server.
-   * If it succeeds, we shall load the memos asynchronously after
-   * local notes are loaded.
-   */
   self->eds_registry = e_source_registry_new_sync (self->provider_cancellable,
                                                    &error);
 
