@@ -498,16 +498,11 @@ gn_manager_load_goa_providers (GnManager *self)
 }
 
 static void
-gn_manager_load_local_providers_cb (GObject      *object,
-                                    GAsyncResult *result,
-                                    gpointer      user_data)
+gn_manager_connect_provider_signals (GnManager *self)
 {
-  GnManager *self = (GnManager *)object;
-  g_autoptr(GError) error = NULL;
-  GList *providers;
+  g_autoptr(GList) providers = NULL;
 
   g_assert (GN_IS_MANAGER (self));
-  g_assert (G_IS_ASYNC_RESULT (result));
 
   providers = g_hash_table_get_values (self->providers);
 
@@ -519,23 +514,7 @@ gn_manager_load_local_providers_cb (GObject      *object,
       g_signal_connect_object (node->data, "item-trashed",
                                G_CALLBACK (gn_manager_item_trashed_cb),
                                self, G_CONNECT_SWAPPED);
-      g_signal_emit (self, signals[PROVIDER_ADDED], 0, node->data);
     }
-
-  gn_manager_decrement_pending_providers (self);
-
-  /*
-   * We load other providers after local provider is loaded.  This is
-   * because Evolution/goa providers may be stored remote and thus
-   * may be slow to load.  Don't bore the user waiting for those.
-   * We have completed setting up local provider above.  Now let's
-   * load other providers.
-   */
-  if (self->eds_registry != NULL)
-    gn_manager_load_memo_providers (self);
-
-  if (self->goa_client != NULL)
-    gn_manager_load_goa_providers (self);
 }
 
 static void
@@ -561,11 +540,17 @@ gn_manager_load_providers (GnManager *self)
                  error->message);
       g_clear_error (&error);
     }
+  else
+    gn_manager_load_memo_providers (self);
 
   self->goa_client = goa_client_new_sync (self->provider_cancellable, &error);
 
   if (error)
     g_warning ("Error loading GNOME Online accounts: %s", error->message);
+  else
+    gn_manager_load_goa_providers (self);
+
+  gn_manager_connect_provider_signals (self);
 
   GN_EXIT;
 }
