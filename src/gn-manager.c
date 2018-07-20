@@ -465,6 +465,8 @@ gn_manager_load_memo_providers (GnManager *self)
       provider = gn_memo_provider_new (node->data);
       gn_manager_load_and_save_provider (self, provider);
     }
+
+  g_list_free_full (sources, g_object_unref);
 }
 
 static void
