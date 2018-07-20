@@ -486,6 +486,9 @@ gn_manager_load_goa_providers (GnManager *self)
         continue;
 
       provider = gn_goa_provider_new (object);
+      g_hash_table_insert (self->providers,
+                           gn_provider_get_uid (GN_PROVIDER (provider)),
+                           provider);
       gn_manager_increment_pending_providers (self);
       gn_provider_load_items_async (GN_PROVIDER (provider),
                                     self->provider_cancellable,
