@@ -301,10 +301,7 @@ void
 gn_settings_get_rgba (GnSettings *self,
                       GdkRGBA    *rgba)
 {
-  rgba->red   = self->rgba.red;
-  rgba->green = self->rgba.green;
-  rgba->blue  = self->rgba.blue;
-  rgba->alpha = self->rgba.alpha;
+  *rgba = self->rgba;
 }
 
 void
@@ -317,10 +314,7 @@ gn_settings_set_rgba (GnSettings    *self,
   g_free (self->color);
   self->color = gdk_rgba_to_string (rgba);
 
-  self->rgba.red   = rgba->red;
-  self->rgba.green = rgba->green;
-  self->rgba.blue  = rgba->blue;
-  self->rgba.alpha = rgba->alpha;
+  self->rgba = *rgba;
 
   g_settings_set_string (G_SETTINGS (self), "color", self->color);
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLOR]);

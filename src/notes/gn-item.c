@@ -441,10 +441,7 @@ gn_item_get_rgba (GnItem  *self,
   if (priv->rgba == NULL)
     return FALSE;
 
-  rgba->red   = priv->rgba->red;
-  rgba->green = priv->rgba->green;
-  rgba->blue  = priv->rgba->blue;
-  rgba->alpha = priv->rgba->alpha;
+  *rgba = *priv->rgba;
 
   return TRUE;
 }
