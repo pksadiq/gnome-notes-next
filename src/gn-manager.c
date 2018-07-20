@@ -434,6 +434,22 @@ gn_manager_items_loaded_cb (GObject      *object,
 }
 
 static void
+gn_manager_load_and_save_provider (GnManager *self,
+                                   GnProvider *provider)
+{
+  g_assert (GN_IS_MANAGER (self));
+  g_assert (GN_IS_PROVIDER (provider));
+
+  g_hash_table_insert (self->providers,
+                       gn_provider_get_uid (provider),
+                       provider);
+  gn_manager_increment_pending_providers (self);
+  gn_provider_load_items_async (provider,
+                                self->provider_cancellable,
+                                gn_manager_items_loaded_cb, self);
+}
+
+static void
 gn_manager_load_memo_providers (GnManager *self)
 {
   GnProvider *provider;
@@ -449,12 +465,7 @@ gn_manager_load_memo_providers (GnManager *self)
       if (e_source_has_extension (node->data, E_SOURCE_EXTENSION_MEMO_LIST))
         {
           provider = gn_memo_provider_new (node->data);
-          g_hash_table_insert (self->providers,
-                               gn_provider_get_uid (provider),
-                               provider);
-          gn_manager_increment_pending_providers (self);
-          gn_provider_load_items_async (provider, self->provider_cancellable,
-                                        gn_manager_items_loaded_cb, self);
+          gn_manager_load_and_save_provider (self, provider);
         }
     }
 }
@@ -480,13 +491,7 @@ gn_manager_load_goa_providers (GnManager *self)
         continue;
 
       provider = gn_goa_provider_new (object);
-      g_hash_table_insert (self->providers,
-                           gn_provider_get_uid (provider),
-                           provider);
-      gn_manager_increment_pending_providers (self);
-      gn_provider_load_items_async (provider,
-                                    self->provider_cancellable,
-                                    gn_manager_items_loaded_cb, self);
+      gn_manager_load_and_save_provider (self, provider);
     }
 
   g_list_free_full (accounts, g_object_unref);
@@ -544,17 +549,8 @@ gn_manager_load_providers (GnManager *self)
 
   g_assert (GN_IS_MANAGER (self));
 
-  /* We shall load local providers first */
-  gn_manager_increment_pending_providers (self);
-
   provider = gn_local_provider_new ();
-
-  g_hash_table_insert (self->providers,
-                       gn_provider_get_uid (provider),
-                       provider);
-  gn_provider_load_items_async (provider,
-                                self->provider_cancellable,
-                                gn_manager_items_loaded_cb, self);
+  gn_manager_load_and_save_provider (self, provider);
 
   /*
    * Setup Evolution.  We are not actually loading any memos here.
