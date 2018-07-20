@@ -785,9 +785,6 @@ gn_manager_load_more_notes (GnManager *self)
   /* FIXME: use a GMutex instead? */
   g_return_if_fail (GN_IS_MAIN_THREAD ());
 
-  if (g_queue_is_empty (self->notes_queue))
-    return;
-
   gn_manager_load_more_items (self, self->notes_store,
                               self->notes_queue);
 }
@@ -803,9 +800,6 @@ gn_manager_load_more_trash_notes (GnManager *self)
 {
   /* FIXME: use a GMutex instead? */
   g_return_if_fail (GN_IS_MAIN_THREAD ());
-
-  if (g_queue_is_empty (self->trash_notes_queue))
-    return;
 
   gn_manager_load_more_items (self, self->trash_notes_store,
                               self->trash_notes_queue);
