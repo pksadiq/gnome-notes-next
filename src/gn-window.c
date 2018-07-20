@@ -41,6 +41,7 @@ struct _GnWindow
 
   GtkWidget *header_bar;
   GtkWidget *stack_switcher;
+  GtkWidget *loading_spinner;
   GtkWidget *view_button_stack;
   GtkWidget *grid_button;
   GtkWidget *list_button;
@@ -605,12 +606,18 @@ gn_window_constructed (GObject *object)
 {
   GnWindow *self = GN_WINDOW (object);
   GtkWindow *window = GTK_WINDOW (self);
+  GnManager *manager;
   GnSettings *settings;
   gboolean is_maximized;
   gint width, height;
   gint x, y;
 
-  settings = gn_manager_get_settings (gn_manager_get_default ());
+  manager = gn_manager_get_default ();
+  settings = gn_manager_get_settings (manager);
+  g_object_bind_property (manager, "providers-loading",
+                          self->loading_spinner, "active",
+                          G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
+
   is_maximized = gn_settings_get_window_maximized (settings);
   gn_settings_get_window_geometry (settings, &width, &height, &x, &y);
 
@@ -641,6 +648,7 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, stack_switcher);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, loading_spinner);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
