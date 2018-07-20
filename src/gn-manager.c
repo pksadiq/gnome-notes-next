@@ -440,39 +440,9 @@ gn_manager_items_loaded_cb (GObject      *object,
 }
 
 static void
-gn_manager_eds_client_connected_cb (GObject      *object,
-                                    GAsyncResult *result,
-                                    gpointer      user_data)
-{
-  GnManager *self = user_data;
-  g_autoptr(GError) error = NULL;
-  g_autoptr(ECalClient) client = NULL;
-  GnProvider *provider;
-  ESource *source;
-
-  g_assert (GN_IS_MANAGER (self));
-
-  client = E_CAL_CLIENT (e_cal_client_connect_finish (result, &error));
-
-  if (error)
-    {
-      g_warning ("Failed to connect to Evolution data server: %s",
-                 error->message);
-      return;
-    }
-
-  source = e_client_get_source (E_CLIENT (client));
-  provider = GN_PROVIDER (gn_memo_provider_new (source, client));
-  g_hash_table_insert (self->providers,
-                       gn_provider_get_uid (provider),
-                       provider);
-  gn_provider_load_items_async (provider, self->provider_cancellable,
-                                gn_manager_items_loaded_cb, self);
-}
-
-static void
 gn_manager_load_memo_providers (GnManager *self)
 {
+  GnProvider *provider;
   GList *sources;
 
   g_assert (GN_IS_MANAGER (self));
@@ -482,15 +452,16 @@ gn_manager_load_memo_providers (GnManager *self)
 
   for (GList *node = sources; node != NULL; node = node->next)
     {
-      if (!e_source_has_extension (node->data, E_SOURCE_EXTENSION_MEMO_LIST))
-        continue;
-
-      e_cal_client_connect (node->data, E_CAL_CLIENT_SOURCE_TYPE_MEMOS,
-                            10, /* seconds to wait */
-                            NULL,
-                            gn_manager_eds_client_connected_cb,
-                            self);
-
+      if (e_source_has_extension (node->data, E_SOURCE_EXTENSION_MEMO_LIST))
+        {
+          provider = GN_PROVIDER (gn_memo_provider_new (node->data));
+          g_hash_table_insert (self->providers,
+                               gn_provider_get_uid (provider),
+                               provider);
+          gn_manager_increment_pending_providers (self);
+          gn_provider_load_items_async (provider, self->provider_cancellable,
+                                        gn_manager_items_loaded_cb, self);
+        }
     }
 }
 
@@ -656,8 +627,6 @@ gn_manager_load_providers (GnManager *self)
                  error->message);
       g_clear_error (&error);
     }
-  else
-    gn_manager_increment_pending_providers (self);
 
   self->goa_client = goa_client_new_sync (self->provider_cancellable, &error);
 

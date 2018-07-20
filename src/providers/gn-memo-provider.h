@@ -37,7 +37,6 @@ G_DEFINE_AUTOPTR_CLEANUP_FUNC (ECalComponentId, e_cal_component_free_id)
 
 G_DECLARE_FINAL_TYPE (GnMemoProvider, gn_memo_provider, GN, MEMO_PROVIDER, GnProvider)
 
-GnMemoProvider *gn_memo_provider_new (ESource    *source,
-                                      ECalClient *client);
+GnMemoProvider *gn_memo_provider_new (ESource *source);
 
 G_END_DECLS

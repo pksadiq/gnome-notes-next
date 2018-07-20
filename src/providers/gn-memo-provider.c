@@ -57,6 +57,8 @@ struct _GnMemoProvider
   ECalClientView *client_view;
 
   GList *notes;
+
+  gboolean items_loaded;
 };
 
 G_DEFINE_TYPE (GnMemoProvider, gn_memo_provider, GN_TYPE_PROVIDER)
@@ -216,8 +218,45 @@ gn_memo_provider_view_ready_cb (GObject      *object,
       g_task_return_error (task, g_steal_pointer (&error));
       g_object_unref (task);
     }
+  else
+    self->items_loaded = TRUE;
 
   GN_EXIT;
+}
+
+static void
+gn_memo_provider_connected_cb (GObject      *object,
+                               GAsyncResult *result,
+                               gpointer      user_data)
+{
+  GnMemoProvider *self;
+  g_autoptr(GTask) task = user_data;
+  g_autoptr(GError) error = NULL;
+  g_autoptr(ECalClient) client = NULL;
+  GCancellable *cancellable;
+
+  GN_ENTRY;
+
+  g_assert (G_IS_ASYNC_RESULT (result));
+  g_assert (G_IS_TASK (task));
+
+  client = E_CAL_CLIENT (e_cal_client_connect_finish (result, &error));
+
+  if (error)
+    {
+      g_task_return_error (task, g_steal_pointer (&error));
+
+      GN_EXIT;
+    }
+
+  self = g_task_get_source_object (task);
+  cancellable = g_task_get_cancellable (task);
+  self->client = client;
+  e_cal_client_get_view (self->client,
+                         "#t",
+                         cancellable,
+                         gn_memo_provider_view_ready_cb,
+                         g_steal_pointer (&task));
 }
 
 static void
@@ -235,11 +274,11 @@ gn_memo_provider_load_items_async (GnProvider          *provider,
   task = g_task_new (self, cancellable, callback, user_data);
   g_task_set_source_tag (task, gn_memo_provider_load_items_async);
 
-  e_cal_client_get_view (self->client,
-                         "#t",
-                         cancellable,
-                         gn_memo_provider_view_ready_cb,
-                         g_steal_pointer (&task));
+  e_cal_client_connect (self->source, E_CAL_CLIENT_SOURCE_TYPE_MEMOS,
+                        10, /* seconds to wait */
+                        NULL,
+                        gn_memo_provider_connected_cb,
+                        g_steal_pointer (&task));
 }
 
 static void
@@ -339,17 +378,14 @@ gn_memo_provider_init (GnMemoProvider *self)
 }
 
 GnMemoProvider *
-gn_memo_provider_new (ESource    *source,
-                      ECalClient *client)
+gn_memo_provider_new (ESource *source)
 {
   GnMemoProvider *self;
 
   g_return_val_if_fail (E_IS_SOURCE (source), NULL);
-  g_return_val_if_fail (E_IS_CAL_CLIENT (client), NULL);
 
   self = g_object_new (GN_TYPE_MEMO_PROVIDER, NULL);
   self->source = g_object_ref (source);
-  self->client = g_object_ref (client);
   self->uid = g_strdup (e_source_get_uid (source));
   self->name = g_strconcat ("Memo: ",
                             e_source_get_display_name (source),
