@@ -453,15 +453,15 @@ gn_manager_eds_client_connected_cb (GObject      *object,
   g_assert (GN_IS_MANAGER (self));
 
   client = E_CAL_CLIENT (e_cal_client_connect_finish (result, &error));
-  source = e_client_get_source (E_CLIENT (client));
 
   if (error)
     {
-      g_warning ("Failed to connect to eds memo list '%s': %s",
-                 e_source_get_uid (source), error->message);
+      g_warning ("Failed to connect to Evolution data server: %s",
+                 error->message);
       return;
     }
 
+  source = e_client_get_source (E_CLIENT (client));
   provider = GN_PROVIDER (gn_memo_provider_new (source, client));
   g_hash_table_insert (self->providers,
                        gn_provider_get_uid (provider),
