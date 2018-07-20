@@ -782,8 +782,9 @@ gn_manager_get_default_provider (GnManager *self)
   name = gn_settings_get_provider_name (self->settings);
   provider = g_hash_table_lookup (self->providers, name);
 
-  if (provider == NULL)
-    g_hash_table_lookup (self->providers, "local");
+  if (provider == NULL ||
+      !gn_provider_has_loaded (provider))
+    provider = g_hash_table_lookup (self->providers, "local");
 
   return provider;
 }
