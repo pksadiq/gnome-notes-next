@@ -76,6 +76,8 @@ struct _GnManager
   gchar *old_search_needle;
   gchar *search_needle;
   gboolean search_is_narrowing;
+
+  gint providers_to_load;
 };
 
 typedef struct
@@ -88,12 +90,59 @@ typedef struct
 G_DEFINE_TYPE (GnManager, gn_manager, G_TYPE_OBJECT)
 
 enum {
+  PROP_0,
+  PROP_PROVIDERS_LOADING,
+  N_PROPS
+};
+
+enum {
   PROVIDER_ADDED,
   PROVIDER_REMOVED,
   N_SIGNALS
 };
 
+static GParamSpec *properties[N_PROPS];
 static guint signals[N_SIGNALS];
+
+void
+gn_manager_increment_pending_providers (GnManager *self)
+{
+  g_assert (GN_IS_MANAGER (self));
+  g_assert (GN_IS_MAIN_THREAD ());
+
+  self->providers_to_load++;
+
+  /*
+   * if providers_to_load is 1, it means we had 0 providers
+   * to load previously.  So there is a change of state
+   * from no providers loading -> some providers loading.
+   * This is what PROP_PROVIDERS_LOADING property is about.
+   */
+  if (self->providers_to_load == 1)
+    g_object_notify_by_pspec (G_OBJECT (self),
+                              properties[PROP_PROVIDERS_LOADING]);
+  g_print ("loading count++: %d\n", self->providers_to_load);
+}
+
+void
+gn_manager_decrement_pending_providers (GnManager *self)
+{
+  g_assert (GN_IS_MANAGER (self));
+  g_assert (GN_IS_MAIN_THREAD ());
+  g_assert (self->providers_to_load > 0);
+
+  self->providers_to_load--;
+
+  /*
+   * if providers_to_load is 0, it means we had 1 provider
+   * to load previously.  So there is a change of state
+   * from some providers loading -> no providers loading.
+   */
+  if (self->providers_to_load == 0)
+    g_object_notify_by_pspec (G_OBJECT (self),
+                              properties[PROP_PROVIDERS_LOADING]);
+  g_print ("loading count--: %d\n", self->providers_to_load);
+}
 
 static gboolean
 gn_manager_get_item_position (GnManager  *self,
@@ -386,6 +435,8 @@ gn_manager_items_loaded_cb (GObject      *object,
     gn_manager_load_items (self, provider);
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
     g_warning ("Failed to load items: %s", error->message);
+
+  gn_manager_decrement_pending_providers (self);
 }
 
 static void
@@ -468,6 +519,8 @@ gn_manager_goa_connect_cb (GObject      *object,
     }
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
     g_warning ("Failed to Load GOA: %s", error->message);
+
+  gn_manager_decrement_pending_providers (self);
 }
 
 static void
@@ -554,6 +607,8 @@ gn_manager_load_local_providers_cb (GObject      *object,
       g_signal_emit (self, signals[PROVIDER_ADDED], 0, node->data);
     }
 
+  gn_manager_decrement_pending_providers (self);
+
   /*
    * We load other providers after local provider is loaded.  This is
    * because Evolution/goa providers may be stored remote and thus
@@ -578,6 +633,9 @@ gn_manager_load_providers (GnManager *self)
 
   g_assert (GN_IS_MANAGER (self));
 
+  /* We shall load local providers first */
+  gn_manager_increment_pending_providers (self);
+
   task = g_task_new (self, self->provider_cancellable,
                      gn_manager_load_local_providers_cb, NULL);
   g_task_set_source_tag (task, gn_manager_load_providers);
@@ -598,11 +656,15 @@ gn_manager_load_providers (GnManager *self)
                  error->message);
       g_clear_error (&error);
     }
+  else
+    gn_manager_increment_pending_providers (self);
 
   self->goa_client = goa_client_new_sync (self->provider_cancellable, &error);
 
   if (error)
     g_warning ("Error loading GNOME Online accounts: %s", error->message);
+  else
+    gn_manager_increment_pending_providers (self);
 
   GN_EXIT;
 }
@@ -631,11 +693,42 @@ gn_manager_dispose (GObject *object)
 }
 
 static void
+gn_manager_get_property (GObject    *object,
+                         guint       prop_id,
+                         GValue     *value,
+                         GParamSpec *pspec)
+{
+  GnManager *self = (GnManager *)object;
+  gboolean providers_loading = self->providers_to_load > 0;
+
+  g_print ("Loading: %d\n", providers_loading);
+  switch (prop_id)
+    {
+    case PROP_PROVIDERS_LOADING:
+      g_value_set_boolean (value, providers_loading);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
+
+static void
 gn_manager_class_init (GnManagerClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   object_class->dispose = gn_manager_dispose;
+  object_class->get_property = gn_manager_get_property;
+
+  properties[PROP_PROVIDERS_LOADING] =
+    g_param_spec_boolean ("providers-loading",
+                          "Providers loading",
+                          "TRUE if providers are being loaded",
+                          TRUE,
+                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 
   /**
    * GnManager::provider-added:
