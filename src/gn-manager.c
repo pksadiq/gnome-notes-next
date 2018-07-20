@@ -429,6 +429,7 @@ gn_manager_items_loaded_cb (GObject      *object,
   else if (!g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED))
     g_warning ("Failed to load items: %s", error->message);
 
+  g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider);
   gn_manager_decrement_pending_providers (self);
 }
 
@@ -492,35 +493,6 @@ gn_manager_load_goa_providers (GnManager *self)
 }
 
 static void
-gn_manager_load_local_providers (GTask        *task,
-                                 gpointer      source_object,
-                                 gpointer      task_data,
-                                 GCancellable *cancellable)
-{
-  GnManager *self = source_object;
-  GnProvider *provider;
-  g_autoptr(GError) error = NULL;
-  gboolean success;
-
-  g_assert (G_IS_TASK (task));
-  g_assert (GN_IS_MANAGER (self));
-  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
-
-  provider = gn_local_provider_new ();
-
-  g_hash_table_insert (self->providers,
-                       gn_provider_get_uid (provider),
-                       provider);
-  success = gn_provider_load_items (provider,
-                                    self->provider_cancellable,
-                                    &error);
-  if (success)
-    gn_manager_load_items (self, provider);
-  else
-    g_warning ("Error loading local notes: %s", error->message);
-}
-
-static void
 gn_manager_load_local_providers_cb (GObject      *object,
                                     GAsyncResult *result,
                                     gpointer      user_data)
@@ -564,6 +536,7 @@ gn_manager_load_local_providers_cb (GObject      *object,
 static void
 gn_manager_load_providers (GnManager *self)
 {
+  GnProvider *provider;
   g_autoptr(GTask) task = NULL;
   g_autoptr(GError) error = NULL;
 
@@ -574,10 +547,14 @@ gn_manager_load_providers (GnManager *self)
   /* We shall load local providers first */
   gn_manager_increment_pending_providers (self);
 
-  task = g_task_new (self, self->provider_cancellable,
-                     gn_manager_load_local_providers_cb, NULL);
-  g_task_set_source_tag (task, gn_manager_load_providers);
-  g_task_run_in_thread (task, gn_manager_load_local_providers);
+  provider = gn_local_provider_new ();
+
+  g_hash_table_insert (self->providers,
+                       gn_provider_get_uid (provider),
+                       provider);
+  gn_provider_load_items_async (provider,
+                                self->provider_cancellable,
+                                gn_manager_items_loaded_cb, self);
 
   /*
    * Setup Evolution.  We are not actually loading any memos here.
