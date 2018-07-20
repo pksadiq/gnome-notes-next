@@ -246,19 +246,19 @@ gn_manager_save_item_cb (GObject      *object,
 }
 
 static void
-gn_manager_load_more_items (GnManager   *self,
-                            GListStore **store,
-                            GQueue     **queue)
+gn_manager_load_more_items (GnManager  *self,
+                            GListStore *store,
+                            GQueue     *queue)
 {
   GnItem *item;
   int i = 0;
 
   g_assert (GN_IS_MANAGER (self));
-  g_assert (G_IS_LIST_STORE (*store));
+  g_assert (G_IS_LIST_STORE (store));
 
-  while ((item = g_queue_pop_head (*queue)))
+  while ((item = g_queue_pop_head (queue)))
     {
-      g_list_store_append (*store, item);
+      g_list_store_append (store, item);
 
       i++;
       if (i >= MAX_ITEMS_TO_LOAD)
@@ -284,8 +284,8 @@ gn_manager_search_complete_cb (GObject      *object,
     self->search_queue = g_steal_pointer (&search_data->search_queue);
 
   g_list_store_remove_all (self->search_store);
-  gn_manager_load_more_items (self, &self->search_store,
-                              &self->search_queue);
+  gn_manager_load_more_items (self, self->search_store,
+                              self->search_queue);
 }
 
 static void
@@ -383,6 +383,18 @@ gn_manager_do_search_async (GnManager           *self,
 }
 
 
+static void
+gn_manager_save_items_to_queue (GnManager  *self,
+                                GList      *items,
+                                GQueue     *queue,
+                                GListStore *store)
+{
+  for (GList *l = items; l != NULL; l = l->next)
+    g_queue_insert_sorted (queue, l->data, gn_item_compare, NULL);
+
+  gn_manager_load_more_items (self, store, queue);
+}
+
 /* Load items from the provider to the store and queue */
 static void
 gn_manager_load_items (GnManager  *self,
@@ -391,25 +403,12 @@ gn_manager_load_items (GnManager  *self,
   GList *items;
 
   items = gn_provider_get_notes (provider);
-
-  for (GList *node = items; node != NULL; node = node->next)
-    {
-      g_queue_insert_sorted (self->notes_queue, node->data,
-                             gn_item_compare, NULL);
-    }
+  gn_manager_save_items_to_queue (self, items, self->notes_queue,
+                                  self->notes_store);
 
   items = gn_provider_get_trash_notes (provider);
-
-  for (GList *node = items; node != NULL; node = node->next)
-    {
-      g_queue_insert_sorted (self->trash_notes_queue, node->data,
-                             gn_item_compare, NULL);
-    }
-
-  gn_manager_load_more_items (self, &self->notes_store,
-                              &self->notes_queue);
-  gn_manager_load_more_items (self, &self->trash_notes_store,
-                              &self->trash_notes_queue);
+  gn_manager_save_items_to_queue (self, items, self->trash_notes_queue,
+                                  self->trash_notes_store);
 }
 
 static void
@@ -789,8 +788,8 @@ gn_manager_load_more_notes (GnManager *self)
   if (g_queue_is_empty (self->notes_queue))
     return;
 
-  gn_manager_load_more_items (self, &self->notes_store,
-                              &self->notes_queue);
+  gn_manager_load_more_items (self, self->notes_store,
+                              self->notes_queue);
 }
 
 /**
@@ -808,8 +807,8 @@ gn_manager_load_more_trash_notes (GnManager *self)
   if (g_queue_is_empty (self->trash_notes_queue))
     return;
 
-  gn_manager_load_more_items (self, &self->trash_notes_store,
-                              &self->trash_notes_queue);
+  gn_manager_load_more_items (self, self->trash_notes_store,
+                              self->trash_notes_queue);
 }
 
 /**
