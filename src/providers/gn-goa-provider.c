@@ -188,8 +188,11 @@ gn_goa_provider_load_items (GnGoaProvider *self,
                                           G_FILE_QUERY_INFO_NONE,
                                           cancellable,
                                           &error);
-  if (error != NULL)
-    g_task_return_error (task, g_steal_pointer (&error));
+  if (error)
+    {
+      g_task_return_error (task, g_steal_pointer (&error));
+      GN_EXIT;
+    }
 
   while ((file_info_ptr = g_file_enumerator_next_file (enumerator, cancellable, NULL)))
     {
