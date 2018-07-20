@@ -31,6 +31,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GnGoaProvider, gn_goa_provider, GN, GOA_PROVIDER, GnProvider)
 
-GnGoaProvider *gn_goa_provider_new (GoaObject *object);
+GnProvider *gn_goa_provider_new (GoaObject *object);
 
 G_END_DECLS

@@ -367,7 +367,7 @@ gn_goa_provider_init (GnGoaProvider *self)
 {
 }
 
-GnGoaProvider *
+GnProvider *
 gn_goa_provider_new (GoaObject *object)
 {
   GnGoaProvider *self;
@@ -389,5 +389,5 @@ gn_goa_provider_new (GoaObject *object)
                             NULL);
   self->location_name = goa_account_dup_presentation_identity (account);
 
-  return self;
+  return GN_PROVIDER (self);
 }

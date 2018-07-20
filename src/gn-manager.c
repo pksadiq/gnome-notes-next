@@ -454,7 +454,7 @@ gn_manager_load_memo_providers (GnManager *self)
     {
       if (e_source_has_extension (node->data, E_SOURCE_EXTENSION_MEMO_LIST))
         {
-          provider = GN_PROVIDER (gn_memo_provider_new (node->data));
+          provider = gn_memo_provider_new (node->data);
           g_hash_table_insert (self->providers,
                                gn_provider_get_uid (provider),
                                provider);
@@ -470,7 +470,7 @@ gn_manager_load_goa_providers (GnManager *self)
 {
   GList *accounts;
   GoaAccount *account;
-  GnGoaProvider *provider;
+  GnProvider *provider;
 
   g_assert (GN_IS_MANAGER (self));
 
@@ -487,10 +487,10 @@ gn_manager_load_goa_providers (GnManager *self)
 
       provider = gn_goa_provider_new (object);
       g_hash_table_insert (self->providers,
-                           gn_provider_get_uid (GN_PROVIDER (provider)),
+                           gn_provider_get_uid (provider),
                            provider);
       gn_manager_increment_pending_providers (self);
-      gn_provider_load_items_async (GN_PROVIDER (provider),
+      gn_provider_load_items_async (provider,
                                     self->provider_cancellable,
                                     gn_manager_items_loaded_cb, self);
     }
@@ -513,7 +513,7 @@ gn_manager_load_local_providers (GTask        *task,
   g_assert (GN_IS_MANAGER (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  provider = GN_PROVIDER (gn_local_provider_new ());
+  provider = gn_local_provider_new ();
 
   g_hash_table_insert (self->providers,
                        gn_provider_get_uid (provider),

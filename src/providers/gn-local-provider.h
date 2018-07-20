@@ -30,6 +30,6 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GnLocalProvider, gn_local_provider, GN, LOCAL_PROVIDER, GnProvider)
 
-GnLocalProvider *gn_local_provider_new (void);
+GnProvider *gn_local_provider_new (void);
 
 G_END_DECLS

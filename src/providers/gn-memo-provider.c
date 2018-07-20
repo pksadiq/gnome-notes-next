@@ -377,7 +377,7 @@ gn_memo_provider_init (GnMemoProvider *self)
 {
 }
 
-GnMemoProvider *
+GnProvider *
 gn_memo_provider_new (ESource *source)
 {
   GnMemoProvider *self;
@@ -390,6 +390,5 @@ gn_memo_provider_new (ESource *source)
   self->name = g_strconcat ("Memo: ",
                             e_source_get_display_name (source),
                             NULL);
-
-  return self;
+  return GN_PROVIDER (self);
 }

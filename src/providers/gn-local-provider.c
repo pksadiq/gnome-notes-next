@@ -459,8 +459,12 @@ gn_local_provider_init (GnLocalProvider *self)
     }
 }
 
-GnLocalProvider *
+GnProvider *
 gn_local_provider_new (void)
 {
-  return g_object_new (GN_TYPE_LOCAL_PROVIDER, NULL);
+  GnLocalProvider *self;
+
+  self = g_object_new (GN_TYPE_LOCAL_PROVIDER, NULL);
+
+  return GN_PROVIDER (self);
 }
