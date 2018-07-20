@@ -624,14 +624,19 @@ gn_provider_load_items (GnProvider    *self,
                         GCancellable  *cancellable,
                         GError       **error)
 {
+  GnProviderPrivate *priv = gn_provider_get_instance_private (self);
   gboolean ret;
 
   GN_ENTRY;
 
   g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
   g_return_val_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable), FALSE);
+  g_return_val_if_fail (priv->loaded == FALSE, FALSE);
 
   ret = GN_PROVIDER_GET_CLASS (self)->load_items (self, cancellable, error);
+
+  if (ret)
+    priv->loaded = TRUE;
 
   GN_RETURN (ret);
 }
@@ -663,8 +668,6 @@ gn_provider_load_items_async (GnProvider          *self,
   g_return_if_fail (!cancellable || G_IS_CANCELLABLE (cancellable));
   g_return_if_fail (priv->loaded == FALSE);
 
-  priv->loaded = TRUE;
-
   GN_PROVIDER_GET_CLASS (self)->load_items_async (self, cancellable,
                                                   callback, user_data);
 
@@ -687,6 +690,7 @@ gn_provider_load_items_finish (GnProvider    *self,
                                GAsyncResult  *result,
                                GError       **error)
 {
+  GnProviderPrivate *priv = gn_provider_get_instance_private (self);
   gboolean ret;
 
   GN_ENTRY;
@@ -695,6 +699,9 @@ gn_provider_load_items_finish (GnProvider    *self,
   g_return_val_if_fail (G_IS_ASYNC_RESULT (result), FALSE);
 
   ret = GN_PROVIDER_GET_CLASS (self)->load_items_finish (self, result, error);
+
+  if (ret)
+    priv->loaded = TRUE;
 
   GN_RETURN (ret);
 }

@@ -57,8 +57,6 @@ struct _GnMemoProvider
   ECalClientView *client_view;
 
   GList *notes;
-
-  gboolean items_loaded;
 };
 
 G_DEFINE_TYPE (GnMemoProvider, gn_memo_provider, GN_TYPE_PROVIDER)
@@ -218,8 +216,6 @@ gn_memo_provider_view_ready_cb (GObject      *object,
       g_task_return_error (task, g_steal_pointer (&error));
       g_object_unref (task);
     }
-  else
-    self->items_loaded = TRUE;
 
   GN_EXIT;
 }
