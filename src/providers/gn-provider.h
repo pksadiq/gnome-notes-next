@@ -165,5 +165,6 @@ gboolean     gn_provider_delete_item_finish   (GnProvider           *self,
 GList       *gn_provider_get_notes            (GnProvider           *self);
 GList       *gn_provider_get_trash_notes      (GnProvider           *self);
 GList       *gn_provider_get_notebooks        (GnProvider           *self);
+gboolean     gn_provider_has_loaded           (GnProvider           *self);
 
 G_END_DECLS

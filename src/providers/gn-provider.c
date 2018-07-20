@@ -1041,3 +1041,22 @@ gn_provider_get_trash_notes (GnProvider *self)
 
   GN_RETURN (notes);
 }
+
+/**
+ * gn_provider_has_loaded:
+ * @self: a #GnProvider
+ *
+ * Get if the @self has connected and loaded notes.
+ *
+ * Returns: %TRUE if @self has successfully loaded.
+ * %False otherwise.
+ */
+gboolean
+gn_provider_has_loaded (GnProvider *self)
+{
+  GnProviderPrivate *priv = gn_provider_get_instance_private (self);
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), FALSE);
+
+  return priv->loaded;
+}
