@@ -376,17 +376,12 @@ gn_manager_do_search_async (GnManager           *self,
   task = g_task_new (self, cancellable, callback, user_data);
   g_task_set_task_data (task, search_data, NULL);
   g_task_set_priority (task, G_PRIORITY_LOW);
+  g_task_set_source_tag (task, gn_manager_update_search);
 
   if (self->search_is_narrowing)
-    {
-      g_task_set_source_tag (task, gn_manager_update_search);
-      g_task_run_in_thread (task, gn_manager_update_search);
-    }
+    g_task_run_in_thread (task, gn_manager_update_search);
   else
-    {
-      g_task_set_source_tag (task, gn_manager_update_search);
-      g_task_run_in_thread (task, gn_manager_full_search);
-    }
+    g_task_run_in_thread (task, gn_manager_full_search);
 }
 
 
