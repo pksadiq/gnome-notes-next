@@ -261,6 +261,8 @@ gn_settings_save_window_state (GnSettings *self)
 gboolean
 gn_settings_get_window_maximized (GnSettings *self)
 {
+  g_return_val_if_fail (GN_IS_SETTINGS (self), TRUE);
+
   return self->maximized;
 }
 
@@ -268,7 +270,9 @@ void
 gn_settings_set_window_maximized (GnSettings *self,
                                   gboolean    maximized)
 {
-  self->maximized = maximized;
+  g_return_if_fail (GN_IS_SETTINGS (self));
+
+  self->maximized = !!maximized;
 }
 
 void
@@ -278,6 +282,8 @@ gn_settings_get_window_geometry (GnSettings *self,
                                  gint       *x,
                                  gint       *y)
 {
+  g_return_if_fail (GN_IS_SETTINGS (self));
+
   *width = self->width;
   *height = self->height;
   *x = self->x;
@@ -291,6 +297,8 @@ gn_settings_set_window_geometry (GnSettings *self,
                                  gint        x,
                                  gint        y)
 {
+  g_return_if_fail (GN_IS_SETTINGS (self));
+
   self->width = width;
   self->height = height;
   self->x = x;
@@ -301,6 +309,9 @@ void
 gn_settings_get_rgba (GnSettings *self,
                       GdkRGBA    *rgba)
 {
+  g_return_if_fail (GN_IS_SETTINGS (self));
+  g_return_if_fail (rgba != NULL);
+
   *rgba = self->rgba;
 }
 
@@ -308,6 +319,9 @@ void
 gn_settings_set_rgba (GnSettings    *self,
                       const GdkRGBA *rgba)
 {
+  g_return_if_fail (GN_IS_SETTINGS (self));
+  g_return_if_fail (rgba != NULL);
+
   if (gdk_rgba_equal (&self->rgba, rgba))
     return;
 
