@@ -383,8 +383,7 @@ gn_memo_provider_new (ESource *source)
   self = g_object_new (GN_TYPE_MEMO_PROVIDER, NULL);
   self->source = g_object_ref (source);
   self->uid = g_strdup (e_source_get_uid (source));
-  self->name = g_strconcat ("Memo: ",
-                            e_source_get_display_name (source),
-                            NULL);
+  self->name = e_source_dup_display_name (source);
+
   return GN_PROVIDER (self);
 }

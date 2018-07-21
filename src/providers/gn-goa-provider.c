@@ -387,9 +387,7 @@ gn_goa_provider_new (GoaObject *object)
   self = g_object_new (GN_TYPE_GOA_PROVIDER, NULL);
   self->goa_object = g_object_ref (object);
   self->uid = goa_account_dup_id (account);
-  self->name = g_strconcat ("Goa: ",
-                            goa_account_get_provider_name (account),
-                            NULL);
+  self->name = goa_account_dup_provider_name (account);
   self->location_name = goa_account_dup_presentation_identity (account);
 
   return GN_PROVIDER (self);
