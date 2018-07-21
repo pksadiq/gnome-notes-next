@@ -67,7 +67,7 @@ gn_settings_set_use_system_font (GnSettings *self,
                                  gboolean    use_system_font)
 {
   GSettings *desktop_settings;
-  g_autofree gchar *font_name;
+  g_autofree gchar *font_name = NULL;
 
   g_assert (GN_IS_SETTINGS (self));
 
