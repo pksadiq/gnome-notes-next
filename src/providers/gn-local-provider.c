@@ -57,7 +57,6 @@ struct _GnLocalProvider
 
   gchar *uid;
   gchar *name;
-  gchar *icon;
   gchar *domain;
   gchar *user_name;
 
@@ -89,7 +88,6 @@ gn_local_provider_finalize (GObject *object)
 
   g_clear_pointer (&self->uid, g_free);
   g_clear_pointer (&self->name, g_free);
-  g_clear_pointer (&self->icon, g_free);
   g_clear_pointer (&self->domain, g_free);
   g_clear_pointer (&self->user_name, g_free);
   g_clear_pointer (&self->location, g_free);
@@ -118,7 +116,7 @@ gn_local_provider_get_name (GnProvider *provider)
 static gchar *
 gn_local_provider_get_icon (GnProvider *provider)
 {
-  return g_strdup (GN_LOCAL_PROVIDER (provider)->icon);
+  return g_strdup ("user-home");
 }
 
 static gchar *
