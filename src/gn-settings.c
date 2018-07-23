@@ -346,14 +346,18 @@ gboolean
 gn_settings_set_provider_name (GnSettings  *self,
                                const gchar *name)
 {
+  GSettings *settings;
+
   g_return_val_if_fail (GN_IS_SETTINGS (self), FALSE);
   g_return_val_if_fail (name != NULL, FALSE);
 
   if (g_strcmp0 (self->provider, name) == 0)
     return FALSE;
 
+  settings = G_SETTINGS (self);
   g_free (self->provider);
   self->provider = g_strdup (name);
+  g_settings_set_string (settings, "provider", name);
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_PROVIDER]);
 
   return TRUE;
