@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="GnProviderRow" parent="GtkListBoxRow">
+    <child>
+      <object class="GtkBox" id="provider_row">
+
+        <child>
+          <object class="GtkBox" id="icon_box">
+            <property name="margin">6</property>
+            <property name="margin-end">12</property>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkBox">
+            <property name="valign">center</property>
+            <property name="orientation">vertical</property>
+            <property name="hexpand">1</property>
+            <child>
+              <object class="GtkLabel" id="title">
+                <property name="halign">start</property>
+                <!-- <property name="xalign">0.0</property> -->
+              </object>
+            </child>
+            <child>
+              <object class="GtkLabel" id="subtitle">
+                <property name="halign">start</property>
+                <!-- <property name="xalign">0.0</property> -->
+                <style>
+                 <class name="dim-label"/>
+                </style>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkStack" id="check_box_stack">
+            <property name="halign">end</property>
+            <property name="valign">center</property>
+            <property name="margin">6</property>
+            <child>
+              <object class="GtkBox"/>
+              <packing>
+                <property name="name">empty</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkImage">
+                <property name="icon-name">object-select-symbolic</property>
+              </object>
+              <packing>
+                <property name="name">selected</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+
+      </object>
+    </child>
+  </template>
+</interface>

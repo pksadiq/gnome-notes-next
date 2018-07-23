@@ -125,6 +125,43 @@
                 <property name="title" translatable="1">Note Appearance</property>
               </packing>
             </child>
+
+            <child>
+              <object class="GtkBox">
+                <property name="orientation">vertical</property>
+                <property name="spacing">12</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label" translatable="yes">Select the default storage location:</property>
+                    <property name="xalign">0</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <property name="shadow-type">in</property>
+                    <property name="propagate-natural-height">1</property>
+                    <property name="max-content-width">350</property>
+                    <child>
+                      <object class="GtkViewport">
+                        <property name="shadow-type">none</property>
+                        <child>
+                          <object class="GtkListBox" id="provider_list">
+                            <property name="selection-mode">none</property>
+                            <signal name="row-activated" handler="gn_settings_dialog_row_activated"
+                                    swapped="1" />
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object> <!-- ./GtkScrolledWindow -->
+                </child>
+              </object>
+              <packing>
+                <property name="name">provider</property>
+                <property name="title" translatable="yes">Primary Book</property>
+              </packing>
+            </child>
+
           </object>
           <packing>
             <property name="position">1</property>
