@@ -92,7 +92,8 @@ struct _GnProviderClass
 
   gchar       *(*get_uid)              (GnProvider           *self);
   const gchar *(*get_name)             (GnProvider           *self);
-  gchar       *(*get_icon)             (GnProvider           *self);
+  GIcon       *(*get_icon)             (GnProvider           *self,
+                                        GError              **error);
   gboolean     (*get_rgba)             (GnProvider           *self,
                                         GdkRGBA              *rgba);
   gchar       *(*get_domain)           (GnProvider           *self);
@@ -104,7 +105,8 @@ struct _GnProviderClass
 
 gchar       *gn_provider_get_uid              (GnProvider           *self);
 const gchar *gn_provider_get_name             (GnProvider           *self);
-gchar       *gn_provider_get_icon             (GnProvider           *self);
+GIcon       *gn_provider_get_icon             (GnProvider           *self,
+                                               GError              **error);
 gboolean     gn_provider_get_rgba             (GnProvider           *self,
                                                GdkRGBA              *rgba);
 gchar       *gn_provider_get_domain           (GnProvider           *self);

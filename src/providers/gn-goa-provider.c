@@ -41,7 +41,7 @@ struct _GnGoaProvider
 
   gchar *uid;
   gchar *name;
-  gchar *icon;
+  gchar *icon_name;
 
   gchar *domain_name;
   gchar *user_name;
@@ -72,6 +72,7 @@ gn_goa_provider_finalize (GObject *object)
 
   g_clear_pointer (&self->uid, g_free);
   g_clear_pointer (&self->name, g_free);
+  g_clear_pointer (&self->icon_name, g_free);
   g_clear_pointer (&self->location_name, g_free);
 
   G_OBJECT_CLASS (gn_goa_provider_parent_class)->finalize (object);
@@ -91,6 +92,15 @@ gn_goa_provider_get_name (GnProvider *provider)
   GnGoaProvider *self = GN_GOA_PROVIDER (provider);
 
   return self->name ? self->name : "";
+}
+
+static GIcon *
+gn_goa_provider_get_icon (GnProvider  *provider,
+                          GError     **error)
+{
+  GnGoaProvider *self = GN_GOA_PROVIDER (provider);
+
+  return g_icon_new_for_string (self->icon_name, error);
 }
 
 static const gchar *
@@ -358,6 +368,7 @@ gn_goa_provider_class_init (GnGoaProviderClass *klass)
 
   provider_class->get_uid = gn_goa_provider_get_uid;
   provider_class->get_name = gn_goa_provider_get_name;
+  provider_class->get_icon = gn_goa_provider_get_icon;
   provider_class->get_location_name = gn_goa_provider_get_location_name;
   provider_class->get_notes = gn_goa_provider_get_notes;
 
@@ -388,6 +399,7 @@ gn_goa_provider_new (GoaObject *object)
   self->goa_object = g_object_ref (object);
   self->uid = goa_account_dup_id (account);
   self->name = goa_account_dup_provider_name (account);
+  self->icon_name = goa_account_dup_provider_icon (account);
   self->location_name = goa_account_dup_presentation_identity (account);
 
   return GN_PROVIDER (self);

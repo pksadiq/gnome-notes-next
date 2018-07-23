@@ -113,10 +113,11 @@ gn_local_provider_get_name (GnProvider *provider)
   return self->name ? self->name : "";
 }
 
-static gchar *
-gn_local_provider_get_icon (GnProvider *provider)
+static GIcon *
+gn_local_provider_get_icon (GnProvider  *provider,
+                            GError     **error)
 {
-  return g_strdup ("user-home");
+  return g_icon_new_for_string ("user-home", error);
 }
 
 static gchar *

@@ -80,7 +80,7 @@ gn_provider_get_property (GObject    *object,
       break;
 
     case PROP_ICON:
-      g_value_set_string (value, gn_provider_get_icon (self));
+      g_value_set_object (value, gn_provider_get_icon (self, NULL));
       break;
 
     case PROP_DOMAIN:
@@ -115,13 +115,14 @@ gn_provider_real_get_name (GnProvider *self)
   return "";
 }
 
-static gchar *
-gn_provider_real_get_icon (GnProvider *self)
+static GIcon *
+gn_provider_real_get_icon (GnProvider  *self,
+                           GError     **error)
 {
   g_assert (GN_IS_PROVIDER (self));
 
   /* Derived classes should implement this, if supported */
-  return g_strdup ("");
+  return NULL;
 }
 
 static gboolean
@@ -348,10 +349,10 @@ gn_provider_class_init (GnProviderClass *klass)
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   properties[PROP_ICON] =
-    g_param_spec_string ("icon",
+    g_param_spec_object ("icon",
                          "Icon",
-                         "The icon name for the provider",
-                         NULL,
+                         "The icon for the provider",
+                         G_TYPE_ICON,
                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
 
   properties[PROP_DOMAIN] =
@@ -489,21 +490,22 @@ gn_provider_get_name (GnProvider *self)
  * gn_item_get_icon:
  * @self: a #GnProvider
  *
- * Get the icon name of the provider
+ * Get the #GIcon of the provider.
  *
  * Returns: (transfer full) (nullable): the icon
- * of the provider. Free with g_free().
+ * of the provider. Free with g_object_unref().
  */
-gchar *
-gn_provider_get_icon (GnProvider *self)
+GIcon *
+gn_provider_get_icon (GnProvider  *self,
+                      GError     **error)
 {
-  gchar *icon;
+  GIcon *icon;
 
   GN_ENTRY;
 
   g_return_val_if_fail (GN_IS_PROVIDER (self), NULL);
 
-  icon = GN_PROVIDER_GET_CLASS (self)->get_icon (self);
+  icon = GN_PROVIDER_GET_CLASS (self)->get_icon (self, error);
 
   GN_RETURN (icon);
 }
