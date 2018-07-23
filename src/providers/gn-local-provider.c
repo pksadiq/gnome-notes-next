@@ -55,8 +55,6 @@ struct _GnLocalProvider
 {
   GnProvider parent_instance;
 
-  gchar *uid;
-  gchar *name;
   gchar *domain;
   gchar *user_name;
 
@@ -86,8 +84,6 @@ gn_local_provider_finalize (GObject *object)
 
   GN_ENTRY;
 
-  g_clear_pointer (&self->uid, g_free);
-  g_clear_pointer (&self->name, g_free);
   g_clear_pointer (&self->domain, g_free);
   g_clear_pointer (&self->user_name, g_free);
   g_clear_pointer (&self->location, g_free);
@@ -102,15 +98,13 @@ gn_local_provider_finalize (GObject *object)
 static gchar *
 gn_local_provider_get_uid (GnProvider *provider)
 {
-  return g_strdup (GN_LOCAL_PROVIDER (provider)->uid);
+  return g_strdup ("local");
 }
 
 static const gchar *
 gn_local_provider_get_name (GnProvider *provider)
 {
-  GnLocalProvider *self = GN_LOCAL_PROVIDER (provider);
-
-  return self->name ? self->name : "";
+  return _("Local");
 }
 
 static GIcon *
@@ -466,9 +460,6 @@ gn_local_provider_class_init (GnLocalProviderClass *klass)
 static void
 gn_local_provider_init (GnLocalProvider *self)
 {
-  self->uid = g_strdup ("local");
-  self->name = g_strdup (_("Local"));
-
   if (self->location == NULL)
     {
       self->location = g_build_filename (g_get_user_data_dir (),
