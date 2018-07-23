@@ -44,8 +44,6 @@ struct _GnProviderRow
   GtkWidget *title;
   GtkWidget *subtitle;
   GtkWidget *check_box_stack;
-  /* GtkWidget *active; */
-  /* GtkWidget *inactive; */
 
   gboolean selected;
 };
@@ -99,8 +97,6 @@ gn_provider_row_class_init (GnProviderRowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnProviderRow, title);
   gtk_widget_class_bind_template_child (widget_class, GnProviderRow, subtitle);
   gtk_widget_class_bind_template_child (widget_class, GnProviderRow, check_box_stack);
-  /* gtk_widget_class_bind_template_child (widget_class, GnProviderRow, active); */
-  /* gtk_widget_class_bind_template_child (widget_class, GnProviderRow, inactive); */
 }
 
 static void
@@ -160,4 +156,3 @@ gn_provider_row_unset_selection (GnProviderRow *self,
   stack = GTK_STACK (self->check_box_stack);
   gtk_stack_set_visible_child_name (stack, "empty");
 }
-
