@@ -51,6 +51,7 @@ struct _GnMemoProvider
   gchar *uid;
   gchar *name;
   gchar *icon;
+  GdkRGBA rgba;
 
   ESource *source;
   ECalClient *client;
@@ -92,6 +93,17 @@ gn_memo_provider_get_name (GnProvider *provider)
   GnMemoProvider *self = GN_MEMO_PROVIDER (provider);
 
   return self->name ? self->name : "";
+}
+
+static gboolean
+gn_memo_provider_get_rgba (GnProvider *provider,
+                           GdkRGBA    *rgba)
+{
+  GnMemoProvider *self = GN_MEMO_PROVIDER (provider);
+
+  *rgba = self->rgba;
+
+  return TRUE;
 }
 
 static GList *
@@ -361,6 +373,7 @@ gn_memo_provider_class_init (GnMemoProviderClass *klass)
 
   provider_class->get_uid = gn_memo_provider_get_uid;
   provider_class->get_name = gn_memo_provider_get_name;
+  provider_class->get_rgba = gn_memo_provider_get_rgba;
   provider_class->get_notes = gn_memo_provider_get_notes;
 
   provider_class->load_items_async = gn_memo_provider_load_items_async;
@@ -377,6 +390,8 @@ GnProvider *
 gn_memo_provider_new (ESource *source)
 {
   GnMemoProvider *self;
+  ESourceExtension *extension;
+  const gchar *color;
 
   g_return_val_if_fail (E_IS_SOURCE (source), NULL);
 
@@ -384,6 +399,10 @@ gn_memo_provider_new (ESource *source)
   self->source = g_object_ref (source);
   self->uid = e_source_dup_uid (source);
   self->name = e_source_dup_display_name (source);
+
+  extension = e_source_get_extension (source, E_SOURCE_EXTENSION_MEMO_LIST);
+  color = e_source_selectable_get_color (E_SOURCE_SELECTABLE (extension));
+  gdk_rgba_parse (&self->rgba, color);
 
   return GN_PROVIDER (self);
 }
