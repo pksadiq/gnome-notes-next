@@ -704,17 +704,23 @@ gn_manager_get_settings (GnManager *self)
 /**
  * gn_manager_get_default_provider:
  * self: A #GnManager
+ * @show_disconnected: Search in disconnect providers
  *
  * Get the default provider to which new notes will
  * be saved.
  *
- * If the default provider is not available, the
- * local provider is returned.
+ * If @show_disconnected is %TRUE, return the default
+ * provider even if the provider isn't yet connected.
+ *
+ * If @show_disconnected is %FALSE, or if the default
+ * provider isn't available (eg.: The user has deleted
+ * the default provider), return the local provider.
  *
  * Returns: (transfer none): A #GnProvider
  */
 GnProvider *
-gn_manager_get_default_provider (GnManager *self)
+gn_manager_get_default_provider (GnManager *self,
+                                 gboolean   show_disconnected)
 {
   GnProvider *provider;
   const gchar *name;
@@ -725,7 +731,7 @@ gn_manager_get_default_provider (GnManager *self)
   provider = g_hash_table_lookup (self->providers, name);
 
   if (provider == NULL ||
-      !gn_provider_has_loaded (provider))
+      !(show_disconnected || gn_provider_has_loaded (provider)))
     provider = g_hash_table_lookup (self->providers, "local");
 
   return provider;
@@ -824,7 +830,7 @@ gn_manager_new_note (GnManager *self)
   GnProvider *provider;
   GnItem *item;
 
-  provider = gn_manager_get_default_provider (self);
+  provider = gn_manager_get_default_provider (self, FALSE);
 
   if (GN_IS_LOCAL_PROVIDER (provider))
     item = GN_ITEM (gn_xml_note_new_from_data (NULL));
