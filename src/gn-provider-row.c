@@ -67,13 +67,17 @@ gn_provider_row_get_icon (GnProviderRow *self,
 
   if (icon == NULL)
     {
+      GtkWidget *icon;
       GdkRGBA rgba;
 
       if (!gn_provider_get_rgba (provider, &rgba))
         gn_settings_get_rgba (settings, &rgba);
 
-      icon_image = GTK_WIDGET (gn_item_thumbnail_new ("", &rgba));
-      gtk_widget_set_size_request (icon_image, 32, 32);
+      icon = GTK_WIDGET (gn_item_thumbnail_new ("", &rgba));
+      gtk_widget_set_size_request (icon, 32, 32);
+
+      icon_image = gtk_frame_new (NULL);
+      gtk_container_add (GTK_CONTAINER (icon_image), icon);
     }
   else
     {
