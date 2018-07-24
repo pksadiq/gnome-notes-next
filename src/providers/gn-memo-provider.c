@@ -326,13 +326,21 @@ gn_memo_provider_save_cb (GObject      *object,
   ECalClient *client = (ECalClient *)object;
   g_autoptr(GError) error = NULL;
   g_autoptr(GTask) task = user_data;
+  g_autoptr(GnItem) item = NULL;
+  GnMemoProvider *self;
 
   g_assert (E_IS_CAL_CLIENT (client));
   g_assert (G_IS_ASYNC_RESULT (result));
   g_assert (G_IS_TASK (task));
 
+  self = g_task_get_source_object (task);
+  item = g_task_get_task_data (task);
+
   if (e_cal_client_modify_object_finish (client, result, &error))
-    g_task_return_boolean (task, TRUE);
+    {
+      g_signal_emit_by_name (self, "item-added", item);
+      g_task_return_boolean (task, TRUE);
+    }
   else
     g_task_return_error (task, g_steal_pointer (&error));
 }
