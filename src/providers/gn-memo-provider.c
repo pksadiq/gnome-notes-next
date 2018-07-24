@@ -290,6 +290,35 @@ gn_memo_provider_load_items_async (GnProvider          *provider,
 }
 
 static void
+gn_memo_provider_create_cb (GObject      *object,
+                            GAsyncResult *result,
+                            gpointer      user_data)
+{
+  ECalClient *client = (ECalClient *)object;
+  g_autoptr(GnItem) item = NULL;
+  g_autoptr(GError) error = NULL;
+  g_autoptr(GTask) task = user_data;
+  g_autofree gchar *uid = NULL;
+  GnMemoProvider *self;
+
+  g_assert (E_IS_CAL_CLIENT (client));
+  g_assert (G_IS_ASYNC_RESULT (result));
+  g_assert (G_IS_TASK (task));
+
+  self = g_task_get_source_object (task);
+  item = g_task_get_task_data (task);
+
+  if (e_cal_client_create_object_finish (client, result, &uid, &error))
+    {
+      g_signal_emit_by_name (self, "item-added", item);
+      gn_item_set_uid (item, uid);
+      g_task_return_boolean (task, TRUE);
+    }
+  else
+    g_task_return_error (task, g_steal_pointer (&error));
+}
+
+static void
 gn_memo_provider_save_cb (GObject      *object,
                           GAsyncResult *result,
                           gpointer      user_data)
@@ -319,6 +348,9 @@ gn_memo_provider_save_item_async (GnProvider          *provider,
   g_autoptr(GTask) task = NULL;
   ECalComponent *component;
   ECalComponentText text;
+  ECalComponentDateTime date_time;
+  icaltimezone *zone;
+  struct icaltimetype ical_time;
   GSList list;
 
   GN_ENTRY;
@@ -331,8 +363,28 @@ gn_memo_provider_save_item_async (GnProvider          *provider,
   g_task_set_source_tag (task, gn_memo_provider_save_item_async);
   g_task_set_task_data (task, g_object_ref (item), g_object_unref);
 
+  zone = e_cal_client_get_default_timezone (self->client);
+  ical_time = icaltime_current_time_with_zone (zone);
+  date_time.value = &ical_time;
+  date_time.tzid = icaltimezone_get_tzid (zone);
+
   component = g_object_get_data (G_OBJECT (item), "component");
-  g_assert (E_IS_CAL_COMPONENT (component));
+
+  if (component == NULL)
+    {
+      component = e_cal_component_new ();
+      e_cal_component_set_new_vtype (component, E_CAL_COMPONENT_JOURNAL);
+
+      g_object_set_data_full (G_OBJECT (item), "component",
+                              g_object_ref (component),
+                              g_object_unref);
+
+      e_cal_component_set_dtstart (component, &date_time);
+      e_cal_component_set_dtend (component, &date_time);
+      e_cal_component_set_created (component, &ical_time);
+    }
+
+  e_cal_component_set_last_modified (component, &ical_time);
 
   text.value = gn_item_get_title (item);
   text.altrep = NULL;
@@ -346,12 +398,19 @@ gn_memo_provider_save_item_async (GnProvider          *provider,
 
   e_cal_component_commit_sequence (component);
 
-  e_cal_client_modify_object (self->client,
-                              e_cal_component_get_icalcomponent (component),
-                              E_CAL_OBJ_MOD_THIS,
-                              cancellable,
-                              gn_memo_provider_save_cb,
-                              g_steal_pointer (&task));
+  if (gn_item_is_new (item))
+      e_cal_client_create_object (self->client,
+                                  e_cal_component_get_icalcomponent (component),
+                                  NULL,
+                                  gn_memo_provider_create_cb,
+                                  g_steal_pointer (&task));
+  else
+    e_cal_client_modify_object (self->client,
+                                e_cal_component_get_icalcomponent (component),
+                                E_CAL_OBJ_MOD_THIS,
+                                cancellable,
+                                gn_memo_provider_save_cb,
+                                g_steal_pointer (&task));
   GN_EXIT;
 }
 
