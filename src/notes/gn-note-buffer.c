@@ -144,6 +144,8 @@ gn_note_buffer_constructed (GObject *object)
   GtkTextBuffer *buffer = (GtkTextBuffer *)object;
   GtkTextTag *tag;
 
+  G_OBJECT_CLASS (gn_note_buffer_parent_class)->constructed (object);
+
   gtk_text_buffer_create_tag (buffer, "title",
                               "weight", PANGO_WEIGHT_BOLD,
                               "pixels-below-lines", TITLE_SPACING,
