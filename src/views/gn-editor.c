@@ -122,6 +122,8 @@ gn_editor_format_clicked (GnEditor  *self,
     tag_name = "underline";
   else if (widget == self->strikethrough_button)
     tag_name = "strikethrough";
+  else
+    g_return_if_reached ();
 
   gn_note_buffer_apply_tag (GN_NOTE_BUFFER (self->note_buffer), tag_name);
   gtk_text_buffer_set_modified (self->note_buffer, TRUE);
