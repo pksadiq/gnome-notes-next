@@ -33,16 +33,10 @@ GnSettings *gn_settings_new (const gchar *schema_id);
 gboolean    gn_settings_get_window_maximized (GnSettings *self);
 void        gn_settings_set_window_maximized (GnSettings *self,
                                               gboolean    maximized);
-void        gn_settings_get_window_geometry  (GnSettings *self,
-                                              gint       *width,
-                                              gint       *height,
-                                              gint       *x,
-                                              gint       *y);
-void        gn_settings_set_window_geometry  (GnSettings *self,
-                                              gint        width,
-                                              gint        height,
-                                              gint        x,
-                                              gint        y);
+void        gn_settings_get_window_geometry  (GnSettings   *self,
+                                              GdkRectangle *geometry);
+void        gn_settings_set_window_geometry  (GnSettings   *self,
+                                              GdkRectangle *geometry);
 void        gn_settings_save_window_state    (GnSettings *self);
 
 void        gn_settings_get_rgba             (GnSettings    *self,

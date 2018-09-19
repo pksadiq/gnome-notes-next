@@ -558,8 +558,8 @@ gn_window_size_allocate_cb (GnWindow *self)
 {
   GtkWindow *window = GTK_WINDOW (self);
   GnSettings *settings;
+  GdkRectangle geometry;
   gboolean is_maximized;
-  gint width, height, x, y;
 
   g_assert (GN_IS_WINDOW (self));
 
@@ -570,10 +570,9 @@ gn_window_size_allocate_cb (GnWindow *self)
   if (is_maximized)
     return;
 
-  gtk_window_get_size (window, &width, &height);
-  gtk_window_get_position (window, &x, &y);
-
-  gn_settings_set_window_geometry (settings, width, height, x, y);
+  gtk_window_get_size (window, &geometry.width, &geometry.height);
+  gtk_window_get_position (window, &geometry.x, &geometry.y);
+  gn_settings_set_window_geometry (settings, &geometry);
 }
 
 static gboolean
@@ -608,9 +607,8 @@ gn_window_constructed (GObject *object)
   GtkWindow *window = GTK_WINDOW (self);
   GnManager *manager;
   GnSettings *settings;
+  GdkRectangle geometry;
   gboolean is_maximized;
-  gint width, height;
-  gint x, y;
 
   manager = gn_manager_get_default ();
   settings = gn_manager_get_settings (manager);
@@ -619,14 +617,14 @@ gn_window_constructed (GObject *object)
                           G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 
   is_maximized = gn_settings_get_window_maximized (settings);
-  gn_settings_get_window_geometry (settings, &width, &height, &x, &y);
+  gn_settings_get_window_geometry (settings, &geometry);
 
-  gtk_window_set_default_size (window, width, height);
+  gtk_window_set_default_size (window, geometry.width, geometry.height);
 
   if (is_maximized)
     gtk_window_maximize (window);
-  else if (x >= 0)
-    gtk_window_move (window, x, y);
+  else if (geometry.x >= 0)
+    gtk_window_move (window, geometry.x, geometry.y);
 
   G_OBJECT_CLASS (gn_window_parent_class)->constructed (object);
 }
