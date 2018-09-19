@@ -10,4 +10,4 @@ StartupNotify=true
 Categories=GNOME;GTK;Office;
 # Translators: Do NOT translate the semicolon. keywords should
 # also end with a semicolon
-keywords=notes;
+Keywords=notes;
