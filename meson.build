@@ -40,6 +40,7 @@ conf.set_quoted('PACKAGE_VERSION', pkg_version)
 conf.set_quoted('PACKAGE_BUGREPORT', 'https://sadiqpk.org/bugs')
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
 conf.set_quoted('PACKAGE', meson.project_name())
+conf.set_quoted('PACKAGE_ID', pkg_id)
 conf.set_quoted('PACKAGE_URL', '')
 conf.set_quoted('PACKAGE_LOCALE_DIR', pkg_localedir)
 

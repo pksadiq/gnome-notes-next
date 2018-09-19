@@ -127,7 +127,7 @@ gn_application_show_about (GSimpleAction *action,
                          "license-type", GTK_LICENSE_GPL_3_0,
                          "authors", authors,
                          "artists", artists,
-                         "logo-icon-name", "org.sadiqpk.notes",
+                         "logo-icon-name", PACKAGE_ID,
                          "translator-credits", _("translator-credits"),
                          NULL);
 }
@@ -260,14 +260,14 @@ gn_application_init (GnApplication *self)
   g_application_add_main_option_entries (G_APPLICATION (self), cmd_options);
 
   g_set_application_name (_("GNOME Notes"));
-  gtk_window_set_default_icon_name ("org.sadiqpk.notes");
+  gtk_window_set_default_icon_name (PACKAGE_ID);
 }
 
 GnApplication *
 gn_application_new (void)
 {
   return g_object_new (GN_TYPE_APPLICATION,
-                       "application-id", "org.sadiqpk.notes",
+                       "application-id", PACKAGE_ID,
                        "flags", G_APPLICATION_HANDLES_COMMAND_LINE,
                        NULL);
 }

@@ -655,7 +655,7 @@ gn_manager_class_init (GnManagerClass *klass)
 static void
 gn_manager_init (GnManager *self)
 {
-  self->settings = gn_settings_new ("org.sadiqpk.notes");
+  self->settings = gn_settings_new (PACKAGE_ID);
 
   self->providers = g_hash_table_new_full (g_str_hash, g_str_equal,
                                            g_free, NULL);
