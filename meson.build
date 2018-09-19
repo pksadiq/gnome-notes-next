@@ -9,19 +9,19 @@ project(
     'buildtype=debugoptimized'
   ])
 
-pkg_name = meson.project_name()
+pkg_name      = meson.project_name()
 pkg_id        = 'org.sadiqpk.notes'
-pkg_version = meson.project_version()
+pkg_version   = meson.project_version()
 pkg_is_debug  = get_option('buildtype').startswith('debug')
 
-pkg_prefix = get_option('prefix')
-pkg_srcdir = meson.source_root()
-pkg_builddir = meson.build_root()
-pkg_libdir = join_paths(pkg_prefix, get_option('libdir'))
+pkg_prefix    = get_option('prefix')
+pkg_srcdir    = meson.source_root()
+pkg_builddir  = meson.build_root()
+pkg_libdir    = join_paths(pkg_prefix, get_option('libdir'))
 pkg_localedir = join_paths(pkg_prefix, get_option('localedir'))
-pkg_datadir = join_paths(pkg_prefix, get_option('datadir'))
+pkg_datadir   = join_paths(pkg_prefix, get_option('datadir'))
 pkg_schemadir = join_paths(pkg_datadir, 'glib-2.0', 'schemas')
-pkg_po_dir = join_paths(meson.source_root(), 'po')
+pkg_po_dir    = join_paths(meson.source_root(), 'po')
 top_inc       = include_directories('.')
 src_inc       = include_directories('src')
 
