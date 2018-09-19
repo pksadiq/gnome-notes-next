@@ -5,11 +5,14 @@ project(
   license: 'GPL3+',
   default_options: [
     'c_std=gnu11',
-    'warning_level=1'
+    'warning_level=1',
+    'buildtype=debugoptimized'
   ])
 
 pkg_name = meson.project_name()
+pkg_id        = 'org.sadiqpk.notes'
 pkg_version = meson.project_version()
+pkg_is_debug  = get_option('buildtype').startswith('debug')
 
 pkg_prefix = get_option('prefix')
 pkg_srcdir = meson.source_root()
@@ -18,8 +21,9 @@ pkg_libdir = join_paths(pkg_prefix, get_option('libdir'))
 pkg_localedir = join_paths(pkg_prefix, get_option('localedir'))
 pkg_datadir = join_paths(pkg_prefix, get_option('datadir'))
 pkg_schemadir = join_paths(pkg_datadir, 'glib-2.0', 'schemas')
-
-po_dir = join_paths(meson.source_root(), 'po')
+pkg_po_dir = join_paths(meson.source_root(), 'po')
+top_inc       = include_directories('.')
+src_inc       = include_directories('src')
 
 cc = meson.get_compiler('c')
 conf = configuration_data()
@@ -48,10 +52,18 @@ conf.set_quoted('PACKAGE_LOCALE_DIR', join_paths([ get_option('prefix'),
                                                    'locale' ]))
 
 common_flags = [
-  '-DHAVE_CONFIG_H'
+  '-DHAVE_CONFIG_H',
+  '-D_FORTIFY_SOURCE=2'
 ]
 
 add_global_arguments(common_flags, language: 'c')
+c_link_args = cc.get_supported_arguments(
+  ['-Wall',
+   '-Werror=format-security',
+   '-Werror=implicit-function-declaration',
+   '-fasynchronous-unwind-tables',
+   '-pipe',
+  ])
 
 pkg_dep = [
   dependency('glib-2.0', version: '>= 2.44.0'),
@@ -68,9 +80,6 @@ configure_file(
 
 gnome = import('gnome')
 pkg = import('pkgconfig')
-
-top_inc = include_directories('.')
-src_inc = include_directories('src')
 
 subdir('src')
 subdir('data')
@@ -95,7 +104,7 @@ run_target('make-po',
 run_target('make-help-po',
            command: [
              find_program('build-aux/make_po.sh'),
-             'org.sadiqpk.notes',
+             pkg_id,
              meson.current_build_dir(),
              join_paths(pkg_srcdir, 'docs/help'),
              'help-',

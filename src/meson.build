@@ -72,6 +72,7 @@ executable(
   'gnome-notes',
   src,
   install: true,
+  link_args: c_link_args,
   include_directories: inc_dir,
   dependencies: pkg_dep
 )

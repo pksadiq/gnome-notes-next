@@ -1,17 +1,14 @@
-desktop = 'org.sadiqpk.notes.desktop'
-
 i18n.merge_file(
-  desktop,
+  input: pkg_id + '.desktop.in',
+  output: pkg_id + '.desktop',
   type: 'desktop',
-  input: desktop + '.in',
-  output: desktop,
-  po_dir: po_dir,
+  po_dir: pkg_po_dir,
   install: true,
   install_dir: join_paths(pkg_datadir, 'applications')
 )
 
 install_data(
-  'org.sadiqpk.notes.gschema.xml',
+  pkg_id + '.gschema.xml',
   install_dir: pkg_schemadir
 )
 
