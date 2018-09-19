@@ -1,4 +1,4 @@
-i18n.merge_file(
+desktop_file = i18n.merge_file(
   input: pkg_id + '.desktop.in',
   output: pkg_id + '.desktop',
   type: 'desktop',
@@ -13,5 +13,11 @@ install_data(
 )
 
 compiled = gnome.compile_schemas(build_by_default: true)
+
+desktop_utils = find_program('desktop-file-validate', required: false)
+if desktop_utils.found()
+  test('Validate desktop file', desktop_utils,
+       args: [desktop_file])
+endif
 
 subdir('icons')
