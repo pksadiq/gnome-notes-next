@@ -25,31 +25,23 @@ pkg_po_dir    = join_paths(meson.source_root(), 'po')
 top_inc       = include_directories('.')
 src_inc       = include_directories('src')
 
-cc = meson.get_compiler('c')
+gnome = import('gnome')
+i18n  = import('i18n')
+pkg   = import('pkgconfig')
+cc    = meson.get_compiler('c')
+
 conf = configuration_data()
-
-i18n = import('i18n')
+conf.set('ENABLE_TRACING', get_option('tracing'))
+conf.set('NDEBUG', (not pkg_is_debug))
+conf.set('G_DISABLE_ASSERT', (not pkg_is_debug))
+conf.set('G_DISABLE_CAST_CHECKS', (not pkg_is_debug))
 conf.set_quoted('GETTEXT_PACKAGE', meson.project_name())
-
-# debug options
-conf.set('NDEBUG', get_option('buildtype').startswith('debug'))
-
-# package
-conf.set_quoted('PACKAGE', meson.project_name())
 conf.set_quoted('PACKAGE_VERSION', pkg_version)
 conf.set_quoted('PACKAGE_BUGREPORT', 'https://sadiqpk.org/bugs')
 conf.set_quoted('PACKAGE_NAME', meson.project_name())
-conf.set_quoted('PACKAGE_STRING', '@0@-@1@'.format(meson.project_name(),
-                                                   pkg_version))
+conf.set_quoted('PACKAGE', meson.project_name())
 conf.set_quoted('PACKAGE_URL', '')
-
-# functions
-conf.set('HAVE_DCGETTEXT', cc.has_function('dcgettext'))
-conf.set('HAVE_GETTEXT', cc.has_function('gettext'))
-conf.set('HAVE_ICONV', cc.has_function('iconv'))
-conf.set_quoted('PACKAGE_LOCALE_DIR', join_paths([ get_option('prefix'),
-                                                   get_option('datadir'),
-                                                   'locale' ]))
+conf.set_quoted('PACKAGE_LOCALE_DIR', pkg_localedir)
 
 common_flags = [
   '-DHAVE_CONFIG_H',
@@ -77,9 +69,6 @@ configure_file(
   output : 'config.h',
   configuration : conf,
 )
-
-gnome = import('gnome')
-pkg = import('pkgconfig')
 
 subdir('src')
 subdir('data')
