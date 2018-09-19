@@ -12,4 +12,6 @@ install_data(
   install_dir: pkg_schemadir
 )
 
+compiled = gnome.compile_schemas(build_by_default: true)
+
 subdir('icons')
