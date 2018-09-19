@@ -159,6 +159,8 @@ gn_settings_constructed (GObject *object)
 
   G_OBJECT_CLASS (gn_settings_parent_class)->constructed (object);
 
+  g_settings_delay (settings);
+
   self->maximized = g_settings_get_boolean (settings, "window-maximized");
   g_settings_get (settings, "window-size", "(ii)", &geometry->width, &geometry->height);
   g_settings_get (settings, "window-position", "(ii)", &geometry->x, &geometry->y);
@@ -170,6 +172,16 @@ gn_settings_constructed (GObject *object)
   self->provider = g_settings_get_string (settings, "provider");
   self->font_name = g_settings_get_string (settings, "font");
   self->use_system_font = g_settings_get_boolean (settings, "use-system-font");
+}
+
+static void
+gn_settings_dispose (GObject *object)
+{
+  GSettings *settings = (GSettings *)object;
+
+  g_settings_apply (settings);
+
+  G_OBJECT_CLASS (gn_settings_parent_class)->dispose (object);
 }
 
 static void
@@ -196,6 +208,7 @@ gn_settings_class_init (GnSettingsClass *klass)
   object_class->get_property = gn_settings_get_property;
   object_class->set_property = gn_settings_set_property;
   object_class->constructed = gn_settings_constructed;
+  object_class->dispose = gn_settings_dispose;
   object_class->finalize = gn_settings_finalize;
 
   properties[PROP_FONT] =
@@ -246,14 +259,6 @@ gn_settings_new (const gchar *schema_id)
   return g_object_new (GN_TYPE_SETTINGS,
                        "schema-id", schema_id,
                        NULL);
-}
-
-void
-gn_settings_save_window_state (GnSettings *self)
-{
-  GSettings *settings = G_SETTINGS (self);
-
-  g_settings_set_boolean (settings, "window-maximized", self->maximized);
 }
 
 gboolean

@@ -590,17 +590,6 @@ gn_window_key_press_cb (GtkEventController *controller,
 }
 
 static void
-gn_window_destroy_cb (GnWindow *self)
-{
-  GnSettings *settings;
-
-  g_assert (GN_IS_WINDOW (self));
-
-  settings = gn_manager_get_settings (gn_manager_get_default ());
-  gn_settings_save_window_state (settings);
-}
-
-static void
 gn_window_constructed (GObject *object)
 {
   GnWindow *self = GN_WINDOW (object);
@@ -676,7 +665,6 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_callback (widget_class, gn_window_continue_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
-  gtk_widget_class_bind_template_callback (widget_class, gn_window_destroy_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_size_allocate_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_mode_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);

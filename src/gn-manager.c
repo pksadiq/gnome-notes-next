@@ -563,6 +563,8 @@ gn_manager_dispose (GObject *object)
   g_cancellable_cancel (self->provider_cancellable);
   g_clear_object (&self->provider_cancellable);
 
+  g_clear_object (&self->settings);
+
   g_clear_pointer (&self->notes_queue, g_queue_free);
   g_clear_pointer (&self->notes_queue, g_queue_free);
   g_clear_pointer (&self->notes_queue, g_queue_free);

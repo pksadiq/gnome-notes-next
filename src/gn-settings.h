@@ -37,7 +37,6 @@ void        gn_settings_get_window_geometry  (GnSettings   *self,
                                               GdkRectangle *geometry);
 void        gn_settings_set_window_geometry  (GnSettings   *self,
                                               GdkRectangle *geometry);
-void        gn_settings_save_window_state    (GnSettings *self);
 
 void        gn_settings_get_rgba             (GnSettings    *self,
                                               GdkRGBA       *rgba);
