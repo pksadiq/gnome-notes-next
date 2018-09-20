@@ -138,7 +138,6 @@ static void
 test_settings_first_run (void)
 {
   g_autoptr(GnSettings) settings = NULL;
-  gboolean is_first_run;
 
   settings = gn_settings_new ("org.sadiqpk.notes");
   g_assert (GN_IS_SETTINGS (settings));
