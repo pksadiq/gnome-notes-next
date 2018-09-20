@@ -575,7 +575,6 @@ gn_window_constructed (GObject *object)
   GnManager *manager;
   GnSettings *settings;
   GdkRectangle geometry;
-  gboolean is_maximized;
 
   manager = gn_manager_get_default ();
   settings = gn_manager_get_settings (manager);
@@ -583,15 +582,12 @@ gn_window_constructed (GObject *object)
                           self->loading_spinner, "active",
                           G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 
-  is_maximized = gn_settings_get_window_maximized (settings);
   gn_settings_get_window_geometry (settings, &geometry);
-
   gtk_window_set_default_size (window, geometry.width, geometry.height);
+  gtk_window_move (window, geometry.x, geometry.y);
 
-  if (is_maximized)
+  if (gn_settings_get_window_maximized (settings))
     gtk_window_maximize (window);
-  else if (geometry.x >= 0)
-    gtk_window_move (window, geometry.x, geometry.y);
 
   G_OBJECT_CLASS (gn_window_parent_class)->constructed (object);
 }
