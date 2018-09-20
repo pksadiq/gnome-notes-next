@@ -94,7 +94,6 @@ test_settings_geometry (void)
   gboolean is_maximized;
 
   settings = gn_settings_new ("org.sadiqpk.notes");
-  g_assert (g_type_is_a (GN_TYPE_SETTINGS, G_TYPE_SETTINGS));
   g_assert (GN_IS_SETTINGS (settings));
 
   gn_settings_set_window_maximized (settings, 0);
