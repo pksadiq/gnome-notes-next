@@ -553,28 +553,6 @@ gn_window_show_view (GnWindow *self,
   gn_window_set_view_type (self, type);
 }
 
-static void
-gn_window_size_allocate_cb (GnWindow *self)
-{
-  GtkWindow *window = GTK_WINDOW (self);
-  GnSettings *settings;
-  GdkRectangle geometry;
-  gboolean is_maximized;
-
-  g_assert (GN_IS_WINDOW (self));
-
-  settings = gn_manager_get_settings (gn_manager_get_default ());
-  is_maximized = gtk_window_is_maximized (window);
-  gn_settings_set_window_maximized (settings, is_maximized);
-
-  if (is_maximized)
-    return;
-
-  gtk_window_get_size (window, &geometry.width, &geometry.height);
-  gtk_window_get_position (window, &geometry.x, &geometry.y);
-  gn_settings_set_window_geometry (settings, &geometry);
-}
-
 static gboolean
 gn_window_key_press_cb (GtkEventController *controller,
                         guint               keyval,
@@ -619,12 +597,36 @@ gn_window_constructed (GObject *object)
 }
 
 static void
+gn_window_unmap (GtkWidget *widget)
+{
+  GtkWindow *window = (GtkWindow *)widget;
+  GnSettings *settings;
+  GdkRectangle geometry;
+  gboolean is_maximized;
+
+  settings = gn_manager_get_settings (gn_manager_get_default ());
+  is_maximized = gtk_window_is_maximized (window);
+  gn_settings_set_window_maximized (settings, is_maximized);
+
+  if (is_maximized)
+    return;
+
+  gtk_window_get_size (window, &geometry.width, &geometry.height);
+  gtk_window_get_position (window, &geometry.x, &geometry.y);
+  gn_settings_set_window_geometry (settings, &geometry);
+
+  GTK_WIDGET_CLASS (gn_window_parent_class)->unmap (widget);
+}
+
+static void
 gn_window_class_init (GnWindowClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->constructed = gn_window_constructed;
+
+  widget_class->unmap = gn_window_unmap;
 
   g_type_ensure (GN_TYPE_MAIN_VIEW);
   g_type_ensure (GN_TYPE_ACTION_BAR);
@@ -665,7 +667,6 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_callback (widget_class, gn_window_continue_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
-  gtk_widget_class_bind_template_callback (widget_class, gn_window_size_allocate_cb);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_mode_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
