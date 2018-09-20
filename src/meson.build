@@ -56,6 +56,7 @@ inc_dir = [
 
 libsrc = [
   'gn-utils.c',
+  'gn-settings.c',
   'notes/gn-item.c',
   'notes/gn-note.c',
   'notes/gn-plain-note.c',

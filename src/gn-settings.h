@@ -30,6 +30,8 @@ G_DECLARE_FINAL_TYPE (GnSettings, gn_settings, GN, SETTINGS, GSettings)
 
 GnSettings *gn_settings_new (const gchar *schema_id);
 
+gboolean    gn_settings_get_is_first_run     (GnSettings  *self);
+
 gboolean    gn_settings_get_window_maximized (GnSettings *self);
 void        gn_settings_set_window_maximized (GnSettings *self,
                                               gboolean    maximized);

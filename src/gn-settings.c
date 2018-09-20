@@ -266,6 +266,14 @@ gn_settings_new (const gchar *schema_id)
 }
 
 gboolean
+gn_settings_get_is_first_run (GnSettings *self)
+{
+  g_return_val_if_fail (GN_IS_SETTINGS (self), FALSE);
+
+  return self->first_run;
+}
+
+gboolean
 gn_settings_get_window_maximized (GnSettings *self)
 {
   g_return_val_if_fail (GN_IS_SETTINGS (self), TRUE);
