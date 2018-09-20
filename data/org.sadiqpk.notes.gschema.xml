@@ -34,6 +34,12 @@
       </description>
     </key>
 
+    <key name="first-run" type="b">
+      <default>true</default>
+      <summary>First run of the application</summary>
+      <description>Whether the application is launching the first time</description>
+    </key>
+
     <key name="window-maximized" type="b">
       <default>false</default>
       <summary>Window maximized</summary>
