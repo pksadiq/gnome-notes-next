@@ -5,7 +5,8 @@ env.set('G_TEST_SRCDIR', meson.current_source_dir())
 env.set('G_TEST_BUILDDIR', meson.current_build_dir())
 env.set('G_DEBUG', 'gc-friendly')
 env.set('MALLOC_CHECK_', '2')
-env.set('MALLOC_PERTURB_', '4') # Guaranteed to be random
+# Guaranteed to be random
+env.set('MALLOC_PERTURB_', '4')
 
 test_items = [
   'plain-note',
