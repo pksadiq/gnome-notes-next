@@ -46,6 +46,8 @@ struct _GnSettings
   /* Window states */
   GdkRectangle geometry;
   gboolean maximized;
+
+  gboolean first_run;
 };
 
 G_DEFINE_TYPE (GnSettings, gn_settings, G_TYPE_SETTINGS)
@@ -161,6 +163,7 @@ gn_settings_constructed (GObject *object)
 
   g_settings_delay (settings);
 
+  self->first_run = g_settings_get_boolean (settings, "first-run");
   self->maximized = g_settings_get_boolean (settings, "window-maximized");
   g_settings_get (settings, "window-size", "(ii)", &geometry->width, &geometry->height);
   g_settings_get (settings, "window-position", "(ii)", &geometry->x, &geometry->y);
@@ -179,6 +182,7 @@ gn_settings_dispose (GObject *object)
 {
   GSettings *settings = (GSettings *)object;
 
+  g_settings_set_boolean (settings, "first-run", FALSE);
   g_settings_apply (settings);
 
   G_OBJECT_CLASS (gn_settings_parent_class)->dispose (object);
@@ -276,6 +280,7 @@ gn_settings_set_window_maximized (GnSettings *self,
   g_return_if_fail (GN_IS_SETTINGS (self));
 
   self->maximized = !!maximized;
+  g_settings_set_boolean (G_SETTINGS (self), "window-maximized", !!maximized);
 }
 
 void
