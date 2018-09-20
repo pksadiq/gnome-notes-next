@@ -7,21 +7,19 @@ env.set('G_DEBUG', 'gc-friendly')
 env.set('MALLOC_CHECK_', '2')
 env.set('MALLOC_PERTURB_', '4') # Guaranteed to be random
 
-test_plain_note = executable(
-  'test-plain-note',
-  'test-plain-note.c',
-  include_directories: tests_inc,
-  link_with: libgnotes,
-  dependencies: pkg_dep
-)
-test('test-plain-note', test_plain_note, env: env)
+test_items = [
+  'plain-note',
+  'note-buffer'
+]
 
-test_note_buffer = executable(
-  'test-note-buffer',
-  'test-note-buffer.c',
-  include_directories: tests_inc,
-  link_with: libgnotes,
-  dependencies: pkg_dep
-)
-test('test-note-buffer', test_note_buffer, env: env)
+foreach item: test_items
+  t = executable(
+    item,
+    item + '.c',
+    include_directories: tests_inc,
+    link_with: libgnotes,
+    dependencies: pkg_dep
+  )
+  test(item, t, env: env)
+endforeach
 

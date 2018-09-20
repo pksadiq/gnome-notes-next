@@ -1,4 +1,4 @@
-/* test-note-buffer.c
+/* note-buffer.c
  *
  * Copyright 2018 Mohammed Sadiq <sadiq@sadiqpk.org>
  *

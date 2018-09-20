@@ -1,4 +1,4 @@
-/* test-plain-note.c
+/* plain-note.c
  *
  * Copyright 2018 Mohammed Sadiq <sadiq@sadiqpk.org>
  *
