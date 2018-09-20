@@ -67,9 +67,6 @@ static void
 gn_settings_set_use_system_font (GnSettings *self,
                                  gboolean    use_system_font)
 {
-  GSettings *desktop_settings;
-  g_autofree gchar *font_name = NULL;
-
   g_assert (GN_IS_SETTINGS (self));
 
   use_system_font = !!use_system_font;
@@ -79,13 +76,20 @@ gn_settings_set_use_system_font (GnSettings *self,
 
   self->use_system_font = use_system_font;
 
-  desktop_settings = g_settings_new ("org.gnome.desktop.interface");
-  font_name = g_settings_get_string (desktop_settings, "document-font-name");
+  if (use_system_font)
+    {
+      g_autoptr(GSettings) desktop_settings = NULL;
+      g_autofree gchar *font_name = NULL;
+
+      desktop_settings = g_settings_new ("org.gnome.desktop.interface");
+      font_name = g_settings_get_string (desktop_settings, "document-font-name");
+
+      gn_settings_set_font_name (self, font_name);
+    }
 
   g_settings_set_boolean (G_SETTINGS (self),
                           "use-system-font", self->use_system_font);
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_USE_SYSTEM_FONT]);
-  gn_settings_set_font_name (self, font_name);
 }
 
 static void
