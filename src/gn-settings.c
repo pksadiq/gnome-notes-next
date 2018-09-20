@@ -64,6 +64,20 @@ enum {
 static GParamSpec *properties[N_PROPS];
 
 static void
+gn_settings_set_font (GnSettings  *self,
+                      const gchar *font_name)
+{
+  g_assert (GN_IS_SETTINGS (self));
+  g_assert (font_name != NULL);
+
+  g_clear_pointer (&self->font_name, g_free);
+  self->font_name = g_strdup (font_name);
+
+  g_settings_set_string (G_SETTINGS (self), "font", font_name);
+  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FONT]);
+}
+
+static void
 gn_settings_set_use_system_font (GnSettings *self,
                                  gboolean    use_system_font)
 {
@@ -84,7 +98,7 @@ gn_settings_set_use_system_font (GnSettings *self,
       desktop_settings = g_settings_new ("org.gnome.desktop.interface");
       font_name = g_settings_get_string (desktop_settings, "document-font-name");
 
-      gn_settings_set_font_name (self, font_name);
+      gn_settings_set_font (self, font_name);
     }
 
   g_settings_set_boolean (G_SETTINGS (self),
@@ -140,6 +154,7 @@ gn_settings_set_property (GObject      *object,
       break;
 
     case PROP_USE_SYSTEM_FONT:
+      g_message ("SET use system font: %d", g_value_get_boolean (value));
       gn_settings_set_use_system_font (self, g_value_get_boolean (value));
       break;
 
@@ -391,19 +406,14 @@ gboolean
 gn_settings_set_font_name (GnSettings  *self,
                            const gchar *name)
 {
-  GSettings *settings = G_SETTINGS (self);
-
   g_return_val_if_fail (GN_IS_SETTINGS (self), FALSE);
   g_return_val_if_fail (name != NULL, FALSE);
 
   if (g_strcmp0 (self->font_name, name) == 0)
     return FALSE;
 
-  g_free (self->font_name);
-  self->font_name = g_strdup (name);
-
-  g_settings_set_string (settings, "font", name);
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_FONT]);
+  gn_settings_set_use_system_font (self, FALSE);
+  gn_settings_set_font (self, name);
 
   return TRUE;
 }
