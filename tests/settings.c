@@ -23,6 +23,68 @@
 #include "gn-settings.h"
 
 static void
+test_settings_fonts (void)
+{
+  g_autoptr(GSettings) desktop_settings = NULL;
+  g_autoptr(GnSettings) settings = NULL;
+  g_autofree gchar *system_font = NULL;
+  const gchar *font;
+  gboolean use_system_font;
+
+  settings = gn_settings_new ("org.sadiqpk.notes");
+  desktop_settings = g_settings_new ("org.gnome.desktop.interface");
+  system_font = g_settings_get_string (desktop_settings,
+                                       "document-font-name");
+  g_assert (GN_IS_SETTINGS (settings));
+  g_assert (G_IS_SETTINGS (desktop_settings));
+
+  /* Unset any font set */
+  gn_settings_set_font_name (settings, "");
+
+  font = "Possibly invalid Font";
+  g_assert_true (gn_settings_set_font_name (settings, font));
+  g_object_get (G_OBJECT (settings),
+                "use-system-font", &use_system_font, NULL);
+  g_assert_false (use_system_font);
+  font = gn_settings_get_font_name (settings);
+  g_assert_cmpstr (font, ==, "Possibly invalid Font");
+
+  g_object_set (G_OBJECT (settings), "use-system-font", FALSE, NULL);
+  g_object_get (G_OBJECT (settings),
+                "use-system-font", &use_system_font, NULL);
+  g_assert_false (use_system_font);
+  font = gn_settings_get_font_name (settings);
+  g_assert_cmpstr (font, ==, "Possibly invalid Font");
+
+  g_object_set (G_OBJECT (settings), "use-system-font", TRUE, NULL);
+  g_object_get (G_OBJECT (settings),
+                "use-system-font", &use_system_font, NULL);
+  g_assert_true (use_system_font);
+  font = gn_settings_get_font_name (settings);
+  g_assert_cmpstr (font, ==, system_font);
+
+  font = "New Font";
+  g_object_set (G_OBJECT (settings), "font", font, NULL);
+  font = gn_settings_get_font_name (settings);
+  g_object_get (G_OBJECT (settings),
+                "use-system-font", &use_system_font, NULL);
+  g_assert_false (use_system_font);
+  g_assert_cmpstr (font, ==, "New Font");
+
+  /* Save the settings, create a new object, and check again */
+  g_object_unref (settings);
+  settings = gn_settings_new ("org.sadiqpk.notes");
+  g_assert (GN_IS_SETTINGS (settings));
+
+  font = gn_settings_get_font_name (settings);
+  g_assert_cmpstr (font, ==, "New Font");
+
+  g_object_get (G_OBJECT (settings),
+                "use-system-font", &use_system_font, NULL);
+  g_assert_false (use_system_font);
+}
+
+static void
 test_settings_geometry (void)
 {
   g_autoptr(GnSettings) settings = NULL;
@@ -104,6 +166,7 @@ main (int   argc,
    */
   g_test_add_func ("/settings/first_run", test_settings_first_run);
   g_test_add_func ("/settings/geometry", test_settings_geometry);
+  g_test_add_func ("/settings/fonts", test_settings_fonts);
 
   return g_test_run ();
 }
