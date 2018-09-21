@@ -36,6 +36,7 @@ src += [
   'providers/gn-memo-provider.c',
   'providers/gn-local-provider.c',
   'views/gn-editor.c',
+  'views/gn-empty-view.c',
   'views/gn-grid-view.c',
   'views/gn-list-view.c',
   'views/gn-main-view.c',

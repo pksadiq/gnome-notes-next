@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="GnEmptyView" parent="GtkBox">
+    <property name="halign">center</property>
+    <property name="valign">center</property>
+
+    <child>
+      <object class="GtkLabel" id="primary_label">
+        <property name="label" translatable="1">No notes</property>
+        <property name="halign">start</property>
+        <attributes>
+          <attribute name="weight" value="bold"/>
+          <attribute name="scale" value="1.2"/>
+        </attributes>
+      </object>
+    </child>
+
+    <style>
+     <class name="dim-label"/>
+    </style>
+  </template>
+</interface>
