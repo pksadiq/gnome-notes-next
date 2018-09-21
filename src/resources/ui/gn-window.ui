@@ -210,52 +210,8 @@
 
                     <!-- Empty notes view -->
                     <child>
-                      <object class="GtkGrid">
-                        <property name="column-spacing">12</property>
-                        <property name="halign">center</property>
-                        <property name="valign">center</property>
-
-                        <child>
-                          <object class="GtkImage">
-                            <property name="icon-name">note-symbolic</property>
-                            <property name="pixel-size">48</property>
-                          </object>
-                          <packing>
-                            <property name="top-attach">0</property>
-                            <property name="left-attach">0</property>
-                            <property name="height">3</property>
-                          </packing>
-                        </child>
-
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label" translatable="1">No notes</property>
-                            <property name="halign">start</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                              <attribute name="scale" value="1.2"/>
-                            </attributes>
-                          </object>
-                          <packing>
-                            <property name="top-attach">0</property>
-                            <property name="left-attach">1</property>
-                          </packing>
-                        </child>
-
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label" translatable="1">Press the new button to create a note</property>
-                          </object>
-                          <packing>
-                            <property name="top-attach">1</property>
-                            <property name="left-attach">1</property>
-                          </packing>
-                        </child>
-
-                        <style>
-                         <class name="dim-label"/>
-                        </style>
-                      </object> <!-- ./GtkGrid -->
+                      <object class="GnEmptyView">
+                      </object>
                       <packing>
                         <property name="name">empty</property>
                       </packing>
@@ -305,26 +261,8 @@
 
                     <!-- Empty trash view -->
                     <child>
-                      <object class="GtkGrid">
-                        <property name="column-spacing">12</property>
-                        <property name="halign">center</property>
-                        <property name="valign">center</property>
-
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label" translatable="1">No notes</property>
-                            <property name="halign">start</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                              <attribute name="scale" value="1.2"/>
-                            </attributes>
-                          </object>
-                        </child>
-
-                        <style>
-                         <class name="dim-label"/>
-                        </style>
-                      </object> <!-- ./GtkGrid -->
+                      <object class="GnEmptyView">
+                      </object>
                       <packing>
                         <property name="name">empty</property>
                       </packing>
@@ -361,26 +299,8 @@
 
                     <!-- Empty Search results -->
                     <child>
-                      <object class="GtkGrid">
-                        <property name="column-spacing">12</property>
-                        <property name="halign">center</property>
-                        <property name="valign">center</property>
-
-                        <child>
-                          <object class="GtkLabel">
-                            <property name="label" translatable="1">No Search Results</property>
-                            <property name="halign">start</property>
-                            <attributes>
-                              <attribute name="weight" value="bold"/>
-                              <attribute name="scale" value="1.2"/>
-                            </attributes>
-                          </object>
-                        </child>
-
-                        <style>
-                         <class name="dim-label"/>
-                        </style>
-                      </object> <!-- ./GtkGrid -->
+                      <object class="GnEmptyView">
+                      </object>
                       <packing>
                         <property name="name">empty</property>
                       </packing>
