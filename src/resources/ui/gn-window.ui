@@ -199,89 +199,89 @@
               </object>
             </child>
 
+            <child>
+              <object class="GtkStack">
+                <property name="expand">1</property>
+                <property name="visible-child-name" bind-source="notes_view"
+                          bind-property="content-status" bind-flags="sync-create"/>
+
+                <!-- Empty notes view -->
                 <child>
-                  <object class="GtkStack">
-                    <property name="expand">1</property>
-                    <property name="visible-child-name" bind-source="notes_view"
-                              bind-property="content-status" bind-flags="sync-create"/>
+                  <object class="GnEmptyView">
+                  </object>
+                  <packing>
+                    <property name="name">empty</property>
+                  </packing>
+                </child>
 
-                    <!-- Empty notes view -->
+                <child>
+                  <object class="GtkScrolledWindow">
+                    <signal name="edge-reached" handler="gn_window_load_more_items" swapped="1"/>
                     <child>
-                      <object class="GnEmptyView">
-                      </object>
-                      <packing>
-                        <property name="name">empty</property>
-                      </packing>
-                    </child>
-
-                    <child>
-                      <object class="GtkScrolledWindow">
-                        <signal name="edge-reached" handler="gn_window_load_more_items" swapped="1"/>
+                      <object class="GtkFrame">
+                        <style>
+                         <class name="content-view"/>
+                        </style>
                         <child>
-                          <object class="GtkFrame">
-                            <style>
-                             <class name="content-view"/>
-                            </style>
+                          <object class="GtkStack" id="main_view">
+                            <signal name="notify::visible-child" handler="gn_window_main_view_changed"
+                                    swapped="1"/>
+
                             <child>
-                              <object class="GtkStack" id="main_view">
-                                <signal name="notify::visible-child" handler="gn_window_main_view_changed"
+                              <object class="GnMainView" id="notes_view">
+                                <signal name="item-activated" handler="gn_window_item_activated"
                                         swapped="1"/>
-
-                                <child>
-                                  <object class="GnMainView" id="notes_view">
-                                    <signal name="item-activated" handler="gn_window_item_activated"
-                                            swapped="1"/>
-                                  </object>
-                                  <packing>
-                                    <property name="name">notes</property>
-                                    <property name="title" translatable="1">Notes</property>
-                                  </packing>
-                                </child>
-
-                                <child>
-                                  <object class="GnMainView" id="notebook_view">
-                                    <signal name="item-activated" handler="gn_window_item_activated"
-                                            swapped="1"/>
-                                  </object>
-                                  <packing>
-                                    <property name="name">notebooks</property>
-                                    <property name="title" translatable="1">Notebooks</property>
-                                  </packing>
-                                </child>
-
-                                <child>
-                                  <object class="GnMainView" id="search_view">
-                                    <signal name="item-activated" handler="gn_window_item_activated"
-                                            swapped="1"/>
-                                  </object>
-                                </child>
-
-                                <child>
-                                  <object class="GnMainView" id="trash_view">
-                                    <signal name="item-activated" handler="gn_window_item_activated"
-                                            swapped="1"/>
-                                  </object>
-                                </child>
-
-                                <child>
-                                  <object class="GtkFrame" id="editor_view">
-                                    <property name="shadow-type">none</property>
-                                  </object>
-                                </child>
-
-                              </object> <!-- ./GtkStack main_view -->
+                              </object>
+                              <packing>
+                                <property name="name">notes</property>
+                                <property name="title" translatable="1">Notes</property>
+                              </packing>
                             </child>
 
-                          </object>
-                        </child>
-                      </object>
-                      <packing>
-                        <property name="name">non-empty</property>
-                      </packing>
-                    </child>
+                            <child>
+                              <object class="GnMainView" id="notebook_view">
+                                <signal name="item-activated" handler="gn_window_item_activated"
+                                        swapped="1"/>
+                              </object>
+                              <packing>
+                                <property name="name">notebooks</property>
+                                <property name="title" translatable="1">Notebooks</property>
+                              </packing>
+                            </child>
 
+                            <child>
+                              <object class="GnMainView" id="search_view">
+                                <signal name="item-activated" handler="gn_window_item_activated"
+                                        swapped="1"/>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GnMainView" id="trash_view">
+                                <signal name="item-activated" handler="gn_window_item_activated"
+                                        swapped="1"/>
+                              </object>
+                            </child>
+
+                            <child>
+                              <object class="GtkFrame" id="editor_view">
+                                <property name="shadow-type">none</property>
+                              </object>
+                            </child>
+
+                          </object> <!-- ./GtkStack main_view -->
+                        </child>
+
+                      </object>
+                    </child>
                   </object>
+                  <packing>
+                    <property name="name">non-empty</property>
+                  </packing>
                 </child>
+
+              </object>
+            </child>
 
           </object> <!-- ./GtkOverlay -->
         </child>
