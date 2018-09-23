@@ -199,8 +199,6 @@
               </object>
             </child>
 
-            <child>
-              <object class="GtkStack" id="main_stack">
                 <child>
                   <object class="GtkStack">
                     <property name="expand">1</property>
@@ -284,9 +282,6 @@
 
                   </object>
                 </child>
-
-              </object> <!-- ./GtkStack main_stack -->
-            </child>
 
           </object> <!-- ./GtkOverlay -->
         </child>
