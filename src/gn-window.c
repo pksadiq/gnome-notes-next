@@ -62,6 +62,7 @@ struct _GnWindow
   GtkWidget *main_stack;
   GtkWidget *main_view;
   GtkWidget *notes_view;
+  GtkWidget *notebook_view;
   GtkWidget *editor_view;
   GtkWidget *trash_view;
 
@@ -298,8 +299,8 @@ gn_window_main_view_changed (GnWindow   *self,
 
   if (child == self->notes_view)
     view = GN_VIEW_NOTES;
-  /* else if (child == self->notebook_stack) */
-  /*   view = GN_VIEW_NOTEBOOKS; */
+  else if (child == self->notebook_view)
+    view = GN_VIEW_NOTEBOOKS;
   else
     return;
 
@@ -470,10 +471,10 @@ gn_window_update_main_view (GnWindow *self,
                                    self->notes_view);
       break;
 
-  /*   case GN_VIEW_NOTEBOOKS: */
-  /*     gtk_stack_set_visible_child (GTK_STACK (self->main_stack), */
-  /*                                  self->notebook_stack); */
-  /*     break; */
+    case GN_VIEW_NOTEBOOKS:
+      gtk_stack_set_visible_child (GTK_STACK (self->main_view),
+                                   self->notebook_view);
+      break;
 
     case GN_VIEW_EDITOR:
       gtk_stack_set_visible_child (GTK_STACK (self->main_view),
@@ -639,6 +640,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, notebook_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_view);
 

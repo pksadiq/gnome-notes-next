@@ -13,7 +13,7 @@
 
         <child type="title">
           <object class="GtkStackSwitcher" id="stack_switcher">
-            <property name="stack">main_stack</property>
+            <property name="stack">main_view</property>
           </object>
         </child>
 
@@ -234,6 +234,21 @@
                                     <signal name="item-activated" handler="gn_window_item_activated"
                                             swapped="1"/>
                                   </object>
+                                  <packing>
+                                    <property name="name">notes</property>
+                                    <property name="title" translatable="1">Notes</property>
+                                  </packing>
+                                </child>
+
+                                <child>
+                                  <object class="GnMainView" id="notebook_view">
+                                    <signal name="item-activated" handler="gn_window_item_activated"
+                                            swapped="1"/>
+                                  </object>
+                                  <packing>
+                                    <property name="name">notebooks</property>
+                                    <property name="title" translatable="1">Notebooks</property>
+                                  </packing>
                                 </child>
 
                                 <child>
@@ -268,10 +283,6 @@
                     </child>
 
                   </object>
-                  <packing>
-                    <property name="name">notes</property>
-                    <property name="title" translatable="1">Notes</property>
-                  </packing>
                 </child>
 
               </object> <!-- ./GtkStack main_stack -->
