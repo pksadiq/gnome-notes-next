@@ -167,7 +167,7 @@ gn_window_provider_added_cb (GnWindow   *self,
   store = gn_manager_get_notes_store (gn_manager_get_default ());
 
   gn_main_view_set_view (GN_MAIN_VIEW (self->notes_view),
-                         GN_VIEW_TYPE_LIST);
+                         "list");
 
   gn_main_view_set_model (GN_MAIN_VIEW (self->notes_view),
                           G_LIST_MODEL (store));
@@ -376,13 +376,13 @@ gn_window_set_view_type (GnWindow   *self,
 
   if (type == GN_VIEW_TYPE_GRID)
     {
-      gn_main_view_set_view (GN_MAIN_VIEW (view), GN_VIEW_TYPE_GRID);
+      gn_main_view_set_view (GN_MAIN_VIEW (view), "grid");
       gtk_stack_set_visible_child (GTK_STACK (self->view_button_stack),
                                    self->list_button);
     }
   else
     {
-      gn_main_view_set_view (GN_MAIN_VIEW (view), GN_VIEW_TYPE_LIST);
+      gn_main_view_set_view (GN_MAIN_VIEW (view), "list");
       gtk_stack_set_visible_child (GTK_STACK (self->view_button_stack),
                                    self->grid_button);
     }
