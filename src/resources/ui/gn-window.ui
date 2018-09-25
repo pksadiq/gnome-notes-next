@@ -202,17 +202,6 @@
             <child>
               <object class="GtkStack">
                 <property name="expand">1</property>
-                <property name="visible-child-name" bind-source="notes_view"
-                          bind-property="content-status" bind-flags="sync-create"/>
-
-                <!-- Empty notes view -->
-                <child>
-                  <object class="GnEmptyView">
-                  </object>
-                  <packing>
-                    <property name="name">empty</property>
-                  </packing>
-                </child>
 
                 <child>
                   <object class="GtkScrolledWindow">

@@ -46,6 +46,7 @@ struct _GnMainView
   GtkWidget *view_stack;
   GtkWidget *grid_view;
   GtkWidget *list_view;
+  GtkWidget *empty_view;
 
   GnViewType current_view;
   gboolean selection_mode;
@@ -76,29 +77,19 @@ gn_main_view_model_changed (GListModel *model,
                             guint       added,
                             GnMainView *self)
 {
-  gboolean empty;
-
   g_assert (GN_IS_MAIN_VIEW (self));
   g_assert (G_IS_LIST_MODEL (model));
 
-  if (g_list_model_get_item (model, 0) != NULL)
-    empty = FALSE;
+  /* TODO: Refactor */
+  if (g_list_model_get_item (model, 0) == NULL)
+    gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
+                                 self->empty_view);
+  else if (self->current_view == GN_VIEW_TYPE_GRID)
+    gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
+                                 self->grid_view);
   else
-    empty = TRUE;
-
-  /* Ie, if the model is empty now, and not empty previously */
-  if (empty && strcmp (self->content_status, "non-empty") == 0)
-    {
-      g_free (self->content_status);
-      self->content_status = g_strdup ("empty");
-    }
-  else if (!empty && strcmp (self->content_status, "empty") == 0)
-    {
-      g_free (self->content_status);
-      self->content_status = g_strdup ("non-empty");
-    }
-  else
-    return;
+    gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
+                                 self->list_view);
 
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CONTENT_STATUS]);
 }
@@ -255,6 +246,7 @@ gn_main_view_class_init (GnMainViewClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnMainView, view_stack);
   gtk_widget_class_bind_template_child (widget_class, GnMainView, grid_view);
   gtk_widget_class_bind_template_child (widget_class, GnMainView, list_view);
+  gtk_widget_class_bind_template_child (widget_class, GnMainView, empty_view);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_main_view_grid_item_activated);
   gtk_widget_class_bind_template_callback (widget_class, gn_main_view_list_item_activated);

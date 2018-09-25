@@ -40,6 +40,10 @@
           </packing>
         </child>
 
+        <child>
+          <object class="GnEmptyView" id="empty_view" />
+        </child>
+
       </object>
     </child>
   </template>
