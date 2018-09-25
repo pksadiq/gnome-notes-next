@@ -77,16 +77,10 @@ gn_main_view_model_changed (GListModel *model,
   g_assert (GN_IS_MAIN_VIEW (self));
   g_assert (G_IS_LIST_MODEL (model));
 
-  /* TODO: Refactor */
-  if (g_list_model_get_item (model, 0) == NULL)
-    gtk_stack_set_visible_child (GTK_STACK (self),
-                                 self->empty_view);
-  else if (self->current_view == GN_VIEW_TYPE_GRID)
-    gtk_stack_set_visible_child (GTK_STACK (self),
-                                 self->grid_view);
+  if (g_list_model_get_item (self->model, 0) == NULL)
+    gtk_stack_set_visible_child (GTK_STACK (self), self->empty_view);
   else
-    gtk_stack_set_visible_child (GTK_STACK (self),
-                                 self->list_view);
+    gn_main_view_set_view (self, self->current_view);
 }
 
 static void
@@ -373,7 +367,8 @@ gn_main_view_set_model (GnMainView *self,
  * @self: A #GnMainView
  * @view_type: a #GnViewType
  *
- * Set Current view type.
+ * Set Current view type.  If the associated #GListModel is
+ * empty, the function simply returns.
  */
 void
 gn_main_view_set_view (GnMainView *self,
@@ -381,7 +376,11 @@ gn_main_view_set_view (GnMainView *self,
 {
   g_return_if_fail (GN_IS_MAIN_VIEW (self));
 
-  if (self->current_view == view_type)
+  if (self->model && g_list_model_get_item (self->model, 0) == NULL)
+    return;
+
+  if (self->current_view == view_type &&
+      gtk_stack_get_visible_child (GTK_STACK (self)) != self->empty_view)
     return;
 
   self->current_view = view_type;
