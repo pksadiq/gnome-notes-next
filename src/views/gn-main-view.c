@@ -41,7 +41,6 @@ struct _GnMainView
   GtkGrid parent_instance;
 
   GListModel *model;
-  gchar *content_status;
 
   GtkWidget *view_stack;
   GtkWidget *grid_view;
@@ -58,7 +57,6 @@ enum {
   PROP_0,
   PROP_SELECTION_MODE,
   PROP_MODEL,
-  PROP_CONTENT_STATUS,
   N_PROPS
 };
 
@@ -90,8 +88,6 @@ gn_main_view_model_changed (GListModel *model,
   else
     gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
                                  self->list_view);
-
-  g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CONTENT_STATUS]);
 }
 
 static void
@@ -148,10 +144,6 @@ gn_main_view_get_property (GObject    *object,
       g_value_set_object (value, self->model);
       break;
 
-    case PROP_CONTENT_STATUS:
-      g_value_set_string (value, self->content_status);
-      break;
-
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -173,10 +165,6 @@ gn_main_view_set_property (GObject      *object,
 
     case PROP_MODEL:
       gn_main_view_set_model (self, g_value_get_object (value));
-      break;
-
-    case PROP_CONTENT_STATUS:
-      self->content_status = g_value_dup_string (value);
       break;
 
     default:
@@ -202,14 +190,6 @@ gn_main_view_class_init (GnMainViewClass *klass)
                           "If mode is selection mode or not",
                           FALSE,
                           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
-
-  properties[PROP_CONTENT_STATUS] =
-  g_param_spec_string ("content-status",
-                       "Cotent status",
-                       "If the content is empty or non-empty",
-                       "empty",
-                       G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY |
-                       G_PARAM_STATIC_STRINGS);
 
   properties[PROP_MODEL] =
     g_param_spec_object ("model",
