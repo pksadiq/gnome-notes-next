@@ -1,45 +1,45 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="GnMainView" parent="GtkStack">
-        <property name="homogeneous">0</property>
+    <property name="homogeneous">0</property>
 
-        <child>
-          <object class="GnGridView" id="grid_view">
-            <property name="halign">start</property>
-            <property name="valign">start</property>
-            <property name="hexpand">1</property>
-            <property name="margin-start">18</property>
-            <property name="margin-top">18</property>
-            <property name="homogeneous">1</property>
-            <property name="row-spacing">24</property>
-            <property name="column-spacing">32</property>
-            <property name="selection-mode">none</property>
-            <signal name="child-activated" handler="gn_main_view_grid_item_activated" swapped="1"/>
-          </object>
-          <packing>
-            <property name="name">grid</property>
-          </packing>
-        </child>
+    <child>
+      <object class="GnGridView" id="grid_view">
+        <property name="halign">start</property>
+        <property name="valign">start</property>
+        <property name="hexpand">1</property>
+        <property name="margin-start">18</property>
+        <property name="margin-top">18</property>
+        <property name="homogeneous">1</property>
+        <property name="row-spacing">24</property>
+        <property name="column-spacing">32</property>
+        <property name="selection-mode">none</property>
+        <signal name="child-activated" handler="gn_main_view_grid_item_activated" swapped="1"/>
+      </object>
+      <packing>
+        <property name="name">grid</property>
+      </packing>
+    </child>
 
-        <child>
-          <object class="GnListView" id="list_view">
-            <property name="halign">fill</property>
-            <property name="valign">start</property>
-            <property name="expand">1</property>
-            <property name="selection-mode">none</property>
-            <signal name="row-activated" handler="gn_main_view_list_item_activated" swapped="1"/>
-            <style>
-             <class name="transparent"/>
-            </style>
-          </object>
-          <packing>
-            <property name="name">list</property>
-          </packing>
-        </child>
+    <child>
+      <object class="GnListView" id="list_view">
+        <property name="halign">fill</property>
+        <property name="valign">start</property>
+        <property name="expand">1</property>
+        <property name="selection-mode">none</property>
+        <signal name="row-activated" handler="gn_main_view_list_item_activated" swapped="1"/>
+        <style>
+         <class name="transparent"/>
+        </style>
+      </object>
+      <packing>
+        <property name="name">list</property>
+      </packing>
+    </child>
 
-        <child>
-          <object class="GnEmptyView" id="empty_view" />
-        </child>
+    <child>
+      <object class="GnEmptyView" id="empty_view" />
+    </child>
 
   </template>
 </interface>
