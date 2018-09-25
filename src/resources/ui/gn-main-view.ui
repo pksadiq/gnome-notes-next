@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
-  <template class="GnMainView" parent="GtkGrid">
-
-    <child>
-      <object class="GtkStack" id="view_stack">
+  <template class="GnMainView" parent="GtkStack">
         <property name="homogeneous">0</property>
 
         <child>
@@ -44,7 +41,5 @@
           <object class="GnEmptyView" id="empty_view" />
         </child>
 
-      </object>
-    </child>
   </template>
 </interface>

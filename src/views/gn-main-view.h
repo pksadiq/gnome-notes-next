@@ -28,7 +28,7 @@ G_BEGIN_DECLS
 
 #define GN_TYPE_MAIN_VIEW (gn_main_view_get_type ())
 
-G_DECLARE_FINAL_TYPE (GnMainView, gn_main_view, GN, MAIN_VIEW, GtkGrid)
+G_DECLARE_FINAL_TYPE (GnMainView, gn_main_view, GN, MAIN_VIEW, GtkStack)
 
 GnMainView *gn_main_view_new                (void);
 gboolean    gn_main_view_get_selection_mode (GnMainView *self);

@@ -38,11 +38,10 @@
 
 struct _GnMainView
 {
-  GtkGrid parent_instance;
+  GtkStack parent_instance;
 
   GListModel *model;
 
-  GtkWidget *view_stack;
   GtkWidget *grid_view;
   GtkWidget *list_view;
   GtkWidget *empty_view;
@@ -51,7 +50,7 @@ struct _GnMainView
   gboolean selection_mode;
 };
 
-G_DEFINE_TYPE (GnMainView, gn_main_view, GTK_TYPE_GRID)
+G_DEFINE_TYPE (GnMainView, gn_main_view, GTK_TYPE_STACK)
 
 enum {
   PROP_0,
@@ -80,13 +79,13 @@ gn_main_view_model_changed (GListModel *model,
 
   /* TODO: Refactor */
   if (g_list_model_get_item (model, 0) == NULL)
-    gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
+    gtk_stack_set_visible_child (GTK_STACK (self),
                                  self->empty_view);
   else if (self->current_view == GN_VIEW_TYPE_GRID)
-    gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
+    gtk_stack_set_visible_child (GTK_STACK (self),
                                  self->grid_view);
   else
-    gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
+    gtk_stack_set_visible_child (GTK_STACK (self),
                                  self->list_view);
 }
 
@@ -223,7 +222,6 @@ gn_main_view_class_init (GnMainViewClass *klass)
                                                "/org/sadiqpk/notes/"
                                                "ui/gn-main-view.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, GnMainView, view_stack);
   gtk_widget_class_bind_template_child (widget_class, GnMainView, grid_view);
   gtk_widget_class_bind_template_child (widget_class, GnMainView, list_view);
   gtk_widget_class_bind_template_child (widget_class, GnMainView, empty_view);
@@ -389,9 +387,9 @@ gn_main_view_set_view (GnMainView *self,
   self->current_view = view_type;
 
   if (view_type == GN_VIEW_TYPE_GRID)
-    gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
+    gtk_stack_set_visible_child (GTK_STACK (self),
                                  self->grid_view);
   else
-    gtk_stack_set_visible_child (GTK_STACK (self->view_stack),
+    gtk_stack_set_visible_child (GTK_STACK (self),
                                  self->list_view);
 }
