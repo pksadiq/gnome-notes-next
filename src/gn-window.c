@@ -706,25 +706,25 @@ gn_window_set_view (GnWindow   *self,
 
   g_return_if_fail (GN_IS_WINDOW (self));
 
-  if (view != self->current_view)
+  if (view == self->current_view)
+    return;
+
+  g_queue_push_head (self->view_stack,
+                     GINT_TO_POINTER (self->current_view));
+
+  if (self->current_view == GN_VIEW_EDITOR)
     {
-      g_queue_push_head (self->view_stack,
-                         GINT_TO_POINTER (self->current_view));
-
-      if (self->current_view == GN_VIEW_EDITOR)
-        {
-          child = gtk_bin_get_child (GTK_BIN (self->editor_view));
-          if (child != NULL)
-            gtk_container_remove (GTK_CONTAINER (self->editor_view), child);
-        }
-
-      if (view == GN_VIEW_NOTES ||
-          view == GN_VIEW_NOTEBOOKS)
-        g_queue_clear (self->view_stack);
-
-      self->current_view = view;
-      gn_window_show_view (self, view);
+      child = gtk_bin_get_child (GTK_BIN (self->editor_view));
+      if (child != NULL)
+        gtk_container_remove (GTK_CONTAINER (self->editor_view), child);
     }
+
+  if (view == GN_VIEW_NOTES ||
+      view == GN_VIEW_NOTEBOOKS)
+    g_queue_clear (self->view_stack);
+
+  self->current_view = view;
+  gn_window_show_view (self, view);
 }
 
 void
