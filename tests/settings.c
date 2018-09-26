@@ -60,6 +60,44 @@ test_settings_provider_name (void)
 }
 
 static void
+test_settings_rgba (void)
+{
+  g_autoptr(GnSettings) settings = NULL;
+  GdkRGBA expected_rgba;
+  GdkRGBA rgba;
+  gboolean is_rgba;
+
+  settings = gn_settings_new ("org.sadiqpk.notes");
+  g_assert_true (GN_IS_SETTINGS (settings));
+
+  /* 'rgb(239, 242, 209)' is the default rgba */
+  is_rgba = gdk_rgba_parse (&expected_rgba, "rgb(239, 242, 209)");
+  g_assert_true (is_rgba);
+  gn_settings_get_rgba (settings, &rgba);
+  g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
+
+  is_rgba = gdk_rgba_parse (&rgba, "rgb(232, 43, 23)");
+  g_assert_true (is_rgba);
+  expected_rgba = rgba;
+  gn_settings_set_rgba (settings, &rgba);
+  gn_settings_get_rgba (settings, &rgba);
+  g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
+
+  gn_settings_set_rgba (settings, &rgba);
+  gn_settings_get_rgba (settings, &rgba);
+  g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
+
+  /* Save the settings, create a new object, and check again */
+  g_object_unref (settings);
+  settings = gn_settings_new ("org.sadiqpk.notes");
+  g_assert (GN_IS_SETTINGS (settings));
+
+  gn_settings_get_rgba (settings, &rgba);
+  g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
+  g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
+}
+
+static void
 test_settings_fonts (void)
 {
   g_autoptr(GSettings) desktop_settings = NULL;
@@ -202,6 +240,7 @@ main (int   argc,
   g_test_add_func ("/settings/first_run", test_settings_first_run);
   g_test_add_func ("/settings/geometry", test_settings_geometry);
   g_test_add_func ("/settings/fonts", test_settings_fonts);
+  g_test_add_func ("/settings/rgba", test_settings_rgba);
   g_test_add_func ("/settings/provider-name", test_settings_provider_name);
 
   return g_test_run ();
