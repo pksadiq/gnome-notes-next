@@ -365,44 +365,36 @@ gn_window_get_widget_for_view (GnWindow *self,
 }
 
 static void
-gn_window_set_view_type (GnWindow   *self,
-                         GnViewType  type)
+gn_window_set_view_type (GnWindow    *self,
+                         const gchar *view_type)
 {
   GtkWidget *view;
+  const gchar *other_button_name;
 
   g_assert (GN_IS_WINDOW (self));
 
   view = gn_window_get_widget_for_view (self, self->current_view);
+  other_button_name = gn_utils_get_other_view_type (view_type);
 
-  if (type == GN_VIEW_TYPE_GRID)
-    {
-      gn_main_view_set_view (GN_MAIN_VIEW (view), "grid");
-      gtk_stack_set_visible_child (GTK_STACK (self->view_button_stack),
-                                   self->list_button);
-    }
-  else
-    {
-      gn_main_view_set_view (GN_MAIN_VIEW (view), "list");
-      gtk_stack_set_visible_child (GTK_STACK (self->view_button_stack),
-                                   self->grid_button);
-    }
+  gn_main_view_set_view (GN_MAIN_VIEW (view), view_type);
+  gtk_stack_set_visible_child_name (GTK_STACK (self->view_button_stack),
+                                    other_button_name);
 }
 
 static void
 gn_window_view_button_toggled (GnWindow  *self,
                                GtkWidget *widget)
 {
-  GnViewType type;
+  const gchar *view_type;
+  GtkStack *btn_stack;
 
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_WIDGET (widget));
 
-  if (widget == self->grid_button)
-    type = GN_VIEW_TYPE_GRID;
-  else
-    type = GN_VIEW_TYPE_LIST;
+  btn_stack = GTK_STACK (self->view_button_stack);
+  view_type = gtk_stack_get_visible_child_name (btn_stack);
 
-  gn_window_set_view_type (self, type);
+  gn_window_set_view_type (self, view_type);
 }
 
 static void
@@ -535,19 +527,16 @@ static void
 gn_window_show_view (GnWindow *self,
                      GnView    view)
 {
-  GtkWidget *button;
-  GnViewType type;
+  GtkStack *btn_stack;
+  const gchar *view_type;
 
   gn_window_update_main_view (self, view);
   gn_window_update_header_bar (self, view);
 
-  button = gtk_stack_get_visible_child (GTK_STACK (self->view_button_stack));
-  if (button == self->grid_button)
-    type = GN_VIEW_TYPE_LIST;
-  else
-    type = GN_VIEW_TYPE_GRID;
+  btn_stack = GTK_STACK (self->view_button_stack);
+  view_type = gtk_stack_get_visible_child_name (btn_stack);
 
-  gn_window_set_view_type (self, type);
+  gn_window_set_view_type (self, view_type);
 }
 
 static gboolean

@@ -429,3 +429,24 @@ gn_utils_get_text_from_xml (const gchar *xml)
 
   return g_string_free (str, FALSE);
 }
+
+/**
+ * gn_utils_get_other_view_type:
+ * @view: (nullable): The current view
+ *
+ * Get the alternate view for the given @view.
+ * @view can either be “list” or “grid”.
+ *
+ * If @view is “list”, the function returns “grid”.
+ * Else, “list” is returned.
+ *
+ * Returns: (transfer none): A string.
+ */
+const gchar *
+gn_utils_get_other_view_type (const gchar *view)
+{
+  if (view && g_str_equal (view, "list"))
+    return "grid";
+  else
+    return "list";
+}

@@ -30,5 +30,6 @@ GThread    *gn_utils_get_main_thread    (void);
 gchar      *gn_utils_get_markup_from_bijiben (const gchar *xml,
                                               gint         max_line);
 gchar      *gn_utils_get_text_from_xml       (const gchar *xml);
+const gchar *gn_utils_get_other_view_type    (const gchar *view);
 
 G_END_DECLS

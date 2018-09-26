@@ -76,6 +76,9 @@
                   </object>
                 </child>
               </object>
+              <packing>
+                <property name="name">grid</property>
+              </packing>
             </child>
 
             <child>
@@ -89,6 +92,9 @@
                   </object>
                 </child>
               </object>
+              <packing>
+                <property name="name">list</property>
+              </packing>
             </child>
           </object>
           <packing>
