@@ -23,6 +23,43 @@
 #include "gn-settings.h"
 
 static void
+test_settings_provider_name (void)
+{
+  g_autoptr(GnSettings) settings = NULL;
+  const gchar *provider_name;
+  gboolean provider_set;
+
+  settings = gn_settings_new ("org.sadiqpk.notes");
+  g_assert_true (GN_IS_SETTINGS (settings));
+
+  /* 'local' is the default provider */
+  provider_name = gn_settings_get_provider_name (settings);
+  g_assert_cmpstr (provider_name, ==, "local");
+
+  provider_set = gn_settings_set_provider_name (settings, "some-provider");
+  g_assert_true (provider_set);
+  provider_name = gn_settings_get_provider_name (settings);
+  g_assert_cmpstr (provider_name, ==, "some-provider");
+
+  provider_set = gn_settings_set_provider_name (settings, "some-provider");
+  g_assert_false (provider_set);
+  provider_name = gn_settings_get_provider_name (settings);
+  g_assert_cmpstr (provider_name, ==, "some-provider");
+
+  g_object_set (G_OBJECT (settings), "provider", "next-provider", NULL);
+  provider_name = gn_settings_get_provider_name (settings);
+  g_assert_cmpstr (provider_name, ==, "next-provider");
+
+  /* Save the settings, create a new object, and check again */
+  g_object_unref (settings);
+  settings = gn_settings_new ("org.sadiqpk.notes");
+  g_assert (GN_IS_SETTINGS (settings));
+
+  provider_name = gn_settings_get_provider_name (settings);
+  g_assert_cmpstr (provider_name, ==, "next-provider");
+}
+
+static void
 test_settings_fonts (void)
 {
   g_autoptr(GSettings) desktop_settings = NULL;
@@ -165,6 +202,7 @@ main (int   argc,
   g_test_add_func ("/settings/first_run", test_settings_first_run);
   g_test_add_func ("/settings/geometry", test_settings_geometry);
   g_test_add_func ("/settings/fonts", test_settings_fonts);
+  g_test_add_func ("/settings/provider-name", test_settings_provider_name);
 
   return g_test_run ();
 }
