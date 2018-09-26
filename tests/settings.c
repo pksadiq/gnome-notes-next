@@ -63,6 +63,7 @@ static void
 test_settings_rgba (void)
 {
   g_autoptr(GnSettings) settings = NULL;
+  g_autoptr(GdkRGBA) p_rgba = NULL;
   GdkRGBA expected_rgba;
   GdkRGBA rgba;
   gboolean is_rgba;
@@ -87,6 +88,13 @@ test_settings_rgba (void)
   gn_settings_get_rgba (settings, &rgba);
   g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
 
+  is_rgba = gdk_rgba_parse (&rgba, "rgb(23, 21, 33)");
+  g_assert_true (is_rgba);
+  expected_rgba = rgba;
+  g_object_set (G_OBJECT (settings), "color", &rgba, NULL);
+  gn_settings_get_rgba (settings, &rgba);
+  g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
+
   /* Save the settings, create a new object, and check again */
   g_object_unref (settings);
   settings = gn_settings_new ("org.sadiqpk.notes");
@@ -94,7 +102,8 @@ test_settings_rgba (void)
 
   gn_settings_get_rgba (settings, &rgba);
   g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
-  g_assert_true (gdk_rgba_equal (&rgba, &expected_rgba));
+  g_object_get (G_OBJECT (settings), "color", &p_rgba, NULL);
+  g_assert_true (gdk_rgba_equal (p_rgba, &expected_rgba));
 }
 
 static void
