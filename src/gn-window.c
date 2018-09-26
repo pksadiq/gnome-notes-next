@@ -535,6 +535,7 @@ gn_window_show_view (GnWindow *self,
 
   btn_stack = GTK_STACK (self->view_button_stack);
   view_type = gtk_stack_get_visible_child_name (btn_stack);
+  view_type = gn_utils_get_other_view_type (view_type);
 
   gn_window_set_view_type (self, view_type);
 }
