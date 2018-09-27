@@ -20,6 +20,8 @@
 
 #define G_LOG_DOMAIN "gn-window"
 
+#include "config.h"
+
 #include <glib/gi18n.h>
 
 #include "gn-application.h"
@@ -292,6 +294,36 @@ gn_window_show_settings (GnWindow  *self,
 
   gtk_dialog_run (GTK_DIALOG (dialog));
   gtk_widget_destroy (dialog);
+}
+
+static void
+gn_window_show_about (GnWindow  *self,
+                      GtkWidget *widget)
+{
+  const gchar *authors[] = {
+    "Mohammed Sadiq https://www.sadiqpk.org",
+    NULL
+  };
+
+  const gchar *artists[] = {
+    "William Jon McCann <jmccann@redhat.com>",
+    NULL
+  };
+
+  g_assert (GN_IS_WINDOW (self));
+
+  gtk_show_about_dialog (GTK_WINDOW (self),
+                         "program-name", _("GNOME Notes"),
+                         "comments", _("Simple Notes for GNOME"),
+                         "website", "https://www.sadiqpk.org",
+                         "version", PACKAGE_VERSION,
+                         "copyright", "Copyright \xC2\xA9 2018 Mohammed Sadiq",
+                         "license-type", GTK_LICENSE_GPL_3_0,
+                         "authors", authors,
+                         "artists", artists,
+                         "logo-icon-name", PACKAGE_ID,
+                         "translator-credits", _("translator-credits"),
+                         NULL);
 }
 
 static void
@@ -682,6 +714,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_item_activated);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_trash);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_settings);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_show_about);
 }
 
 static void
