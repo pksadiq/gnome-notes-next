@@ -108,18 +108,9 @@ gn_application_show_about (GSimpleAction *action,
                          NULL);
 }
 
-static void
-gn_application_quit (GSimpleAction *action,
-                     GVariant      *parameter,
-                     gpointer       user_data)
-{
-  g_application_quit (G_APPLICATION (user_data));
-}
-
 static const GActionEntry application_entries[] = {
   { "settings", gn_application_show_settings },
   { "about", gn_application_show_about },
-  { "quit",  gn_application_quit       },
 };
 
 static void
