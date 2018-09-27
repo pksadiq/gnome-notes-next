@@ -351,6 +351,8 @@ gn_window_main_view_changed (GnWindow   *self,
   g_assert (GTK_IS_STACK (main_view));
 
   child = gtk_stack_get_visible_child (main_view);
+  gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
+                               self->back_button);
 
   if (child == self->notes_view)
     view = GN_VIEW_NOTES;
@@ -359,6 +361,8 @@ gn_window_main_view_changed (GnWindow   *self,
   else
     return;
 
+  gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
+                               self->new_button);
   g_warning ("note or notebook");
   /* If the current view is notes/notebook, reset navigation history */
   g_queue_clear (self->view_stack);
@@ -553,25 +557,19 @@ gn_window_update_header_bar (GnWindow *self,
       gtk_widget_hide (self->select_button_stack);
       gtk_widget_hide (self->view_button_stack);
       gtk_widget_hide (self->search_button);
-      gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
-                                   self->back_button);
       break;
 
     case GN_VIEW_TRASH:
       gn_window_set_title (self, _("Trash"), NULL);
-      /* fallthrough */
+      break;
 
     case GN_VIEW_NOTEBOOK_NOTES:
-      gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
-                                   self->back_button);
       gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
                                        NULL);
       break;
 
     case GN_VIEW_NOTES:
     case GN_VIEW_NOTEBOOKS:
-      gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
-                                   self->new_button);
       gn_window_set_title (self, NULL, NULL);
       break;
     default:
