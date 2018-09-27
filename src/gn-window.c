@@ -29,6 +29,7 @@
 #include "gn-note.h"
 #include "gn-provider.h"
 #include "gn-settings.h"
+#include "gn-settings-dialog.h"
 #include "gn-editor.h"
 #include "gn-main-view.h"
 #include "gn-action-bar.h"
@@ -277,6 +278,20 @@ gn_window_show_trash (GnWindow  *self,
   g_assert (GN_IS_WINDOW (self));
 
   gn_window_set_view (self, GN_VIEW_TRASH, GN_VIEW_MODE_NORMAL);
+}
+
+static void
+gn_window_show_settings (GnWindow  *self,
+                         GtkWidget *widget)
+{
+  GtkWidget *dialog;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  dialog = gn_settings_dialog_new (GTK_WINDOW (self));
+
+  gtk_dialog_run (GTK_DIALOG (dialog));
+  gtk_widget_destroy (dialog);
 }
 
 static void
@@ -666,6 +681,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_item_activated);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_trash);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_show_settings);
 }
 
 static void
