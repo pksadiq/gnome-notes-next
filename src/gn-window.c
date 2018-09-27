@@ -728,6 +728,14 @@ gn_window_set_view (GnWindow   *self,
 }
 
 void
+gn_window_show_trash_view (GnWindow *self)
+{
+  g_return_if_fail (GN_IS_WINDOW (self));
+
+  gn_window_set_view (self, GN_VIEW_TRASH, GN_VIEW_MODE_NORMAL);
+}
+
+void
 gn_window_trash_selected_items (GnWindow *self)
 {
   GtkWidget *current_view;

@@ -83,7 +83,7 @@ gn_application_show_trash (GSimpleAction *action,
 
   g_return_if_fail (window != NULL);
 
-  gn_window_set_view (window, GN_VIEW_TRASH, GN_VIEW_MODE_NORMAL);
+  gn_window_show_trash_view (window);
   gtk_window_present (GTK_WINDOW (window));
 }
 
