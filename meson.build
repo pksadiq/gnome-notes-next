@@ -59,7 +59,7 @@ c_link_args = cc.get_supported_arguments(
   ])
 
 pkg_dep = [
-  dependency('glib-2.0', version: '>= 2.44.0'),
+  dependency('glib-2.0', version: '>= 2.56.0'),
   dependency('gtk+-4.0', version: '>= 3.93.0'),
   dependency('goa-1.0',),
   dependency('libecal-1.2', version: '>= 3.18.0'),
