@@ -3,7 +3,6 @@
   <gresource prefix="/org/sadiqpk/notes">
     <file>css/style.css</file>
     <file preprocess="xml-stripblanks">icons/note-symbolic.svg</file>
-    <file preprocess="xml-stripblanks">gtk/menus.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-window.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-editor.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-empty-view.ui</file>
