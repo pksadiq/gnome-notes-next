@@ -24,7 +24,6 @@
 
 #include <glib/gi18n.h>
 
-#include "gn-settings.h"
 #include "gn-manager.h"
 #include "gn-utils.h"
 #include "gn-window.h"
@@ -43,7 +42,6 @@ struct _GnApplication
   GtkApplication  parent_instance;
 
   GtkCssProvider *css_provider;
-  GnSettings     *settings;
 };
 
 G_DEFINE_TYPE (GnApplication, gn_application, GTK_TYPE_APPLICATION)
@@ -61,52 +59,6 @@ static GOptionEntry cmd_options[] = {
   },
   { NULL }
 };
-
-static void
-gn_application_show_about (GSimpleAction *action,
-                           GVariant      *parameter,
-                           gpointer       user_data)
-{
-  GtkApplication *application = GTK_APPLICATION (user_data);
-  const gchar *authors[] = {
-    "Mohammed Sadiq",
-    NULL
-  };
-
-  const gchar *artists[] = {
-    "William Jon McCann <jmccann@redhat.com>",
-    NULL
-  };
-
-  gtk_show_about_dialog (gtk_application_get_active_window (application),
-                         "program-name", _("GNOME Notes"),
-                         "comments", _("Simple Notes for GNOME"),
-                         "website", "https://www.sadiqpk.org",
-                         "version", PACKAGE_VERSION,
-                         "copyright", "Copyright \xC2\xA9 2018 Mohammed Sadiq",
-                         "license-type", GTK_LICENSE_GPL_3_0,
-                         "authors", authors,
-                         "artists", artists,
-                         "logo-icon-name", PACKAGE_ID,
-                         "translator-credits", _("translator-credits"),
-                         NULL);
-}
-
-static const GActionEntry application_entries[] = {
-  { "about", gn_application_show_about },
-};
-
-static void
-gn_application_finalize (GObject *object)
-{
-  GnApplication *self = (GnApplication *)object;
-
-  GN_ENTRY;
-
-  g_clear_object (&self->settings);
-
-  GN_EXIT;
-}
 
 static gint
 gn_application_handle_local_options (GApplication *application,
@@ -128,10 +80,6 @@ gn_application_startup (GApplication *application)
 
   G_APPLICATION_CLASS (gn_application_parent_class)->startup (application);
 
-  g_action_map_add_action_entries (G_ACTION_MAP (application),
-                                   application_entries,
-                                   G_N_ELEMENTS (application_entries),
-                                   application);
   if (self->css_provider == NULL)
     {
       g_autoptr(GFile) file = NULL;
@@ -190,11 +138,8 @@ static void
 gn_application_class_init (GnApplicationClass *klass)
 {
   GApplicationClass *application_class = G_APPLICATION_CLASS (klass);
-  GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
   g_assert (GN_IS_MAIN_THREAD ());
-
-  object_class->finalize = gn_application_finalize;
 
   application_class->handle_local_options = gn_application_handle_local_options;
   application_class->startup = gn_application_startup;
