@@ -55,7 +55,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">2</property>
+            <property name="position">3</property>
             <property name="pack-type">end</property>
           </packing>
         </child>
@@ -98,7 +98,7 @@
             </child>
           </object>
           <packing>
-            <property name="position">1</property>
+            <property name="position">2</property>
             <property name="pack-type">end</property>
           </packing>
         </child> <!-- ./GtkStack view_button_stack -->
@@ -129,7 +129,7 @@
             </child>
           </object> <!-- ./GtkStack select_button_stack -->
           <packing>
-            <property name="position">0</property>
+            <property name="position">1</property>
             <property name="pack-type">end</property>
           </packing>
         </child>
@@ -143,6 +143,7 @@
             <accelerator key="F10" signal="clicked" />
           </object>
           <packing>
+            <property name="position">0</property>
             <property name="pack-type">end</property>
           </packing>
         </child>
