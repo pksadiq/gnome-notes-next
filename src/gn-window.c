@@ -271,6 +271,15 @@ gn_window_open_new_note (GnWindow *self)
 }
 
 static void
+gn_window_show_trash (GnWindow  *self,
+                      GtkWidget *widget)
+{
+  g_assert (GN_IS_WINDOW (self));
+
+  gn_window_set_view (self, GN_VIEW_TRASH, GN_VIEW_MODE_NORMAL);
+}
+
+static void
 gn_window_show_previous_view (GnWindow  *self,
                               GtkWidget *widget)
 {
@@ -656,6 +665,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_item_activated);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_show_trash);
 }
 
 static void
