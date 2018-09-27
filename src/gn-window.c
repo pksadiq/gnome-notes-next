@@ -73,12 +73,6 @@ struct _GnWindow
   GnViewMode current_view_mode;
 
   guint      undo_timeout_id;
-
-  gint       width;
-  gint       height;
-  gint       pos_x;
-  gint       pos_y;
-  gboolean   is_maximized;
 };
 
 G_DEFINE_TYPE (GnWindow, gn_window, GTK_TYPE_APPLICATION_WINDOW)
@@ -374,10 +368,7 @@ gn_window_item_activated (GnWindow   *self,
                           GnItem     *item,
                           GnMainView *main_view)
 {
-  GtkTextBuffer *buffer = NULL;
   GtkWidget *editor;
-  GtkWidget *scrolled_window;
-  GtkWidget *grid;
   GnProvider *provider;
 
   g_assert (GN_IS_WINDOW (self));
