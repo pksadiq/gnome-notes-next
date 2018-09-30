@@ -69,7 +69,7 @@ struct _GnWindow
   GtkWidget *trash_view;
 
   GQueue    *view_stack;
-  GnView     current_view;
+  GtkWidget *current_view;
   GnViewMode current_view_mode;
 
   guint      undo_timeout_id;
@@ -192,9 +192,9 @@ gn_window_load_more_items (GnWindow          *self,
   if (pos != GTK_POS_BOTTOM)
     return;
 
-  if (self->current_view == GN_VIEW_NOTES)
+  if (self->current_view == self->notes_view)
     gn_manager_load_more_notes (gn_manager_get_default ());
-  else if (self->current_view == GN_VIEW_TRASH)
+  else if (self->current_view == self->trash_view)
     gn_manager_load_more_trash_notes (gn_manager_get_default ());
 }
 
@@ -220,7 +220,7 @@ gn_window_search_changed (GnWindow       *self,
 {
   const gchar *needle;
   GnManager *manager;
-  GnView last_view;
+  GtkWidget *last_view;
 
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_SEARCH_ENTRY (search_entry));
@@ -231,11 +231,11 @@ gn_window_search_changed (GnWindow       *self,
 
   if (needle[0] != '\0')
     {
-      gn_window_set_view (self, GN_VIEW_SEARCH, GN_VIEW_MODE_NORMAL);
+      gn_window_set_view (self, self->search_view, GN_VIEW_MODE_NORMAL);
     }
   else
     {
-      last_view = GPOINTER_TO_INT (g_queue_pop_head (self->view_stack));
+      last_view = g_queue_pop_head (self->view_stack);
       gn_window_set_view (self, last_view, GN_VIEW_MODE_NORMAL);
     }
 }
@@ -264,7 +264,7 @@ gn_window_open_new_note (GnWindow *self)
   gn_window_set_title (self, _("Untitled"),
                        gn_provider_get_name (provider));
   gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
-  gn_window_set_view (self, GN_VIEW_EDITOR, GN_VIEW_MODE_NORMAL);
+  gn_window_set_view (self, self->editor_view, GN_VIEW_MODE_NORMAL);
 }
 
 static void
@@ -273,7 +273,7 @@ gn_window_show_trash (GnWindow  *self,
 {
   g_assert (GN_IS_WINDOW (self));
 
-  gn_window_set_view (self, GN_VIEW_TRASH, GN_VIEW_MODE_NORMAL);
+  gn_window_set_view (self, self->trash_view, GN_VIEW_MODE_NORMAL);
 }
 
 static void
@@ -324,12 +324,12 @@ static void
 gn_window_show_previous_view (GnWindow  *self,
                               GtkWidget *widget)
 {
-  GnView last_view;
+  GtkWidget *last_view;
 
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_WIDGET (widget));
 
-  last_view = GPOINTER_TO_INT (g_queue_pop_head (self->view_stack));
+  last_view = g_queue_pop_head (self->view_stack);
   gn_window_set_view (self, last_view, GN_VIEW_MODE_NORMAL);
 }
 
@@ -338,7 +338,6 @@ gn_window_main_view_changed (GnWindow   *self,
                              GParamSpec *pspec,
                              GtkStack   *main_view)
 {
-  GnView view;
   GtkWidget *child;
 
   g_assert (GN_IS_WINDOW (self));
@@ -348,19 +347,16 @@ gn_window_main_view_changed (GnWindow   *self,
   gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
                                self->back_button);
 
-  if (child == self->notes_view)
-    view = GN_VIEW_NOTES;
-  else if (child == self->notebook_view)
-    view = GN_VIEW_NOTEBOOKS;
-  else
-    return;
-
-  gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
-                               self->new_button);
-  g_warning ("note or notebook");
-  /* If the current view is notes/notebook, reset navigation history */
-  g_queue_clear (self->view_stack);
-  self->current_view = view;
+  if (child == self->notes_view ||
+      child == self->notebook_view)
+    {
+      gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
+                                   self->new_button);
+      g_warning ("note or notebook");
+      /* If the current view is notes/notebook, reset navigation history */
+      g_queue_clear (self->view_stack);
+      self->current_view = child;
+    }
 }
 
 static void
@@ -392,26 +388,7 @@ gn_window_item_activated (GnWindow   *self,
                            gn_provider_get_name (provider));
 
       gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
-      gn_window_set_view (self, GN_VIEW_EDITOR, GN_VIEW_MODE_NORMAL);
-    }
-}
-
-static GtkWidget *
-gn_window_get_widget_for_view (GnWindow *self,
-                               GnView    view)
-{
-  g_assert (GN_IS_WINDOW (self));
-
-  switch (view)
-    {
-    case GN_VIEW_NOTES:
-      return self->notes_view;
-
-    case GN_VIEW_TRASH:
-      return self->trash_view;
-
-    default:
-      return self->notes_view;
+      gn_window_set_view (self, self->editor_view, GN_VIEW_MODE_NORMAL);
     }
 }
 
@@ -419,15 +396,13 @@ static void
 gn_window_set_view_type (GnWindow    *self,
                          const gchar *view_type)
 {
-  GtkWidget *view;
   const gchar *other_button_name;
 
   g_assert (GN_IS_WINDOW (self));
 
-  view = gn_window_get_widget_for_view (self, self->current_view);
   other_button_name = gn_utils_get_other_view_type (view_type);
 
-  gn_main_view_set_view (GN_MAIN_VIEW (view), view_type);
+  gn_main_view_set_view (GN_MAIN_VIEW (self->current_view), view_type);
   gtk_stack_set_visible_child_name (GTK_STACK (self->view_button_stack),
                                     other_button_name);
 }
@@ -467,7 +442,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   selection_mode = self->current_view_mode == GN_VIEW_MODE_SELECTION;
   style_context = gtk_widget_get_style_context (self->header_bar);
 
-  current_view = gn_window_get_widget_for_view (self, self->current_view);
+  current_view = self->current_view;
   gn_main_view_set_selection_mode (GN_MAIN_VIEW (current_view),
                                    selection_mode);
 
@@ -498,91 +473,47 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 }
 
 static void
-gn_window_update_main_view (GnWindow *self,
-                            GnView    view)
-{
-  switch (view)
-    {
-    case GN_VIEW_TRASH:
-      gtk_stack_set_visible_child (GTK_STACK (self->main_view),
-                                   self->trash_view);
-      break;
-
-    case GN_VIEW_NOTES:
-      gtk_stack_set_visible_child (GTK_STACK (self->main_view),
-                                   self->notes_view);
-      break;
-
-    case GN_VIEW_NOTEBOOKS:
-      gtk_stack_set_visible_child (GTK_STACK (self->main_view),
-                                   self->notebook_view);
-      break;
-
-    case GN_VIEW_EDITOR:
-      gtk_stack_set_visible_child (GTK_STACK (self->main_view),
-                                   self->editor_view);
-      break;
-
-    case GN_VIEW_SEARCH:
-      gtk_stack_set_visible_child (GTK_STACK (self->main_view),
-                                   self->search_view);
-      break;
-
-    default:
-      break;
-    }
-}
-
-static void
-gn_window_update_header_bar (GnWindow *self,
-                             GnView    view)
+gn_window_update_header_bar (GnWindow  *self,
+                             GtkWidget *view)
 {
   gtk_widget_show (self->select_button_stack);
   gtk_widget_show (self->view_button_stack);
   gtk_widget_show (self->search_button);
 
 
-  switch (view)
+  if (view == self->editor_view)
     {
-    case GN_VIEW_EDITOR:
       gtk_widget_hide (self->select_button_stack);
       gtk_widget_hide (self->view_button_stack);
       gtk_widget_hide (self->search_button);
-      break;
-
-    case GN_VIEW_TRASH:
-      gn_window_set_title (self, _("Trash"), NULL);
-      break;
-
-    case GN_VIEW_NOTEBOOK_NOTES:
-      gtk_header_bar_set_custom_title (GTK_HEADER_BAR (self->header_bar),
-                                       NULL);
-      break;
-
-    case GN_VIEW_NOTES:
-    case GN_VIEW_NOTEBOOKS:
-      gn_window_set_title (self, NULL, NULL);
-      break;
-    default:
-      break;
     }
+  else if (view == self->trash_view)
+    {
+      gn_window_set_title (self, _("Trash"), NULL);
+    }
+  else  /* notebooks or notes */
+    {
+      gn_window_set_title (self, NULL, NULL);
+    }
+  /* TODO: handle notes inside notebooks view */
 }
 
 static void
-gn_window_show_view (GnWindow *self,
-                     GnView    view)
+gn_window_show_view (GnWindow  *self,
+                     GtkWidget *view)
 {
   GtkStack *btn_stack;
   const gchar *view_type;
 
-  gn_window_update_main_view (self, view);
+  gtk_stack_set_visible_child (GTK_STACK (self->main_view), view);
   gn_window_update_header_bar (self, view);
 
   btn_stack = GTK_STACK (self->view_button_stack);
   view_type = gtk_stack_get_visible_child_name (btn_stack);
   view_type = gn_utils_get_other_view_type (view_type);
 
-  gn_window_set_view_type (self, view_type);
+  if (self->current_view != self->editor_view)
+    gn_window_set_view_type (self, view_type);
 }
 
 static gboolean
@@ -720,6 +651,7 @@ gn_window_init (GnWindow *self)
   gtk_widget_add_controller (GTK_WIDGET (self), controller);
 
   self->view_stack = g_queue_new ();
+  self->current_view = self->notes_view;
   g_signal_connect_object (gn_manager_get_default (),
                            "provider-added",
                            G_CALLBACK (gn_window_provider_added_cb),
@@ -747,20 +679,20 @@ gn_window_get_mode (GnWindow *self)
 
 void
 gn_window_set_view (GnWindow   *self,
-                    GnView      view,
+                    GtkWidget  *view,
                     GnViewMode  mode)
 {
   GtkWidget *child;
 
   g_return_if_fail (GN_IS_WINDOW (self));
+  g_return_if_fail (GTK_IS_WIDGET (view));
 
   if (view == self->current_view)
     return;
 
-  g_queue_push_head (self->view_stack,
-                     GINT_TO_POINTER (self->current_view));
+  g_queue_push_head (self->view_stack, self->current_view);
 
-  if (self->current_view == GN_VIEW_EDITOR)
+  if (self->current_view == self->editor_view)
     {
       child = gtk_bin_get_child (GTK_BIN (self->editor_view));
       if (child != NULL)
@@ -781,7 +713,7 @@ gn_window_trash_selected_items (GnWindow *self)
 
   g_return_if_fail (GN_IS_WINDOW (self));
 
-  current_view = gn_window_get_widget_for_view (self, self->current_view);
+  current_view = self->current_view;
   manager = gn_manager_get_default ();
   items = gn_main_view_get_selected_items (GN_MAIN_VIEW (current_view));
 
