@@ -429,17 +429,14 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 {
   GtkStyleContext *style_context;
   GtkWidget *current_view;
-  gboolean selection_mode;
+  gboolean selection_mode = FALSE;
 
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_BUTTON (widget));
 
   if (widget == self->select_button)
-    self->current_view_mode = GN_VIEW_MODE_SELECTION;
-  else
-    self->current_view_mode = GN_VIEW_MODE_NORMAL;
+    selection_mode = TRUE;
 
-  selection_mode = self->current_view_mode == GN_VIEW_MODE_SELECTION;
   style_context = gtk_widget_get_style_context (self->header_bar);
 
   current_view = self->current_view;
