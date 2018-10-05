@@ -42,12 +42,6 @@ struct _GnSettings
   gchar *font_name;
   gchar *provider;
   gboolean use_system_font;
-
-  /* Window states */
-  GdkRectangle geometry;
-  gboolean maximized;
-
-  gboolean first_run;
 };
 
 G_DEFINE_TYPE (GnSettings, gn_settings, G_TYPE_SETTINGS)
@@ -176,16 +170,10 @@ gn_settings_constructed (GObject *object)
 {
   GnSettings *self = (GnSettings *)object;
   GSettings *settings = G_SETTINGS (self);
-  GdkRectangle *geometry = &self->geometry;
 
   G_OBJECT_CLASS (gn_settings_parent_class)->constructed (object);
 
   g_settings_delay (settings);
-
-  self->first_run = g_settings_get_boolean (settings, "first-run");
-  self->maximized = g_settings_get_boolean (settings, "window-maximized");
-  g_settings_get (settings, "window-size", "(ii)", &geometry->width, &geometry->height);
-  g_settings_get (settings, "window-position", "(ii)", &geometry->x, &geometry->y);
 
   self->color = g_settings_get_string (settings, "color");
   if (!gdk_rgba_parse (&self->rgba, self->color))
@@ -289,7 +277,7 @@ gn_settings_get_is_first_run (GnSettings *self)
 {
   g_return_val_if_fail (GN_IS_SETTINGS (self), FALSE);
 
-  return self->first_run;
+  return g_settings_get_boolean (G_SETTINGS (self), "first-run");
 }
 
 gboolean
@@ -297,7 +285,7 @@ gn_settings_get_window_maximized (GnSettings *self)
 {
   g_return_val_if_fail (GN_IS_SETTINGS (self), TRUE);
 
-  return self->maximized;
+  return g_settings_get_boolean (G_SETTINGS (self), "window-maximized");
 }
 
 void
@@ -306,7 +294,6 @@ gn_settings_set_window_maximized (GnSettings *self,
 {
   g_return_if_fail (GN_IS_SETTINGS (self));
 
-  self->maximized = !!maximized;
   g_settings_set_boolean (G_SETTINGS (self), "window-maximized", !!maximized);
 }
 
@@ -314,10 +301,17 @@ void
 gn_settings_get_window_geometry (GnSettings   *self,
                                  GdkRectangle *geometry)
 {
+  GdkRectangle size;
+  GSettings *settings;
+
   g_return_if_fail (GN_IS_SETTINGS (self));
   g_return_if_fail (geometry != NULL);
 
-  *geometry = self->geometry;
+  settings = G_SETTINGS (self);
+  g_settings_get (settings, "window-size", "(ii)", &size.width, &size.height);
+  g_settings_get (settings, "window-position", "(ii)", &size.x, &size.y);
+
+  *geometry = size;
 }
 
 void
@@ -330,7 +324,6 @@ gn_settings_set_window_geometry (GnSettings   *self,
   g_return_if_fail (geometry != NULL);
 
   settings = G_SETTINGS (self);
-  self->geometry = *geometry;
 
   g_settings_set (settings, "window-size", "(ii)", geometry->width, geometry->height);
   g_settings_set (settings, "window-position", "(ii)", geometry->x, geometry->y);
