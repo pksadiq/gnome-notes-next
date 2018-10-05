@@ -40,8 +40,6 @@
 struct _GnApplication
 {
   GtkApplication  parent_instance;
-
-  GtkCssProvider *css_provider;
 };
 
 G_DEFINE_TYPE (GnApplication, gn_application, GTK_TYPE_APPLICATION)
@@ -76,22 +74,17 @@ gn_application_handle_local_options (GApplication *application,
 static void
 gn_application_startup (GApplication *application)
 {
-  GnApplication *self = (GnApplication *)application;
+  g_autoptr(GtkCssProvider) css_provider = NULL;
 
   G_APPLICATION_CLASS (gn_application_parent_class)->startup (application);
 
-  if (self->css_provider == NULL)
-    {
-      g_autoptr(GFile) file = NULL;
+  css_provider = gtk_css_provider_new ();
+  gtk_css_provider_load_from_resource (css_provider,
+                                       "/org/sadiqpk/notes/css/style.css");
 
-      self->css_provider = gtk_css_provider_new ();
-      file = g_file_new_for_uri ("resource:///org/sadiqpk/notes/css/style.css");
-      gtk_css_provider_load_from_file (self->css_provider, file);
-
-      gtk_style_context_add_provider_for_display (gdk_display_get_default (),
-                                                  GTK_STYLE_PROVIDER (self->css_provider),
-                                                  GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    }
+  gtk_style_context_add_provider_for_display (gdk_display_get_default (),
+                                              GTK_STYLE_PROVIDER (css_provider),
+                                              GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
 }
 
 static gint
