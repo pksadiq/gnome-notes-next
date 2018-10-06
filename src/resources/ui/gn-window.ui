@@ -23,8 +23,13 @@
             <property name="homogeneous">0</property>
             <child>
               <object class="GtkButton" id="new_button">
-                <property name="label" translatable="1">New</property>
+                <property name="icon-name">list-add-symbolic</property>
                 <signal name="clicked" handler="gn_window_open_new_note" swapped="1"/>
+                <child internal-child="accessible">
+                  <object class="AtkObject">
+                    <property name="accessible-name" translatable="yes">New Note</property>
+                  </object>
+                </child>
               </object>
             </child>
             <child>
