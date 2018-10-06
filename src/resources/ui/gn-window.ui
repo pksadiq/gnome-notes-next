@@ -185,17 +185,6 @@
                                     swapped="1"/>
 
                             <child>
-                              <object class="GnMainView" id="notebook_view">
-                                <signal name="item-activated" handler="gn_window_item_activated"
-                                        swapped="1"/>
-                              </object>
-                              <packing>
-                                <property name="name">notebooks</property>
-                                <property name="title" translatable="1">Notebooks</property>
-                              </packing>
-                            </child>
-
-                            <child>
                               <object class="GnMainView" id="search_view">
                                 <signal name="item-activated" handler="gn_window_item_activated"
                                         swapped="1"/>

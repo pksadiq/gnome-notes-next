@@ -55,7 +55,6 @@ struct _GnWindow
   GtkWidget *search_view;
   GtkWidget *main_view;
   GtkWidget *notes_view;
-  GtkWidget *notebook_view;
   GtkWidget *editor_view;
 
   GQueue    *view_stack;
@@ -293,8 +292,7 @@ gn_window_main_view_changed (GnWindow   *self,
 
   child = gtk_stack_get_visible_child (main_view);
 
-  if (child == self->notes_view ||
-      child == self->notebook_view)
+  if (child == self->notes_view)
     {
       g_warning ("note or notebook");
       /* If the current view is notes/notebook, reset navigation history */
@@ -478,7 +476,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, notebook_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_view);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, new_button);
