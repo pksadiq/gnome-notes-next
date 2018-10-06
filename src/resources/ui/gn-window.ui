@@ -100,8 +100,10 @@
 
     <child>
       <object class="GtkBox">
-        <property name="orientation">vertical</property>
 
+        <child>
+          <object class="GtkBox" id="sidebar">
+            <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="search_bar">
             <property name="halign">center</property>
@@ -120,6 +122,9 @@
           <object class="GnActionBar" id="main_action_bar">
             <property name="visible">0</property>
           </object>
+        </child>
+
+        </object>
         </child>
 
         <child>
