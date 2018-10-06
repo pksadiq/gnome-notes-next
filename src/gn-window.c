@@ -43,7 +43,6 @@ struct _GnWindow
   GtkApplicationWindow parent_instance;
 
   GtkWidget *header_bar;
-  GtkWidget *stack_switcher;
   GtkWidget *navigate_button_stack;
   GtkWidget *new_button;
   GtkWidget *back_button;
@@ -134,8 +133,6 @@ gn_window_set_title (GnWindow    *self,
 
   if (title == NULL && subtitle == NULL)
     {
-      gtk_header_bar_set_custom_title (header_bar,
-                                       self->stack_switcher);
       gtk_header_bar_set_title (header_bar, _("Notes"));
       gtk_header_bar_set_subtitle (header_bar, NULL);
       return;
@@ -554,7 +551,6 @@ gn_window_class_init (GnWindowClass *klass)
                                                "ui/gn-window.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, stack_switcher);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);

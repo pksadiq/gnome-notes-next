@@ -12,12 +12,6 @@
             <property name="title" translatable="yes">Notes</property>
             <property name="can-focus">1</property>
 
-            <child type="title">
-              <object class="GtkStackSwitcher" id="stack_switcher">
-                <property name="stack">main_view</property>
-              </object>
-            </child>
-
             <!-- Back/New buttons -->
             <child>
               <object class="GtkStack" id="navigate_button_stack">
