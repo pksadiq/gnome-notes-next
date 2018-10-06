@@ -293,4 +293,12 @@
     </child>
   </object>
 
+  <object class="GtkSizeGroup">
+    <property name="mode">horizontal</property>
+    <widgets>
+      <widget name="sidebar" />
+      <widget name="header_bar" />
+    </widgets>
+  </object>
+
 </interface>
