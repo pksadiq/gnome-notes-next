@@ -103,6 +103,7 @@
 
         <child>
           <object class="GtkBox" id="sidebar">
+            <property name="hexpand-set">1</property>
             <property name="orientation">vertical</property>
         <child>
           <object class="GtkBox" id="search_bar">
