@@ -53,7 +53,6 @@ struct _GnWindow
   GtkWidget *cancel_button;
   GtkWidget *main_action_bar;
 
-  GtkWidget *search_button;
   GtkWidget *search_bar;
   GtkWidget *search_entry;
   GtkWidget *search_view;
@@ -447,13 +446,11 @@ gn_window_update_header_bar (GnWindow  *self,
                              GtkWidget *view)
 {
   gtk_widget_show (self->select_button_stack);
-  gtk_widget_show (self->search_button);
 
 
   if (view == self->editor_view)
     {
       gtk_widget_hide (self->select_button_stack);
-      gtk_widget_hide (self->search_button);
     }
   else if (view == self->trash_view)
     {
@@ -552,7 +549,6 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
 
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_view);
