@@ -125,6 +125,12 @@
         </child>
 
         <child>
+          <object class="GnActionBar" id="main_action_bar">
+            <property name="visible">0</property>
+          </object>
+        </child>
+
+        <child>
           <object class="GtkOverlay">
 
             <child type="overlay">
@@ -248,11 +254,6 @@
           </object> <!-- ./GtkOverlay -->
         </child>
 
-        <child>
-          <object class="GnActionBar" id="main_action_bar">
-            <property name="visible">0</property>
-          </object>
-        </child>
       </object> <!-- ./GtkBox -->
     </child>
   </template>
