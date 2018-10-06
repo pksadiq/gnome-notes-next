@@ -191,22 +191,6 @@ gn_window_load_more_items (GnWindow          *self,
 }
 
 static void
-gn_window_search_mode_changed (GnWindow     *self,
-                               GParamSpec   *pspec,
-                               GtkSearchBar *search_bar)
-{
-  gboolean search_enabled;
-
-  g_assert (GN_IS_WINDOW (self));
-  g_assert (GTK_IS_SEARCH_BAR (search_bar));
-
-  search_enabled = gtk_search_bar_get_search_mode (search_bar);
-
-  if (!search_enabled)
-    gtk_entry_set_text (GTK_ENTRY (self->search_entry), "");
-}
-
-static void
 gn_window_search_changed (GnWindow       *self,
                           GtkSearchEntry *search_entry)
 {
@@ -469,20 +453,6 @@ gn_window_show_view (GnWindow  *self,
   gn_window_set_view_type (self, "list");
 }
 
-static gboolean
-gn_window_key_press_cb (GtkEventController *controller,
-                        guint               keyval,
-                        guint               keycode,
-                        GdkModifierType     state,
-                        GtkSearchBar       *search_bar)
-{
-  g_assert (GTK_IS_EVENT_CONTROLLER (controller));
-  g_assert (GTK_IS_SEARCH_BAR (search_bar));
-
-  return gtk_search_bar_handle_event (search_bar,
-                                      gtk_get_current_event ());
-}
-
 static void
 gn_window_constructed (GObject *object)
 {
@@ -567,7 +537,6 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_callback (widget_class, gn_window_continue_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
-  gtk_widget_class_bind_template_callback (widget_class, gn_window_search_mode_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_previous_view);
@@ -583,15 +552,7 @@ gn_window_class_init (GnWindowClass *klass)
 static void
 gn_window_init (GnWindow *self)
 {
-  GtkEventController *controller;
-
   gtk_widget_init_template (GTK_WIDGET (self));
-
-  controller = gtk_event_controller_key_new ();
-  g_signal_connect (controller, "key-pressed",
-                    G_CALLBACK (gn_window_key_press_cb),
-                    GTK_SEARCH_BAR (self->search_bar));
-  gtk_widget_add_controller (GTK_WIDGET (self), controller);
 
   self->view_stack = g_queue_new ();
   self->current_view = self->notes_view;
