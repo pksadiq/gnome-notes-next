@@ -6,6 +6,8 @@
 
     <!-- Headerbar -->
     <child type="titlebar">
+      <object class="GtkBox">
+        <child>
       <object class="GtkHeaderBar" id="header_bar">
         <property name="title" translatable="yes">Notes</property>
         <property name="can-focus">1</property>
@@ -107,6 +109,8 @@
         </child>
 
       </object> <!-- ./GtkHeaderBar -->
+        </child>
+      </object>
     </child>
 
     <child>
