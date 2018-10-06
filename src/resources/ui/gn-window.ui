@@ -47,10 +47,6 @@
         </child>
 
         <child>
-          <object class="GtkSpinner" id="loading_spinner"/>
-        </child>
-
-        <child>
           <object class="GtkToggleButton" id="search_button">
             <property name="icon-name">edit-find-symbolic</property>
             <child internal-child="accessible">

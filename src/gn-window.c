@@ -44,7 +44,6 @@ struct _GnWindow
 
   GtkWidget *header_bar;
   GtkWidget *stack_switcher;
-  GtkWidget *loading_spinner;
   GtkWidget *view_button_stack;
   GtkWidget *grid_button;
   GtkWidget *list_button;
@@ -538,9 +537,6 @@ gn_window_constructed (GObject *object)
 
   manager = gn_manager_get_default ();
   settings = gn_manager_get_settings (manager);
-  g_object_bind_property (manager, "providers-loading",
-                          self->loading_spinner, "active",
-                          G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 
   gn_settings_get_window_geometry (settings, &geometry);
   gtk_window_set_default_size (window, geometry.width, geometry.height);
@@ -593,7 +589,6 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, stack_switcher);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, loading_spinner);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
