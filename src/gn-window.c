@@ -366,8 +366,6 @@ static void
 gn_window_set_view_type (GnWindow    *self,
                          const gchar *view_type)
 {
-  const gchar *other_button_name;
-
   g_assert (GN_IS_WINDOW (self));
 
   gn_main_view_set_view (GN_MAIN_VIEW (self->current_view), view_type);
