@@ -7,7 +7,7 @@
     <!-- Headerbar -->
     <child type="titlebar">
       <object class="GtkHeaderBar" id="header_bar">
-        <property name="title" translatable="1">New and Recent</property>
+        <property name="title" translatable="yes">Notes</property>
         <property name="can-focus">1</property>
         <property name="show-title-buttons">1</property>
 
