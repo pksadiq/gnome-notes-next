@@ -47,7 +47,6 @@ struct _GnWindow
   GtkWidget *new_button;
   GtkWidget *undo_revealer;
 
-  GtkWidget *select_button_stack;
   GtkWidget *select_button;
   GtkWidget *main_action_bar;
 
@@ -416,12 +415,8 @@ static void
 gn_window_update_header_bar (GnWindow  *self,
                              GtkWidget *view)
 {
-  gtk_widget_show (self->select_button_stack);
-
-
   if (view == self->editor_view)
     {
-      gtk_widget_hide (self->select_button_stack);
     }
   else if (view == self->trash_view)
     {
@@ -519,7 +514,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, new_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, undo_revealer);
 
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_action_bar);
 

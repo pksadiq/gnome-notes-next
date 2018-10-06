@@ -24,9 +24,6 @@
                   </object>
                 </child>
 
-            <child>
-              <object class="GtkStack" id="select_button_stack">
-                <property name="homogeneous">0</property>
                 <child>
                   <object class="GtkToggleButton" id="select_button">
                     <property name="tooltip-text" translatable="yes">Selection mode</property>
@@ -38,14 +35,11 @@
                       </object>
                     </child>
                   </object>
+                  <packing>
+                    <property name="position">1</property>
+                    <property name="pack-type">end</property>
+                  </packing>
                 </child>
-
-              </object> <!-- ./GtkStack select_button_stack -->
-              <packing>
-                <property name="position">1</property>
-                <property name="pack-type">end</property>
-              </packing>
-            </child>
 
             <child>
               <object class="GtkMenuButton" id="menu_button">
