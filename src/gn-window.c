@@ -57,7 +57,6 @@ struct _GnWindow
   GtkWidget *notes_view;
   GtkWidget *notebook_view;
   GtkWidget *editor_view;
-  GtkWidget *trash_view;
 
   GQueue    *view_stack;
   GtkWidget *current_view;
@@ -150,11 +149,6 @@ gn_window_provider_added_cb (GnWindow   *self,
   gn_main_view_set_model (GN_MAIN_VIEW (self->notes_view),
                           G_LIST_MODEL (store));
 
-  store = gn_manager_get_trash_notes_store (gn_manager_get_default ());
-
-  gn_main_view_set_model (GN_MAIN_VIEW (self->trash_view),
-                          G_LIST_MODEL (store));
-
   store = gn_manager_get_search_store (gn_manager_get_default ());
 
   gn_main_view_set_model (GN_MAIN_VIEW (self->search_view),
@@ -175,8 +169,6 @@ gn_window_load_more_items (GnWindow          *self,
 
   if (self->current_view == self->notes_view)
     gn_manager_load_more_notes (gn_manager_get_default ());
-  else if (self->current_view == self->trash_view)
-    gn_manager_load_more_trash_notes (gn_manager_get_default ());
 }
 
 static void
@@ -230,15 +222,6 @@ gn_window_open_new_note (GnWindow *self)
                        gn_provider_get_name (provider));
   gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
   gn_window_set_view (self, self->editor_view, GN_VIEW_MODE_NORMAL);
-}
-
-static void
-gn_window_show_trash (GnWindow  *self,
-                      GtkWidget *widget)
-{
-  g_assert (GN_IS_WINDOW (self));
-
-  gn_window_set_view (self, self->trash_view, GN_VIEW_MODE_NORMAL);
 }
 
 static void
@@ -410,10 +393,6 @@ gn_window_update_header_bar (GnWindow  *self,
   if (view == self->editor_view)
     {
     }
-  else if (view == self->trash_view)
-    {
-      gn_window_set_title (self, _("Trash"), NULL);
-    }
   else  /* notebooks or notes */
     {
       gn_window_set_title (self, NULL, NULL);
@@ -501,7 +480,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notebook_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_view);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_view);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, new_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, undo_revealer);
@@ -518,7 +496,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_item_activated);
-  gtk_widget_class_bind_template_callback (widget_class, gn_window_show_trash);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_settings);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_about);
 }
@@ -597,8 +574,6 @@ gn_window_trash_selected_items (GnWindow *self)
 
   if (current_view == self->notes_view)
     store = gn_manager_get_notes_store (manager);
-  else if (current_view == self->trash_view)
-    store = gn_manager_get_trash_notes_store (manager);
   else
     g_assert_not_reached ();
 

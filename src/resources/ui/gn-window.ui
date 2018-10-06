@@ -203,13 +203,6 @@
                             </child>
 
                             <child>
-                              <object class="GnMainView" id="trash_view">
-                                <signal name="item-activated" handler="gn_window_item_activated"
-                                        swapped="1"/>
-                              </object>
-                            </child>
-
-                            <child>
                               <object class="GtkFrame" id="editor_view">
                                 <property name="shadow-type">none</property>
                               </object>
@@ -240,17 +233,6 @@
     <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
-
-        <child>
-          <object class="GtkModelButton">
-            <property name="text" translatable="yes">_View Trash</property>
-            <signal name="clicked" handler="gn_window_show_trash" swapped="1" />
-          </object>
-        </child>
-
-        <child>
-          <object class="GtkSeparatorMenuItem" />
-        </child>
 
         <child>
           <object class="GtkModelButton">
