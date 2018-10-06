@@ -8,107 +8,107 @@
     <child type="titlebar">
       <object class="GtkBox">
         <child>
-      <object class="GtkHeaderBar" id="header_bar">
-        <property name="title" translatable="yes">Notes</property>
-        <property name="can-focus">1</property>
-        <property name="show-title-buttons">1</property>
+          <object class="GtkHeaderBar" id="header_bar">
+            <property name="title" translatable="yes">Notes</property>
+            <property name="can-focus">1</property>
+            <property name="show-title-buttons">1</property>
 
-        <child type="title">
-          <object class="GtkStackSwitcher" id="stack_switcher">
-            <property name="stack">main_view</property>
-          </object>
-        </child>
+            <child type="title">
+              <object class="GtkStackSwitcher" id="stack_switcher">
+                <property name="stack">main_view</property>
+              </object>
+            </child>
 
-        <!-- Back/New buttons -->
-        <child>
-          <object class="GtkStack" id="navigate_button_stack">
-            <property name="homogeneous">0</property>
+            <!-- Back/New buttons -->
             <child>
-              <object class="GtkButton" id="new_button">
-                <property name="icon-name">list-add-symbolic</property>
-                <signal name="clicked" handler="gn_window_open_new_note" swapped="1"/>
-                <child internal-child="accessible">
-                  <object class="AtkObject">
-                    <property name="accessible-name" translatable="yes">New Note</property>
+              <object class="GtkStack" id="navigate_button_stack">
+                <property name="homogeneous">0</property>
+                <child>
+                  <object class="GtkButton" id="new_button">
+                    <property name="icon-name">list-add-symbolic</property>
+                    <signal name="clicked" handler="gn_window_open_new_note" swapped="1"/>
+                    <child internal-child="accessible">
+                      <object class="AtkObject">
+                        <property name="accessible-name" translatable="yes">New Note</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="back_button">
-                <property name="icon-name">go-previous-symbolic</property>
-                <signal name="clicked" handler="gn_window_show_previous_view" swapped="1"/>
-                <child internal-child="accessible">
-                  <object class="AtkObject">
-                    <property name="accessible-name" translatable="1">Back</property>
-                  </object>
-                </child>
-              </object>
-            </child>
-          </object>
-        </child>
-
-        <child>
-          <object class="GtkToggleButton" id="search_button">
-            <property name="icon-name">edit-find-symbolic</property>
-            <child internal-child="accessible">
-              <object class="AtkObject">
-                <property name="accessible-name" translatable="1">Search</property>
-              </object>
-            </child>
-          </object>
-          <packing>
-            <property name="position">3</property>
-            <property name="pack-type">end</property>
-          </packing>
-        </child>
-
-        <child>
-          <object class="GtkStack" id="select_button_stack">
-            <property name="homogeneous">0</property>
-            <child>
-              <object class="GtkButton" id="select_button">
-                <property name="tooltip-text" translatable="1">Enable selection mode</property>
-                <property name="icon-name">object-select-symbolic</property>
-                <signal name="clicked" handler="gn_window_selection_mode_toggled" swapped="1"/>
-                <child internal-child="accessible">
-                  <object class="AtkObject">
-                    <property name="accessible-name" translatable="1">Enable selection mode</property>
+                <child>
+                  <object class="GtkButton" id="back_button">
+                    <property name="icon-name">go-previous-symbolic</property>
+                    <signal name="clicked" handler="gn_window_show_previous_view" swapped="1"/>
+                    <child internal-child="accessible">
+                      <object class="AtkObject">
+                        <property name="accessible-name" translatable="1">Back</property>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
             </child>
 
             <child>
-              <object class="GtkButton" id="cancel_button">
-                <property name="label" translatable="1">Cancel</property>
-                <property name="visible" bind-source="select_button" bind-property="visible"
-                          bind-flags="default|bidirectional|invert-boolean"/>
-                <signal name="clicked" handler="gn_window_selection_mode_toggled" swapped="1"/>
+              <object class="GtkToggleButton" id="search_button">
+                <property name="icon-name">edit-find-symbolic</property>
+                <child internal-child="accessible">
+                  <object class="AtkObject">
+                    <property name="accessible-name" translatable="1">Search</property>
+                  </object>
+                </child>
               </object>
+              <packing>
+                <property name="position">3</property>
+                <property name="pack-type">end</property>
+              </packing>
             </child>
-          </object> <!-- ./GtkStack select_button_stack -->
-          <packing>
-            <property name="position">1</property>
-            <property name="pack-type">end</property>
-          </packing>
-        </child>
 
-        <child>
-          <object class="GtkMenuButton" id="menu_button">
-            <property name="can-focus">0</property>
-            <property name="focus-on-click">0</property>
-            <property name="direction">none</property>
-            <property name="popover">main_menu</property>
-            <accelerator key="F10" signal="clicked" />
-          </object>
-          <packing>
-            <property name="position">0</property>
-            <property name="pack-type">end</property>
-          </packing>
-        </child>
+            <child>
+              <object class="GtkStack" id="select_button_stack">
+                <property name="homogeneous">0</property>
+                <child>
+                  <object class="GtkButton" id="select_button">
+                    <property name="tooltip-text" translatable="1">Enable selection mode</property>
+                    <property name="icon-name">object-select-symbolic</property>
+                    <signal name="clicked" handler="gn_window_selection_mode_toggled" swapped="1"/>
+                    <child internal-child="accessible">
+                      <object class="AtkObject">
+                        <property name="accessible-name" translatable="1">Enable selection mode</property>
+                      </object>
+                    </child>
+                  </object>
+                </child>
 
-      </object> <!-- ./GtkHeaderBar -->
+                <child>
+                  <object class="GtkButton" id="cancel_button">
+                    <property name="label" translatable="1">Cancel</property>
+                    <property name="visible" bind-source="select_button" bind-property="visible"
+                              bind-flags="default|bidirectional|invert-boolean"/>
+                    <signal name="clicked" handler="gn_window_selection_mode_toggled" swapped="1"/>
+                  </object>
+                </child>
+              </object> <!-- ./GtkStack select_button_stack -->
+              <packing>
+                <property name="position">1</property>
+                <property name="pack-type">end</property>
+              </packing>
+            </child>
+
+            <child>
+              <object class="GtkMenuButton" id="menu_button">
+                <property name="can-focus">0</property>
+                <property name="focus-on-click">0</property>
+                <property name="direction">none</property>
+                <property name="popover">main_menu</property>
+                <accelerator key="F10" signal="clicked" />
+              </object>
+              <packing>
+                <property name="position">0</property>
+                <property name="pack-type">end</property>
+              </packing>
+            </child>
+
+          </object> <!-- ./GtkHeaderBar -->
         </child>
       </object>
     </child>
@@ -266,7 +266,7 @@
     </child>
   </template>
 
-    <object class="GtkPopoverMenu" id="main_menu">
+  <object class="GtkPopoverMenu" id="main_menu">
     <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
