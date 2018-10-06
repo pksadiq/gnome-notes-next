@@ -51,7 +51,6 @@ struct _GnWindow
 
   GtkWidget *select_button_stack;
   GtkWidget *select_button;
-  GtkWidget *cancel_button;
   GtkWidget *main_action_bar;
 
   GtkWidget *search_bar;
@@ -403,13 +402,14 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   GtkStyleContext *style_context;
   GtkWidget *current_view;
   GtkWidget *title_bar;
-  gboolean selection_mode = FALSE;
+  GtkToggleButton *select_button;
+  gboolean selection_mode;
 
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_BUTTON (widget));
 
-  if (widget == self->select_button)
-    selection_mode = TRUE;
+  select_button = GTK_TOGGLE_BUTTON (self->select_button);
+  selection_mode = gtk_toggle_button_get_active (select_button);
 
   title_bar = gtk_window_get_titlebar (GTK_WINDOW (self));
   style_context = gtk_widget_get_style_context (title_bar);
@@ -436,12 +436,6 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 
   gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (self->secondary_header_bar),
                                          !selection_mode);
-  /*
-   * widget can either be select_button or cancel_button. As their
-   * 'visible' property is bind to inverse of each other, hiding
-   * one of them reveals the other.
-   */
-  gtk_widget_hide (widget);
 }
 
 static void
@@ -569,7 +563,6 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, cancel_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_action_bar);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_window_continue_delete);
