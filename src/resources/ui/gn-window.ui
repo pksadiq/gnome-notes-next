@@ -12,10 +12,6 @@
             <property name="title" translatable="yes">Notes</property>
             <property name="can-focus">1</property>
 
-            <!-- Back/New buttons -->
-            <child>
-              <object class="GtkStack" id="navigate_button_stack">
-                <property name="homogeneous">0</property>
                 <child>
                   <object class="GtkButton" id="new_button">
                     <property name="icon-name">list-add-symbolic</property>
@@ -27,19 +23,6 @@
                     </child>
                   </object>
                 </child>
-                <child>
-                  <object class="GtkButton" id="back_button">
-                    <property name="icon-name">go-previous-symbolic</property>
-                    <signal name="clicked" handler="gn_window_show_previous_view" swapped="1"/>
-                    <child internal-child="accessible">
-                      <object class="AtkObject">
-                        <property name="accessible-name" translatable="1">Back</property>
-                      </object>
-                    </child>
-                  </object>
-                </child>
-              </object>
-            </child>
 
             <child>
               <object class="GtkStack" id="select_button_stack">

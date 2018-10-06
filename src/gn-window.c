@@ -44,9 +44,7 @@ struct _GnWindow
 
   GtkWidget *header_bar;
   GtkWidget *secondary_header_bar;
-  GtkWidget *navigate_button_stack;
   GtkWidget *new_button;
-  GtkWidget *back_button;
   GtkWidget *undo_revealer;
 
   GtkWidget *select_button_stack;
@@ -320,14 +318,10 @@ gn_window_main_view_changed (GnWindow   *self,
   g_assert (GTK_IS_STACK (main_view));
 
   child = gtk_stack_get_visible_child (main_view);
-  gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
-                               self->back_button);
 
   if (child == self->notes_view ||
       child == self->notebook_view)
     {
-      gtk_stack_set_visible_child (GTK_STACK (self->navigate_button_stack),
-                                   self->new_button);
       g_warning ("note or notebook");
       /* If the current view is notes/notebook, reset navigation history */
       g_queue_clear (self->view_stack);
@@ -404,7 +398,6 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 
   if (selection_mode)
     {
-      gtk_widget_hide (self->navigate_button_stack);
       gtk_widget_show (self->main_action_bar);
       gtk_style_context_add_class (style_context, "selection-mode");
       gn_window_set_title (self, _("Click on items to select them"),
@@ -413,7 +406,6 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   else
     {
       gtk_style_context_remove_class (style_context, "selection-mode");
-      gtk_widget_show (self->navigate_button_stack);
       gtk_widget_hide (self->main_action_bar);
       gn_window_set_title (self, NULL, NULL);
     }
@@ -526,9 +518,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_view);
 
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, navigate_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, new_button);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, back_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, undo_revealer);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, select_button_stack);
