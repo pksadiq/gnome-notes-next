@@ -60,12 +60,8 @@ struct _GnManager
   GCancellable *provider_cancellable;
 
   GQueue       *notes_queue;
-  GQueue       *notebooks_queue;
-  GQueue       *trash_notes_queue;
   GQueue       *search_queue;
   GListStore   *notes_store;
-  GListStore   *notebooks_store;
-  GListStore   *trash_notes_store;
   GListStore   *search_store;
 
   GList       *delete_queue;
@@ -225,9 +221,6 @@ gn_manager_item_trashed_cb (GnManager *self,
     g_list_store_remove (self->notes_store, position);
   else
     g_queue_remove (self->notes_queue, item);
-
-  g_list_store_insert_sorted (self->trash_notes_store, item,
-                              gn_item_compare, NULL);
 }
 
 static void
@@ -405,10 +398,6 @@ gn_manager_load_items (GnManager  *self,
   items = gn_provider_get_notes (provider);
   gn_manager_save_items_to_queue (self, items, self->notes_queue,
                                   self->notes_store);
-
-  items = gn_provider_get_trash_notes (provider);
-  gn_manager_save_items_to_queue (self, items, self->trash_notes_queue,
-                                  self->trash_notes_store);
 }
 
 static void
@@ -570,8 +559,6 @@ gn_manager_dispose (GObject *object)
   g_clear_pointer (&self->notes_queue, g_queue_free);
   g_clear_pointer (&self->notes_queue, g_queue_free);
   g_clear_object (&self->notes_store);
-  g_clear_object (&self->notebooks_store);
-  g_clear_object (&self->trash_notes_store);
   g_clear_pointer (&self->providers, g_hash_table_unref);
 
   G_OBJECT_CLASS (gn_manager_parent_class)->dispose (object);
@@ -664,8 +651,6 @@ gn_manager_init (GnManager *self)
                                            g_free, NULL);
   self->notes_queue = g_queue_new ();
   self->notes_store = g_list_store_new (GN_TYPE_ITEM);
-  self->trash_notes_queue = g_queue_new ();
-  self->trash_notes_store = g_list_store_new (GN_TYPE_ITEM);
   self->provider_cancellable = g_cancellable_new ();
 
   self->search_needle = g_strdup ("");
@@ -755,20 +740,6 @@ gn_manager_get_notes_store (GnManager *self)
 }
 
 /**
- * gn_manager_get_trash_notes_store:
- * @self: A #GnManager
- *
- * Get a sorted list of trashed notes loaded from providers.
- *
- * Returns: (transfer none): a #GListStore
- */
-GListStore *
-gn_manager_get_trash_notes_store (GnManager *self)
-{
-  return self->trash_notes_store;
-}
-
-/**
  * gn_manager_get_search_store:
  * @self: A #GnManager
  *
@@ -796,22 +767,6 @@ gn_manager_load_more_notes (GnManager *self)
 
   gn_manager_load_more_items (self, self->notes_store,
                               self->notes_queue);
-}
-
-/**
- * gn_manager_load_more_trash_notes:
- * @self: A #GnManager
- *
- * Load more trash notes to the store from the queue, if any.
- */
-void
-gn_manager_load_more_trash_notes (GnManager *self)
-{
-  /* FIXME: use a GMutex instead? */
-  g_return_if_fail (GN_IS_MAIN_THREAD ());
-
-  gn_manager_load_more_items (self, self->trash_notes_store,
-                              self->trash_notes_queue);
 }
 
 /**

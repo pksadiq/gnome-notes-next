@@ -38,11 +38,9 @@ GnProvider *gn_manager_get_default_provider   (GnManager *self,
                                                gboolean   show_disconnected);
 
 GListStore *gn_manager_get_notes_store        (GnManager *self);
-GListStore *gn_manager_get_trash_notes_store  (GnManager *self);
 GListStore *gn_manager_get_search_store       (GnManager *self);
 
 void        gn_manager_load_more_notes        (GnManager *self);
-void        gn_manager_load_more_trash_notes  (GnManager *self);
 
 GnItem     *gn_manager_new_note               (GnManager *self);
 void        gn_manager_save_item              (GnManager *self,
