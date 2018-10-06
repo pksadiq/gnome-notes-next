@@ -529,24 +529,25 @@ gn_manager_load_providers (GnManager *self)
   provider = gn_local_provider_new ();
   gn_manager_load_and_save_provider (self, provider);
 
-  self->eds_registry = e_source_registry_new_sync (self->provider_cancellable,
-                                                   &error);
+  /* TODO: Enable once the new design is ready */
+  /* self->eds_registry = e_source_registry_new_sync (self->provider_cancellable, */
+  /*                                                  &error); */
 
-  if (error)
-    {
-      g_warning ("Error loading Evolution-Data-Server backend: %s",
-                 error->message);
-      g_clear_error (&error);
-    }
-  else
-    gn_manager_load_memo_providers (self);
+  /* if (error) */
+  /*   { */
+  /*     g_warning ("Error loading Evolution-Data-Server backend: %s", */
+  /*                error->message); */
+  /*     g_clear_error (&error); */
+  /*   } */
+  /* else */
+  /*   gn_manager_load_memo_providers (self); */
 
-  self->goa_client = goa_client_new_sync (self->provider_cancellable, &error);
+  /* self->goa_client = goa_client_new_sync (self->provider_cancellable, &error); */
 
-  if (error)
-    g_warning ("Error loading GNOME Online accounts: %s", error->message);
-  else
-    gn_manager_load_goa_providers (self);
+  /* if (error) */
+  /*   g_warning ("Error loading GNOME Online accounts: %s", error->message); */
+  /* else */
+  /*   gn_manager_load_goa_providers (self); */
 
   gn_manager_connect_provider_signals (self);
 
