@@ -268,19 +268,6 @@ gn_window_show_about (GnWindow  *self,
 }
 
 static void
-gn_window_show_previous_view (GnWindow  *self,
-                              GtkWidget *widget)
-{
-  GtkWidget *last_view;
-
-  g_assert (GN_IS_WINDOW (self));
-  g_assert (GTK_IS_WIDGET (widget));
-
-  last_view = g_queue_pop_head (self->view_stack);
-  gn_window_set_view (self, last_view, GN_VIEW_MODE_NORMAL);
-}
-
-static void
 gn_window_main_view_changed (GnWindow   *self,
                              GParamSpec *pspec,
                              GtkStack   *main_view)
@@ -488,7 +475,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
-  gtk_widget_class_bind_template_callback (widget_class, gn_window_show_previous_view);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_selection_mode_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);
