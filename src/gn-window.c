@@ -125,16 +125,8 @@ gn_window_set_title (GnWindow    *self,
 
   g_assert (GN_IS_WINDOW (self));
 
-  header_bar = GTK_HEADER_BAR (self->header_bar);
+  header_bar = GTK_HEADER_BAR (self->secondary_header_bar);
 
-  if (title == NULL && subtitle == NULL)
-    {
-      gtk_header_bar_set_title (header_bar, _("Notes"));
-      gtk_header_bar_set_subtitle (header_bar, NULL);
-      return;
-    }
-
-  gtk_header_bar_set_custom_title (header_bar, NULL);
   gtk_header_bar_set_title (header_bar, title);
   gtk_header_bar_set_subtitle (header_bar, subtitle);
 }
