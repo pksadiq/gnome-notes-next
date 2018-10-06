@@ -372,25 +372,10 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 }
 
 static void
-gn_window_update_header_bar (GnWindow  *self,
-                             GtkWidget *view)
-{
-  if (view == self->editor_view)
-    {
-    }
-  else  /* notebooks or notes */
-    {
-      gn_window_set_title (self, NULL, NULL);
-    }
-  /* TODO: handle notes inside notebooks view */
-}
-
-static void
 gn_window_show_view (GnWindow  *self,
                      GtkWidget *view)
 {
   gtk_stack_set_visible_child (GTK_STACK (self->main_view), view);
-  gn_window_update_header_bar (self, view);
   gn_window_set_view_type (self, "list");
 }
 
