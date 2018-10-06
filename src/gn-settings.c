@@ -262,6 +262,17 @@ gn_settings_init (GnSettings *self)
 {
 }
 
+/**
+ * gn_settings_new:
+ * @schema_id: An application id as string
+ *
+ * Create a new settings for the given application
+ * id @schema_id.  @schema_ids are usually of the form
+ * “org.example.AppName”.
+ *
+ * Returns: (transfer full): A #GnSettings.
+ * Free with g_object_unref().
+ */
 GnSettings *
 gn_settings_new (const gchar *schema_id)
 {
@@ -272,6 +283,17 @@ gn_settings_new (const gchar *schema_id)
                        NULL);
 }
 
+/**
+ * gn_settings_get_is_first_run:
+ * @self: A #GnSettings
+ *
+ * Get if the application has ever launched after install.
+ * Updating the application to a new version won’t reset
+ * this flag.
+ *
+ * Returns: %TRUE for the first launch of application.
+ * %FALSE otherwise.
+ */
 gboolean
 gn_settings_get_is_first_run (GnSettings *self)
 {
@@ -280,6 +302,14 @@ gn_settings_get_is_first_run (GnSettings *self)
   return g_settings_get_boolean (G_SETTINGS (self), "first-run");
 }
 
+/**
+ * gn_settings_get_window_maximized:
+ * @self: A #GnSettings
+ *
+ * Get the window maximized state as saved in @self.
+ *
+ * Returns: %TRUE if maximized.  %FALSE otherwise.
+ */
 gboolean
 gn_settings_get_window_maximized (GnSettings *self)
 {
@@ -288,6 +318,13 @@ gn_settings_get_window_maximized (GnSettings *self)
   return g_settings_get_boolean (G_SETTINGS (self), "window-maximized");
 }
 
+/**
+ * gn_settings_set_window_maximized:
+ * @self: A #GnSettings
+ * @maximized: The window state to save
+ *
+ * Set the window maximized state in @self.
+ */
 void
 gn_settings_set_window_maximized (GnSettings *self,
                                   gboolean    maximized)
@@ -297,6 +334,13 @@ gn_settings_set_window_maximized (GnSettings *self,
   g_settings_set_boolean (G_SETTINGS (self), "window-maximized", !!maximized);
 }
 
+/**
+ * gn_settings_get_window_geometry:
+ * @self: A #GnSettings
+ * @geometry: (out): A #GdkRectangle
+ *
+ * Get the window geometry as saved in @self.
+ */
 void
 gn_settings_get_window_geometry (GnSettings   *self,
                                  GdkRectangle *geometry)
@@ -314,6 +358,13 @@ gn_settings_get_window_geometry (GnSettings   *self,
   *geometry = size;
 }
 
+/**
+ * gn_settings_set_window_geometry:
+ * @self: A #GnSettings
+ * @geometry: A #GdkRectangle
+ *
+ * Set the window geometry in @self.
+ */
 void
 gn_settings_set_window_geometry (GnSettings   *self,
                                  GdkRectangle *geometry)
@@ -329,6 +380,13 @@ gn_settings_set_window_geometry (GnSettings   *self,
   g_settings_set (settings, "window-position", "(ii)", geometry->x, geometry->y);
 }
 
+/**
+ * gn_settings_get_rgba:
+ * @self: A #GnSettings
+ * @rgba: (out): A #GdkRGBA
+ *
+ * Get the default color for notes
+ */
 void
 gn_settings_get_rgba (GnSettings *self,
                       GdkRGBA    *rgba)
@@ -339,6 +397,13 @@ gn_settings_get_rgba (GnSettings *self,
   *rgba = self->rgba;
 }
 
+/**
+ * gn_settings_set_rgba:
+ * @self: A #GnSettings
+ * @rgba: A #GdkRGBA
+ *
+ * Set the default color for notes
+ */
 void
 gn_settings_set_rgba (GnSettings    *self,
                       const GdkRGBA *rgba)
@@ -358,6 +423,16 @@ gn_settings_set_rgba (GnSettings    *self,
   g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_COLOR]);
 }
 
+/**
+ * gn_settings_get_provider_name:
+ * @self: A #GnSettings
+ *
+ * Get the default provider name for saving notes.
+ * It is user's responsibility to verify that the
+ * provider returned is available and usable.
+ *
+ * Returns: (transfer none): The default font name string
+ */
 const gchar *
 gn_settings_get_provider_name (GnSettings *self)
 {
@@ -366,6 +441,18 @@ gn_settings_get_provider_name (GnSettings *self)
   return self->provider;
 }
 
+/**
+ * gn_settings_set_provider_name:
+ * @self: A #GnSettings
+ * @name: The default provider name to set as
+ * retrieved by gn_provider_get_name()
+ *
+ * Set the default provider name for saving notes.
+ *
+ * Returns: %TRUE if @name was set as default.  If
+ * @name was already set as the default provider name,
+ * %FALSE is returned.
+ */
 gboolean
 gn_settings_set_provider_name (GnSettings  *self,
                                const gchar *name)
@@ -387,6 +474,14 @@ gn_settings_set_provider_name (GnSettings  *self,
   return TRUE;
 }
 
+/**
+ * gn_settings_get_font_name:
+ * @self: A #GnSettings
+ *
+ * Get the default font name for notes editor
+ *
+ * Returns: (transfer none): The default font name string
+ */
 const gchar *
 gn_settings_get_font_name (GnSettings *self)
 {
@@ -395,6 +490,17 @@ gn_settings_get_font_name (GnSettings *self)
   return self->font_name;
 }
 
+/**
+ * gn_settings_set_font_name:
+ * @self: A #GnSettings
+ * @name: The default font name to set
+ *
+ * Set the default font to be used for notes editor.
+ *
+ * Returns: %TRUE if @name was set as default.  If
+ * @name was already set as the default font,
+ * %FALSE is returned.
+ */
 gboolean
 gn_settings_set_font_name (GnSettings  *self,
                            const gchar *name)
