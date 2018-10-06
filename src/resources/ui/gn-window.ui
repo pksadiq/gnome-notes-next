@@ -61,49 +61,6 @@
           </packing>
         </child>
 
-        <!-- List/Grid view buttons -->
-        <child>
-          <object class="GtkStack" id="view_button_stack">
-            <property name="visible" bind-source="select_button" bind-property="visible"
-                      bind-flags="sync-create"/>
-            <child>
-              <object class="GtkButton" id="grid_button">
-                <property name="tooltip-text" translatable="1">View items in a grid</property>
-                <property name="icon-name">view-grid-symbolic</property>
-                <signal name="clicked" handler="gn_window_view_button_toggled" swapped="1"/>
-                <child internal-child="accessible">
-                  <object class="AtkObject">
-                    <property name="accessible-name" translatable="1">Grid View</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="name">grid</property>
-              </packing>
-            </child>
-
-            <child>
-              <object class="GtkButton" id="list_button">
-                <property name="tooltip-text" translatable="1">View items in a list</property>
-                <property name="icon-name">view-list-symbolic</property>
-                <signal name="clicked" handler="gn_window_view_button_toggled" swapped="1"/>
-                <child internal-child="accessible">
-                  <object class="AtkObject">
-                    <property name="accessible-name" translatable="1">List View</property>
-                  </object>
-                </child>
-              </object>
-              <packing>
-                <property name="name">list</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="position">2</property>
-            <property name="pack-type">end</property>
-          </packing>
-        </child> <!-- ./GtkStack view_button_stack -->
-
         <child>
           <object class="GtkStack" id="select_button_stack">
             <property name="homogeneous">0</property>

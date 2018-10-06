@@ -44,9 +44,6 @@ struct _GnWindow
 
   GtkWidget *header_bar;
   GtkWidget *stack_switcher;
-  GtkWidget *view_button_stack;
-  GtkWidget *grid_button;
-  GtkWidget *list_button;
   GtkWidget *navigate_button_stack;
   GtkWidget *new_button;
   GtkWidget *back_button;
@@ -399,27 +396,7 @@ gn_window_set_view_type (GnWindow    *self,
 
   g_assert (GN_IS_WINDOW (self));
 
-  other_button_name = gn_utils_get_other_view_type (view_type);
-
   gn_main_view_set_view (GN_MAIN_VIEW (self->current_view), view_type);
-  gtk_stack_set_visible_child_name (GTK_STACK (self->view_button_stack),
-                                    other_button_name);
-}
-
-static void
-gn_window_view_button_toggled (GnWindow  *self,
-                               GtkWidget *widget)
-{
-  const gchar *view_type;
-  GtkStack *btn_stack;
-
-  g_assert (GN_IS_WINDOW (self));
-  g_assert (GTK_IS_WIDGET (widget));
-
-  btn_stack = GTK_STACK (self->view_button_stack);
-  view_type = gtk_stack_get_visible_child_name (btn_stack);
-
-  gn_window_set_view_type (self, view_type);
 }
 
 static void
@@ -473,14 +450,12 @@ gn_window_update_header_bar (GnWindow  *self,
                              GtkWidget *view)
 {
   gtk_widget_show (self->select_button_stack);
-  gtk_widget_show (self->view_button_stack);
   gtk_widget_show (self->search_button);
 
 
   if (view == self->editor_view)
     {
       gtk_widget_hide (self->select_button_stack);
-      gtk_widget_hide (self->view_button_stack);
       gtk_widget_hide (self->search_button);
     }
   else if (view == self->trash_view)
@@ -498,18 +473,9 @@ static void
 gn_window_show_view (GnWindow  *self,
                      GtkWidget *view)
 {
-  GtkStack *btn_stack;
-  const gchar *view_type;
-
   gtk_stack_set_visible_child (GTK_STACK (self->main_view), view);
   gn_window_update_header_bar (self, view);
-
-  btn_stack = GTK_STACK (self->view_button_stack);
-  view_type = gtk_stack_get_visible_child_name (btn_stack);
-  view_type = gn_utils_get_other_view_type (view_type);
-
-  if (self->current_view != self->editor_view)
-    gn_window_set_view_type (self, view_type);
+  gn_window_set_view_type (self, "list");
 }
 
 static gboolean
@@ -600,9 +566,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_view);
 
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, grid_button);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, list_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, navigate_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, new_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, back_button);
@@ -619,7 +582,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_previous_view);
-  gtk_widget_class_bind_template_callback (widget_class, gn_window_view_button_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_selection_mode_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);
