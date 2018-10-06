@@ -43,6 +43,7 @@ struct _GnWindow
   GtkApplicationWindow parent_instance;
 
   GtkWidget *header_bar;
+  GtkWidget *secondary_header_bar;
   GtkWidget *navigate_button_stack;
   GtkWidget *new_button;
   GtkWidget *back_button;
@@ -401,6 +402,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 {
   GtkStyleContext *style_context;
   GtkWidget *current_view;
+  GtkWidget *title_bar;
   gboolean selection_mode = FALSE;
 
   g_assert (GN_IS_WINDOW (self));
@@ -409,7 +411,8 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   if (widget == self->select_button)
     selection_mode = TRUE;
 
-  style_context = gtk_widget_get_style_context (self->header_bar);
+  title_bar = gtk_window_get_titlebar (GTK_WINDOW (self));
+  style_context = gtk_widget_get_style_context (title_bar);
 
   current_view = self->current_view;
   gn_main_view_set_selection_mode (GN_MAIN_VIEW (current_view),
@@ -431,7 +434,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
       gn_window_set_title (self, NULL, NULL);
     }
 
-  gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (self->header_bar),
+  gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (self->secondary_header_bar),
                                          !selection_mode);
   /*
    * widget can either be select_button or cancel_button. As their
@@ -548,6 +551,7 @@ gn_window_class_init (GnWindowClass *klass)
                                                "ui/gn-window.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, secondary_header_bar);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);

@@ -98,7 +98,7 @@
         </child>
 
         <child>
-          <object class="GtkHeaderBar" id="secondary_headerbar">
+          <object class="GtkHeaderBar" id="secondary_header_bar">
             <property name="show-title-buttons">1</property>
             <property name="hexpand">1</property>
           </object>
