@@ -58,7 +58,6 @@ struct _GnWindow
   GtkWidget *notes_view;
   GtkWidget *editor_view;
 
-  GtkWidget *current_view;
   GnViewMode current_view_mode;
 
   guint      undo_timeout_id;
@@ -159,6 +158,8 @@ gn_window_load_more_items (GnWindow          *self,
                            GtkPositionType    pos,
                            GtkScrolledWindow *scrolled_window)
 {
+  GtkWidget *current_view;
+
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_SCROLLED_WINDOW (scrolled_window));
 
@@ -166,7 +167,9 @@ gn_window_load_more_items (GnWindow          *self,
   if (pos != GTK_POS_BOTTOM)
     return;
 
-  if (self->current_view == self->notes_view)
+  current_view = gtk_stack_get_visible_child (GTK_STACK (self->sidebar_view));
+
+  if (current_view == self->notes_view)
     gn_manager_load_more_notes (gn_manager_get_default ());
 }
 
@@ -216,7 +219,6 @@ gn_window_open_new_note (GnWindow *self)
   gn_window_set_title (self, _("Untitled"),
                        gn_provider_get_name (provider));
   gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
-  gn_window_set_view (self, self->editor_view, GN_VIEW_MODE_NORMAL);
 }
 
 static void
@@ -268,19 +270,8 @@ gn_window_main_view_changed (GnWindow   *self,
                              GParamSpec *pspec,
                              GtkStack   *main_view)
 {
-  GtkWidget *child;
-
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_STACK (main_view));
-
-  child = gtk_stack_get_visible_child (main_view);
-
-  if (child == self->notes_view)
-    {
-      g_warning ("note or notebook");
-      /* If the current view is notes/notebook, reset navigation history */
-      self->current_view = child;
-    }
 }
 
 static void
@@ -312,7 +303,6 @@ gn_window_item_activated (GnWindow   *self,
                            gn_provider_get_name (provider));
 
       gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
-      gn_window_set_view (self, self->editor_view, GN_VIEW_MODE_NORMAL);
     }
 }
 
@@ -335,7 +325,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   title_bar = gtk_window_get_titlebar (GTK_WINDOW (self));
   style_context = gtk_widget_get_style_context (title_bar);
 
-  current_view = self->current_view;
+  current_view = gtk_stack_get_visible_child (GTK_STACK (self->sidebar_view));
   gn_main_view_set_selection_mode (GN_MAIN_VIEW (current_view),
                                    selection_mode);
 
@@ -452,7 +442,6 @@ gn_window_init (GnWindow *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  self->current_view = self->notes_view;
   g_signal_connect_object (gn_manager_get_default (),
                            "provider-added",
                            G_CALLBACK (gn_window_provider_added_cb),
@@ -479,29 +468,6 @@ gn_window_get_mode (GnWindow *self)
 }
 
 void
-gn_window_set_view (GnWindow   *self,
-                    GtkWidget  *view,
-                    GnViewMode  mode)
-{
-  GtkWidget *child;
-
-  g_return_if_fail (GN_IS_WINDOW (self));
-  g_return_if_fail (GTK_IS_WIDGET (view));
-
-  if (view == self->current_view)
-    return;
-
-  if (self->current_view == self->editor_view)
-    {
-      child = gtk_bin_get_child (GTK_BIN (self->editor_view));
-      if (child != NULL)
-        gtk_container_remove (GTK_CONTAINER (self->editor_view), child);
-    }
-
-  self->current_view = view;
-}
-
-void
 gn_window_trash_selected_items (GnWindow *self)
 {
   GtkWidget *current_view;
@@ -511,7 +477,7 @@ gn_window_trash_selected_items (GnWindow *self)
 
   g_return_if_fail (GN_IS_WINDOW (self));
 
-  current_view = self->current_view;
+  current_view = gtk_stack_get_visible_child (GTK_STACK (self->sidebar_view));
   manager = gn_manager_get_default ();
   items = gn_main_view_get_selected_items (GN_MAIN_VIEW (current_view));
 
