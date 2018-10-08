@@ -41,7 +41,7 @@ test_note_buffer_empty (void)
 void
 test_note_buffer_plain (void)
 {
-  GnPlainNote *plain_note;
+  g_autoptr(GnPlainNote) plain_note = NULL;
   GnNote *note;
   g_autofree gchar *content = NULL;
   g_autoptr(GtkTextBuffer) buffer = NULL;
