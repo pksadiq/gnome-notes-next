@@ -54,6 +54,7 @@ struct _GnWindow
   GtkWidget *search_entry;
   GtkWidget *search_view;
   GtkWidget *main_view;
+  GtkWidget *sidebar_view;
   GtkWidget *notes_view;
   GtkWidget *editor_view;
 
@@ -176,7 +177,6 @@ gn_window_search_changed (GnWindow       *self,
 {
   const gchar *needle;
   GnManager *manager;
-  GtkWidget *last_view;
 
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_SEARCH_ENTRY (search_entry));
@@ -186,14 +186,11 @@ gn_window_search_changed (GnWindow       *self,
   gn_manager_search (manager, &needle);
 
   if (needle[0] != '\0')
-    {
-      gn_window_set_view (self, self->search_view, GN_VIEW_MODE_NORMAL);
-    }
+    gtk_stack_set_visible_child (GTK_STACK (self->sidebar_view),
+                                 self->search_view);
   else
-    {
-      last_view = g_queue_pop_head (self->view_stack);
-      gn_window_set_view (self, last_view, GN_VIEW_MODE_NORMAL);
-    }
+    gtk_stack_set_visible_child (GTK_STACK (self->sidebar_view),
+                                 self->notes_view);
 }
 
 static void
@@ -447,6 +444,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_view);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, sidebar_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_view);
 

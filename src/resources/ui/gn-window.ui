@@ -103,8 +103,17 @@
                  <class name="content-view"/>
                 </style>
                 <child>
-                  <object class="GnMainView" id="notes_view">
-                    <signal name="item-activated" handler="gn_window_item_activated" swapped="1"/>
+                  <object class="GtkStack" id="sidebar_view">
+                    <child>
+                      <object class="GnMainView" id="notes_view">
+                        <signal name="item-activated" handler="gn_window_item_activated" swapped="1"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GnMainView" id="search_view">
+                        <signal name="item-activated" handler="gn_window_item_activated" swapped="1"/>
+                      </object>
+                    </child>
                   </object>
                 </child>
           </object> <!-- ./GtkScrolledWindow -->
@@ -183,13 +192,6 @@
                           <object class="GtkStack" id="main_view">
                             <signal name="notify::visible-child" handler="gn_window_main_view_changed"
                                     swapped="1"/>
-
-                            <child>
-                              <object class="GnMainView" id="search_view">
-                                <signal name="item-activated" handler="gn_window_item_activated"
-                                        swapped="1"/>
-                              </object>
-                            </child>
 
                             <child>
                               <object class="GtkFrame" id="editor_view">
