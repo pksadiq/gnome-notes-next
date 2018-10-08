@@ -58,7 +58,6 @@ struct _GnWindow
   GtkWidget *notes_view;
   GtkWidget *editor_view;
 
-  GQueue    *view_stack;
   GtkWidget *current_view;
   GnViewMode current_view_mode;
 
@@ -280,7 +279,6 @@ gn_window_main_view_changed (GnWindow   *self,
     {
       g_warning ("note or notebook");
       /* If the current view is notes/notebook, reset navigation history */
-      g_queue_clear (self->view_stack);
       self->current_view = child;
     }
 }
@@ -316,15 +314,6 @@ gn_window_item_activated (GnWindow   *self,
       gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
       gn_window_set_view (self, self->editor_view, GN_VIEW_MODE_NORMAL);
     }
-}
-
-static void
-gn_window_set_view_type (GnWindow    *self,
-                         const gchar *view_type)
-{
-  g_assert (GN_IS_WINDOW (self));
-
-  gn_main_view_set_view (GN_MAIN_VIEW (self->current_view), view_type);
 }
 
 static void
@@ -366,14 +355,6 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 
   gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (self->secondary_header_bar),
                                          !selection_mode);
-}
-
-static void
-gn_window_show_view (GnWindow  *self,
-                     GtkWidget *view)
-{
-  gtk_stack_set_visible_child (GTK_STACK (self->main_view), view);
-  gn_window_set_view_type (self, "list");
 }
 
 static void
@@ -471,7 +452,6 @@ gn_window_init (GnWindow *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
-  self->view_stack = g_queue_new ();
   self->current_view = self->notes_view;
   g_signal_connect_object (gn_manager_get_default (),
                            "provider-added",
@@ -511,8 +491,6 @@ gn_window_set_view (GnWindow   *self,
   if (view == self->current_view)
     return;
 
-  g_queue_push_head (self->view_stack, self->current_view);
-
   if (self->current_view == self->editor_view)
     {
       child = gtk_bin_get_child (GTK_BIN (self->editor_view));
@@ -521,7 +499,6 @@ gn_window_set_view (GnWindow   *self,
     }
 
   self->current_view = view;
-  gn_window_show_view (self, view);
 }
 
 void
