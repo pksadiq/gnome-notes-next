@@ -150,6 +150,7 @@ gn_item_finalize (GObject *object)
 
   g_clear_pointer (&priv->uid, g_free);
   g_clear_pointer (&priv->title, g_free);
+  g_clear_pointer (&priv->rgba, gdk_rgba_free);
 
   G_OBJECT_CLASS (gn_item_parent_class)->finalize (object);
 
