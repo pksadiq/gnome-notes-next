@@ -34,9 +34,6 @@ G_DECLARE_FINAL_TYPE (GnWindow, gn_window, GN, WINDOW, GtkApplicationWindow)
 GnWindow *gn_window_new (GnApplication *application);
 
 GnViewMode gn_window_get_mode (GnWindow   *self);
-void       gn_window_set_view (GnWindow   *self,
-                               GtkWidget  *view,
-                               GnViewMode  mode);
 void       gn_window_trash_selected_items (GnWindow *self);
 
 G_END_DECLS
