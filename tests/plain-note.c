@@ -57,7 +57,7 @@ test_plain_note_with_change (GnPlainNote *plain_note)
 static void
 test_plain_note_empty (void)
 {
-  GnPlainNote *plain_note;
+  g_autoptr(GnPlainNote) plain_note = NULL;
   GnItem *item;
   GdkRGBA rgba;
   const gchar *uid;
@@ -86,7 +86,7 @@ test_plain_note_empty (void)
 static void
 test_plain_note_title (void)
 {
-  GnPlainNote *plain_note;
+  g_autoptr(GnPlainNote) plain_note = NULL;
   GnNote *note;
   GnItem *item;
   const gchar *uid;
@@ -114,7 +114,7 @@ test_plain_note_title (void)
 static void
 test_plain_note_content (void)
 {
-  GnPlainNote *plain_note;
+  g_autoptr(GnPlainNote) plain_note = NULL;
   GnNote *note;
   GnItem *item;
   const gchar *uid;
