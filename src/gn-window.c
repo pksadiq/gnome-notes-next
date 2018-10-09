@@ -43,7 +43,6 @@ struct _GnWindow
   GtkApplicationWindow parent_instance;
 
   GtkWidget *header_bar;
-  GtkWidget *secondary_header_bar;
   GtkWidget *new_button;
   GtkWidget *undo_revealer;
 
@@ -122,7 +121,7 @@ gn_window_set_title (GnWindow    *self,
 
   g_assert (GN_IS_WINDOW (self));
 
-  header_bar = GTK_HEADER_BAR (self->secondary_header_bar);
+  header_bar = GTK_HEADER_BAR (self->header_bar);
 
   gtk_header_bar_set_title (header_bar, title);
   gtk_header_bar_set_subtitle (header_bar, subtitle);
@@ -343,7 +342,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
       gn_window_set_title (self, NULL, NULL);
     }
 
-  gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (self->secondary_header_bar),
+  gtk_header_bar_set_show_title_buttons (GTK_HEADER_BAR (self->header_bar),
                                          !selection_mode);
 }
 
@@ -409,7 +408,6 @@ gn_window_class_init (GnWindowClass *klass)
                                                "ui/gn-window.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, secondary_header_bar);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);

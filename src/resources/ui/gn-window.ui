@@ -5,10 +5,9 @@
     <property name="height-request">300</property>
 
     <!-- Headerbar -->
-    <child type="titlebar">
-      <object class="GtkBox">
-        <child>
+        <child type="titlebar">
           <object class="GtkHeaderBar" id="header_bar">
+            <property name="show-title-buttons">1</property>
             <property name="title" translatable="yes">Notes</property>
             <property name="can-focus">1</property>
 
@@ -57,23 +56,6 @@
 
           </object> <!-- ./GtkHeaderBar -->
         </child>
-
-        <child>
-          <object class="GtkSeparator">
-            <property name="orientation">vertical</property>
-            <!-- FIXME: Do we need this? -->
-            <property name="width-request">2</property>
-          </object>
-        </child>
-
-        <child>
-          <object class="GtkHeaderBar" id="secondary_header_bar">
-            <property name="show-title-buttons">1</property>
-            <property name="hexpand">1</property>
-          </object>
-        </child>
-      </object>
-    </child>
 
     <child>
       <object class="GtkBox">
