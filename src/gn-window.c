@@ -45,6 +45,7 @@ struct _GnWindow
   GtkWidget *header_bar;
   GtkWidget *new_button;
   GtkWidget *search_button;
+  GtkWidget *view_button_stack;
   GtkWidget *undo_revealer;
 
   GtkWidget *select_button;
@@ -125,6 +126,34 @@ gn_window_set_title (GnWindow    *self,
 
   gtk_header_bar_set_title (header_bar, title);
   gtk_header_bar_set_subtitle (header_bar, subtitle);
+}
+
+static void
+gn_window_view_button_toggled (GnWindow  *self,
+                               GtkWidget *widget)
+{
+  GtkStack *btn_stack;
+  const gchar *view;
+  const gchar *other_view;
+
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_WIDGET (widget));
+
+  btn_stack = GTK_STACK (self->view_button_stack);
+  view = gtk_stack_get_visible_child_name (btn_stack);
+  other_view = gn_utils_get_other_view_type (view);
+
+  gtk_stack_set_visible_child_name (btn_stack, other_view);
+
+  /*
+   * TODO: As it is costly to switch views, we should
+   * only change the current view, and change other views
+   * when the view changes.
+   */
+  gn_main_view_set_view (GN_MAIN_VIEW (self->notes_view),
+                         view);
+  gn_main_view_set_view (GN_MAIN_VIEW (self->search_view),
+                         view);
 }
 
 static void
@@ -409,6 +438,7 @@ gn_window_class_init (GnWindowClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
@@ -427,6 +457,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_view_button_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_selection_mode_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);

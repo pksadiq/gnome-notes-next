@@ -23,6 +23,53 @@
           </object>
         </child>
 
+        <!-- List/Grid view buttons -->
+        <child>
+          <object class="GtkStack" id="view_button_stack">
+            <property name="visible" bind-source="select_button" bind-property="visible"
+                      bind-flags="sync-create"/>
+            <signal name="notify::visible-child" handler="gn_window_view_button_changed"
+                    swapped="1"/>
+            <child>
+              <object class="GtkButton" id="grid_button">
+                <property name="tooltip-text" translatable="1">View items in a grid</property>
+                <property name="icon-name">view-grid-symbolic</property>
+                <signal name="clicked" handler="gn_window_view_button_toggled"
+                        swapped="1" after="0" />
+                <child internal-child="accessible">
+                  <object class="AtkObject">
+                    <property name="accessible-name" translatable="1">Grid View</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="name">grid</property>
+              </packing>
+            </child>
+
+            <child>
+              <object class="GtkButton" id="list_button">
+                <property name="tooltip-text" translatable="1">View items in a list</property>
+                <property name="icon-name">view-list-symbolic</property>
+                <signal name="clicked" handler="gn_window_view_button_toggled"
+                        swapped="1" after="1" />
+                <child internal-child="accessible">
+                  <object class="AtkObject">
+                    <property name="accessible-name" translatable="1">List View</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="name">list</property>
+              </packing>
+            </child>
+          </object> <!-- ./GtkStack view_button_stack -->
+          <packing>
+            <property name="position">2</property>
+            <property name="pack-type">end</property>
+          </packing>
+        </child>
+
         <child>
           <object class="GtkToggleButton" id="search_button">
             <property name="icon-name">edit-find-symbolic</property>
@@ -152,9 +199,6 @@
                         </style>
                         <child>
                           <object class="GtkStack" id="main_view">
-                            <signal name="notify::visible-child" handler="gn_window_main_view_changed"
-                                    swapped="1"/>
-
                             <child>
                               <object class="GnMainView" id="notes_view">
                                 <signal name="item-activated" handler="gn_window_item_activated"
