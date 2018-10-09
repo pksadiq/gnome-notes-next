@@ -44,6 +44,7 @@ struct _GnWindow
 
   GtkWidget *header_bar;
   GtkWidget *new_button;
+  GtkWidget *search_button;
   GtkWidget *undo_revealer;
 
   GtkWidget *select_button;
@@ -408,6 +409,7 @@ gn_window_class_init (GnWindowClass *klass)
                                                "ui/gn-window.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
