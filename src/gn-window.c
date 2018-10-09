@@ -54,7 +54,6 @@ struct _GnWindow
   GtkWidget *search_entry;
   GtkWidget *search_view;
   GtkWidget *main_view;
-  GtkWidget *sidebar_view;
   GtkWidget *notes_view;
   GtkWidget *editor_view;
 
@@ -167,7 +166,7 @@ gn_window_load_more_items (GnWindow          *self,
   if (pos != GTK_POS_BOTTOM)
     return;
 
-  current_view = gtk_stack_get_visible_child (GTK_STACK (self->sidebar_view));
+  current_view = gtk_stack_get_visible_child (GTK_STACK (self->main_view));
 
   if (current_view == self->notes_view)
     gn_manager_load_more_notes (gn_manager_get_default ());
@@ -188,10 +187,10 @@ gn_window_search_changed (GnWindow       *self,
   gn_manager_search (manager, &needle);
 
   if (needle[0] != '\0')
-    gtk_stack_set_visible_child (GTK_STACK (self->sidebar_view),
+    gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                  self->search_view);
   else
-    gtk_stack_set_visible_child (GTK_STACK (self->sidebar_view),
+    gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                  self->notes_view);
 }
 
@@ -325,7 +324,7 @@ gn_window_selection_mode_toggled (GnWindow  *self,
   title_bar = gtk_window_get_titlebar (GTK_WINDOW (self));
   style_context = gtk_widget_get_style_context (title_bar);
 
-  current_view = gtk_stack_get_visible_child (GTK_STACK (self->sidebar_view));
+  current_view = gtk_stack_get_visible_child (GTK_STACK (self->main_view));
   gn_main_view_set_selection_mode (GN_MAIN_VIEW (current_view),
                                    selection_mode);
 
@@ -415,7 +414,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_view);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, sidebar_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_view);
 
@@ -477,7 +475,7 @@ gn_window_trash_selected_items (GnWindow *self)
 
   g_return_if_fail (GN_IS_WINDOW (self));
 
-  current_view = gtk_stack_get_visible_child (GTK_STACK (self->sidebar_view));
+  current_view = gtk_stack_get_visible_child (GTK_STACK (self->main_view));
   manager = gn_manager_get_default ();
   items = gn_main_view_get_selected_items (GN_MAIN_VIEW (current_view));
 

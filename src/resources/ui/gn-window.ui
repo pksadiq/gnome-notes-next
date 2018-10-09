@@ -76,11 +76,8 @@
 
     <child>
       <object class="GtkBox">
+        <property name="orientation">vertical</property>
 
-        <child>
-          <object class="GtkBox" id="sidebar">
-            <property name="hexpand-set">1</property>
-            <property name="orientation">vertical</property>
         <child>
           <object class="GtkSearchBar" id="search_bar">
             <child>
@@ -94,25 +91,9 @@
         </child>
 
         <child>
-          <object class="GtkScrolledWindow">
-            <signal name="edge-reached" handler="gn_window_load_more_items" swapped="1"/>
-                <style>
-                 <class name="content-view"/>
-                </style>
-                <child>
-                  <object class="GtkStack" id="sidebar_view">
-                  </object>
-                </child>
-          </object> <!-- ./GtkScrolledWindow -->
-        </child>
-
-        <child>
           <object class="GnActionBar" id="main_action_bar">
             <property name="visible">0</property>
           </object>
-        </child>
-
-        </object>
         </child>
 
         <child>
