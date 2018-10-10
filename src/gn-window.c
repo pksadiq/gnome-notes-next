@@ -149,14 +149,7 @@ gn_window_view_button_toggled (GnWindow  *self,
 
   gtk_stack_set_visible_child_name (btn_stack, other_view);
 
-  /*
-   * TODO: As it is costly to switch views, we should
-   * only change the current view, and change other views
-   * when the view changes.
-   */
-  gn_main_view_set_view (GN_MAIN_VIEW (self->notes_view),
-                         view);
-  gn_main_view_set_view (GN_MAIN_VIEW (self->search_view),
+  gn_main_view_set_view (GN_MAIN_VIEW (self->current_view),
                          view);
 }
 
@@ -343,12 +336,17 @@ gn_window_main_view_changed (GnWindow   *self,
 {
   GtkWidget *child;
   GtkStack *nav_stack;
+  GtkStack *btn_stack;
+  const gchar *view;
 
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_STACK (main_view));
 
   child = gtk_stack_get_visible_child (main_view);
   nav_stack = GTK_STACK (self->nav_button_stack);
+  btn_stack = GTK_STACK (self->view_button_stack);
+  view = gtk_stack_get_visible_child_name (btn_stack);
+  view = gn_utils_get_other_view_type (view);
 
   if (child == self->notes_view)
     {
@@ -376,6 +374,7 @@ gn_window_main_view_changed (GnWindow   *self,
       gtk_widget_show (self->view_button_stack);
       gtk_widget_show (self->search_button);
       gtk_widget_show (self->select_button);
+      gn_main_view_set_view (GN_MAIN_VIEW (child), view);
     }
 }
 
