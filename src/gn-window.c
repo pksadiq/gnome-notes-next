@@ -323,6 +323,19 @@ gn_window_main_view_changed (GnWindow   *self,
     {
       gtk_stack_set_visible_child_name (nav_stack, "back");
     }
+
+  if (child == self->editor_view)
+    {
+      gtk_widget_hide (self->view_button_stack);
+      gtk_widget_hide (self->search_button);
+      gtk_widget_hide (self->select_button);
+    }
+  else
+    {
+      gtk_widget_show (self->view_button_stack);
+      gtk_widget_show (self->search_button);
+      gtk_widget_show (self->select_button);
+    }
 }
 
 static void
