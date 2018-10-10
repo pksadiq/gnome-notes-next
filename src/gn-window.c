@@ -58,6 +58,8 @@ struct _GnWindow
   GtkWidget *notes_view;
   GtkWidget *editor_view;
 
+  GQueue    *view_stack;
+  GtkWidget *current_view;
   GnViewMode current_view_mode;
 
   guint      undo_timeout_id;
@@ -253,8 +255,15 @@ static void
 gn_window_show_previous_view (GnWindow  *self,
                               GtkWidget *widget)
 {
+  GtkWidget *last_view;
+
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_BUTTON (widget));
+  g_assert (!g_queue_is_empty (self->view_stack));
+
+  last_view = g_queue_pop_head (self->view_stack);
+  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
+                               last_view);
 }
 
 static void
@@ -318,10 +327,13 @@ gn_window_main_view_changed (GnWindow   *self,
   if (child == self->notes_view)
     {
       gtk_stack_set_visible_child_name (nav_stack, "new");
+      g_queue_clear (self->view_stack);
     }
   else
     {
       gtk_stack_set_visible_child_name (nav_stack, "back");
+      if (g_queue_peek_head (self->view_stack) != self->current_view)
+        g_queue_push_head (self->view_stack, self->current_view);
     }
 
   if (child == self->editor_view)
@@ -510,6 +522,8 @@ gn_window_init (GnWindow *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
+  self->view_stack = g_queue_new ();
+  self->current_view = self->notes_view;
   g_signal_connect_object (gn_manager_get_default (),
                            "provider-added",
                            G_CALLBACK (gn_window_provider_added_cb),
