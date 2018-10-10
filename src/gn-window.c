@@ -43,6 +43,7 @@ struct _GnWindow
   GtkApplicationWindow parent_instance;
 
   GtkWidget *header_bar;
+  GtkWidget *nav_button_stack;
   GtkWidget *new_button;
   GtkWidget *search_button;
   GtkWidget *view_button_stack;
@@ -250,6 +251,14 @@ gn_window_open_new_note (GnWindow *self)
 }
 
 static void
+gn_window_show_previous_view (GnWindow  *self,
+                              GtkWidget *widget)
+{
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_BUTTON (widget));
+}
+
+static void
 gn_window_show_settings (GnWindow  *self,
                          GtkWidget *widget)
 {
@@ -298,8 +307,23 @@ gn_window_main_view_changed (GnWindow   *self,
                              GParamSpec *pspec,
                              GtkStack   *main_view)
 {
+  GtkWidget *child;
+  GtkStack *nav_stack;
+
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_STACK (main_view));
+
+  child = gtk_stack_get_visible_child (main_view);
+  nav_stack = GTK_STACK (self->nav_button_stack);
+
+  if (child == self->notes_view)
+    {
+      gtk_stack_set_visible_child_name (nav_stack, "new");
+    }
+  else
+    {
+      gtk_stack_set_visible_child_name (nav_stack, "back");
+    }
 }
 
 static void
@@ -439,6 +463,7 @@ gn_window_class_init (GnWindowClass *klass)
                                                "ui/gn-window.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, header_bar);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, nav_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
 
@@ -458,6 +483,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_continue_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_cancel_delete);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_search_changed);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_show_previous_view);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_open_new_note);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_view_button_toggled);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_selection_mode_toggled);

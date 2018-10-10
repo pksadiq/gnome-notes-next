@@ -12,6 +12,9 @@
         <property name="can-focus">1</property>
 
         <child>
+          <object class="GtkStack" id="nav_button_stack">
+
+        <child>
           <object class="GtkButton" id="new_button">
             <property name="icon-name">list-add-symbolic</property>
             <signal name="clicked" handler="gn_window_open_new_note" swapped="1"/>
@@ -21,6 +24,27 @@
               </object>
             </child>
           </object>
+          <packing>
+            <property name="name">new</property>
+          </packing>
+        </child>
+
+        <child>
+          <object class="GtkButton" id="back_button">
+            <property name="icon-name">go-previous-symbolic</property>
+            <signal name="clicked" handler="gn_window_show_previous_view" swapped="1"/>
+            <child internal-child="accessible">
+              <object class="AtkObject">
+                <property name="accessible-name" translatable="yes">Back</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="name">back</property>
+          </packing>
+        </child>
+
+          </object> <!-- ./GtkStack nav_button_stack -->
         </child>
 
         <!-- List/Grid view buttons -->
@@ -199,6 +223,8 @@
                         </style>
                         <child>
                           <object class="GtkStack" id="main_view">
+                            <signal name="notify::visible-child" handler="gn_window_main_view_changed"
+                                    swapped="1"/>
                             <child>
                               <object class="GnMainView" id="notes_view">
                                 <signal name="item-activated" handler="gn_window_item_activated"
