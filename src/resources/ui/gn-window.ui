@@ -52,8 +52,6 @@
           <object class="GtkStack" id="view_button_stack">
             <property name="visible" bind-source="select_button" bind-property="visible"
                       bind-flags="sync-create"/>
-            <signal name="notify::visible-child" handler="gn_window_view_button_changed"
-                    swapped="1"/>
             <child>
               <object class="GtkButton" id="grid_button">
                 <property name="tooltip-text" translatable="1">View items in a grid</property>
