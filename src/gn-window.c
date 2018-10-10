@@ -269,6 +269,8 @@ gn_window_open_new_note (GnWindow *self)
   gn_window_set_title (self, _("Untitled"),
                        gn_provider_get_name (provider));
   gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
+  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
+                               self->editor_view);
 }
 
 static void
