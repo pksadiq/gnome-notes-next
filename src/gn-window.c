@@ -206,6 +206,23 @@ gn_window_load_more_items (GnWindow          *self,
     gn_manager_load_more_notes (gn_manager_get_default ());
 }
 
+static gboolean
+gn_window_key_press_cb (GtkEventController *controller,
+                        guint               keyval,
+                        guint               keycode,
+                        GdkModifierType     state,
+                        GnWindow           *self)
+{
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GTK_IS_EVENT_CONTROLLER (controller));
+
+  if (self->current_view == self->editor_view)
+    return FALSE;
+
+  return gtk_search_bar_handle_event (GTK_SEARCH_BAR (self->search_bar),
+                                      gtk_get_current_event ());
+}
+
 static void
 gn_window_search_changed (GnWindow       *self,
                           GtkSearchEntry *search_entry)
@@ -550,7 +567,15 @@ gn_window_class_init (GnWindowClass *klass)
 static void
 gn_window_init (GnWindow *self)
 {
+  GtkEventController *controller;
+
   gtk_widget_init_template (GTK_WIDGET (self));
+
+  controller = gtk_event_controller_key_new ();
+  g_signal_connect (controller, "key-pressed",
+                    G_CALLBACK (gn_window_key_press_cb),
+                    self);
+  gtk_widget_add_controller (GTK_WIDGET (self), controller);
 
   self->view_stack = g_queue_new ();
   self->current_view = self->notes_view;
