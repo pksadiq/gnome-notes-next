@@ -235,6 +235,18 @@
                                 <property name="title" translatable="yes">Notes</property>
                               </packing>
                             </child>
+
+                            <child>
+                              <object class="GnMainView" id="trash_view">
+                                <signal name="item-activated" handler="gn_window_item_activated"
+                                        swapped="1"/>
+                              </object>
+                              <packing>
+                                <property name="name">trash</property>
+                                <property name="title" translatable="yes">Trash</property>
+                              </packing>
+                            </child>
+
                             <child>
                               <object class="GnMainView" id="search_view">
                                 <signal name="item-activated" handler="gn_window_item_activated"
@@ -285,6 +297,17 @@
     <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
+
+        <child>
+          <object class="GtkModelButton">
+            <property name="text" translatable="yes">_View Trash</property>
+            <signal name="clicked" handler="gn_window_show_trash" swapped="1" />
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkSeparatorMenuItem" />
+        </child>
 
         <child>
           <object class="GtkModelButton">

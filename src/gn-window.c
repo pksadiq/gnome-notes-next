@@ -56,6 +56,7 @@ struct _GnWindow
   GtkWidget *search_view;
   GtkWidget *main_view;
   GtkWidget *notes_view;
+  GtkWidget *trash_view;
   GtkWidget *editor_view;
 
   GQueue    *view_stack;
@@ -177,6 +178,14 @@ gn_window_provider_added_cb (GnWindow   *self,
   gn_main_view_set_model (GN_MAIN_VIEW (self->notes_view),
                           G_LIST_MODEL (store));
 
+  store = gn_manager_get_trash_notes_store (gn_manager_get_default ());
+
+  gn_main_view_set_view (GN_MAIN_VIEW (self->trash_view),
+                         "list");
+
+  gn_main_view_set_model (GN_MAIN_VIEW (self->trash_view),
+                          G_LIST_MODEL (store));
+
   store = gn_manager_get_search_store (gn_manager_get_default ());
 
   gn_main_view_set_model (GN_MAIN_VIEW (self->search_view),
@@ -264,6 +273,15 @@ gn_window_show_previous_view (GnWindow  *self,
   last_view = g_queue_pop_head (self->view_stack);
   gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                last_view);
+}
+
+static void
+gn_window_show_trash (GnWindow *self)
+{
+  g_assert (GN_IS_WINDOW (self));
+
+  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
+                               self->trash_view);
 }
 
 static void
@@ -496,6 +514,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, notes_view);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, trash_view);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_view);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, undo_revealer);
@@ -513,6 +532,7 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_callback (widget_class, gn_window_load_more_items);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_main_view_changed);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_item_activated);
+  gtk_widget_class_bind_template_callback (widget_class, gn_window_show_trash);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_settings);
   gtk_widget_class_bind_template_callback (widget_class, gn_window_show_about);
 }
