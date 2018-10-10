@@ -62,6 +62,7 @@ struct _GnWindow
   GQueue    *view_stack;
   GtkWidget *current_view;
   GnViewMode current_view_mode;
+  gboolean   back_button_pressed;
 
   guint      undo_timeout_id;
 };
@@ -271,8 +272,15 @@ gn_window_show_previous_view (GnWindow  *self,
   g_assert (!g_queue_is_empty (self->view_stack));
 
   last_view = g_queue_pop_head (self->view_stack);
+
+  /*
+   * This helps us to check if the main view was changed by
+   * the user pressing the back button.
+   */
+  self->back_button_pressed = TRUE;
   gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                last_view);
+  self->back_button_pressed = FALSE;
 }
 
 static void
@@ -350,9 +358,12 @@ gn_window_main_view_changed (GnWindow   *self,
   else
     {
       gtk_stack_set_visible_child_name (nav_stack, "back");
-      if (g_queue_peek_head (self->view_stack) != self->current_view)
+      if (!self->back_button_pressed &&
+          g_queue_peek_head (self->view_stack) != self->current_view)
         g_queue_push_head (self->view_stack, self->current_view);
     }
+
+  self->current_view = child;
 
   if (child == self->editor_view)
     {
