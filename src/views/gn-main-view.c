@@ -365,7 +365,9 @@ gn_main_view_set_model (GnMainView *self,
 /**
  * gn_main_view_set_view:
  * @self: A #GnMainView
- * @view_type: a #GnViewType
+ * @view: The view to set
+ *
+ * @view can either be “list” or “grid”.
  *
  * Set Current view type.  If the associated #GListModel is
  * empty, the function simply returns.
