@@ -46,6 +46,9 @@ struct _GnWindow
   GtkWidget *nav_button_stack;
   GtkWidget *search_button;
   GtkWidget *view_button_stack;
+  GtkWidget *menu_button;
+  GtkWidget *main_menu;
+  GtkWidget *editor_menu;
   GtkWidget *undo_revealer;
 
   GtkWidget *select_button;
@@ -387,6 +390,10 @@ gn_window_main_view_changed (GnWindow   *self,
       gtk_widget_hide (self->view_button_stack);
       gtk_widget_hide (self->search_button);
       gtk_widget_hide (self->select_button);
+      gtk_menu_button_set_popover (GTK_MENU_BUTTON (self->menu_button),
+                                   self->editor_menu);
+      gtk_button_set_icon_name (GTK_BUTTON (self->menu_button),
+                                "view-more-symbolic");
     }
   else
     {
@@ -394,6 +401,10 @@ gn_window_main_view_changed (GnWindow   *self,
       gtk_widget_show (self->search_button);
       gtk_widget_show (self->select_button);
       gn_main_view_set_view (GN_MAIN_VIEW (child), view);
+      gtk_menu_button_set_popover (GTK_MENU_BUTTON (self->menu_button),
+                                   self->main_menu);
+      gtk_button_set_icon_name (GTK_BUTTON (self->menu_button),
+                                "open-menu-symbolic");
     }
 }
 
@@ -537,6 +548,9 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, nav_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, menu_button);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, main_menu);
+  gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_menu);
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);

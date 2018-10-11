@@ -325,4 +325,12 @@
     </child>
   </object>
 
+  <object class="GtkPopoverMenu" id="editor_menu">
+    <child>
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+      </object> <!-- ./GtkBox -->
+    </child>
+  </object>
+
 </interface>
