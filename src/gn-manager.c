@@ -888,6 +888,8 @@ gn_manager_search (GnManager    *self,
 {
   g_return_if_fail (GN_IS_MANAGER (self));
 
+  /* TODO */
+  return;
   g_cancellable_cancel (self->search_cancellable);
   g_free (self->old_search_needle);
 
