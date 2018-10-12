@@ -61,8 +61,10 @@ struct _GnLocalProvider
   gchar *location;
   gchar *trash_location;
 
-  GList *notes;
-  GList *trash_notes;
+  GListStore *notes_store;
+  GListStore *trash_store;
+  /* GList *notes; */
+  /* GList *trash_notes; */
 };
 
 G_DEFINE_TYPE (GnLocalProvider, gn_local_provider, GN_TYPE_PROVIDER)
@@ -88,7 +90,9 @@ gn_local_provider_finalize (GObject *object)
   g_clear_pointer (&self->user_name, g_free);
   g_clear_pointer (&self->location, g_free);
 
-  g_list_free_full (self->notes, g_object_unref);
+  g_clear_object (&self->notes_store);
+  g_clear_object (&self->trash_store);
+  /* g_list_free_full (self->notes, g_object_unref); */
 
   G_OBJECT_CLASS (gn_local_provider_parent_class)->finalize (object);
 
@@ -137,7 +141,7 @@ gn_local_provider_get_location_name (GnProvider *provider)
 static void
 gn_local_provider_load_path (GnLocalProvider  *self,
                              const gchar      *path,
-                             GList           **items,
+                             GListStore       *store,
                              GCancellable     *cancellable,
                              GError          **error)
 {
@@ -191,7 +195,9 @@ gn_local_provider_load_path (GnLocalProvider  *self,
       g_object_set_data (G_OBJECT (note), "provider", GN_PROVIDER (self));
       g_object_set_data_full (G_OBJECT (note), "file", g_steal_pointer (&file),
                               g_object_unref);
-      *items = g_list_prepend (*items, note);
+      /* FIXME: Use g_list_store_splice? */
+      g_list_store_append (store, note);
+      /* *items = g_list_prepend (*items, note); */
     }
 }
 
@@ -208,7 +214,8 @@ gn_local_provider_load_notes (GTask        *task,
   g_assert (GN_IS_LOCAL_PROVIDER (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
-  gn_local_provider_load_path (self, self->location, &self->notes,
+  gn_local_provider_load_path (self, self->location,
+                               self->notes_store,
                                cancellable, &error);
 
   if (error)
@@ -218,7 +225,7 @@ gn_local_provider_load_notes (GTask        *task,
     }
 
   gn_local_provider_load_path (self, self->trash_location,
-                               &self->trash_notes,
+                               self->trash_store,
                                cancellable, &error);
   if (error)
     g_task_return_error (task, error);
@@ -335,10 +342,11 @@ gn_local_provider_save_item_async (GnProvider          *provider,
 }
 
 static gboolean
-gn_local_provider_save_item_finish (GnProvider   *self,
-                                    GAsyncResult *result,
+gn_local_provider_save_item_finish (GnProvider    *provider,
+                                    GAsyncResult  *result,
                                     GError       **error)
 {
+  GnLocalProvider *self = (GnLocalProvider *)provider;
   GnItem *item;
   gboolean ret;
 
@@ -350,6 +358,7 @@ gn_local_provider_save_item_finish (GnProvider   *self,
   item = g_task_get_task_data (G_TASK (result));
   g_signal_emit_by_name (self, "item-added", item);
 
+  /* TODO: Emit changed signal if item isn't new */
   if (gn_item_is_new (item))
     {
       GFile *file;
@@ -368,6 +377,8 @@ gn_local_provider_save_item_finish (GnProvider   *self,
             *end = '\0';
 
           gn_item_set_uid (item, file_name);
+          g_list_store_insert_sorted (self->notes_store, item,
+                                      gn_item_compare, NULL);
         }
     }
 
@@ -406,31 +417,33 @@ gn_local_provider_trash_item (GnProvider    *provider,
 
   g_object_set_data_full (G_OBJECT (item), "file", trash_file_name,
                           g_object_unref);
-  self->notes = g_list_remove (self->notes, item);
-  self->trash_notes = g_list_prepend (self->trash_notes, item);
+  /* self->notes = g_list_remove (self->notes, item); */
+  g_list_store_insert_sorted (self->trash_store, item,
+                              gn_item_compare, NULL);
+  /* self->trash_notes = g_list_prepend (self->trash_notes, item); */
   g_signal_emit_by_name (provider, "item-trashed", item);
 
   GN_RETURN (success);
 }
 
-static GList *
+static GListStore *
 gn_local_provider_get_notes (GnProvider *provider)
 {
   GN_ENTRY;
 
   g_assert (GN_IS_PROVIDER (provider));
 
-  GN_RETURN (GN_LOCAL_PROVIDER (provider)->notes);
+  GN_RETURN (GN_LOCAL_PROVIDER (provider)->notes_store);
 }
 
-static GList *
+static GListStore *
 gn_local_provider_get_trash_notes (GnProvider *provider)
 {
   GN_ENTRY;
 
   g_assert (GN_IS_PROVIDER (provider));
 
-  GN_RETURN (GN_LOCAL_PROVIDER (provider)->trash_notes);
+  GN_RETURN (GN_LOCAL_PROVIDER (provider)->trash_store);
 }
 
 static void
@@ -460,6 +473,9 @@ gn_local_provider_class_init (GnLocalProviderClass *klass)
 static void
 gn_local_provider_init (GnLocalProvider *self)
 {
+  self->notes_store = g_list_store_new (GN_TYPE_ITEM);
+  self->trash_store = g_list_store_new (GN_TYPE_ITEM);
+
   if (self->location == NULL)
     {
       self->location = g_build_filename (g_get_user_data_dir (),

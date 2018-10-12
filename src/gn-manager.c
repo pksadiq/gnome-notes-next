@@ -63,13 +63,15 @@ struct _GnManager
   GQueue       *notebooks_queue;
   GQueue       *trash_notes_queue;
   GQueue       *search_queue;
-  GListStore   *notes_store;
+  GListStore   *list_of_notes_store;
+  GListStore   *list_of_trash_store;
+  GtkSliceListModel *notes_store;
+  GtkSliceListModel *trash_store;
   GListStore   *notebooks_store;
   GListStore   *trash_notes_store;
   GListStore   *search_store;
 
   GList       *delete_queue;
-  GListStore  *delete_store;
 
   /* Search */
   GCancellable *search_cancellable;
@@ -171,66 +173,6 @@ gn_manager_get_item_position (GnManager  *self,
 }
 
 static void
-gn_manager_item_added_cb (GnManager *self,
-                          GnItem    *item)
-{
-  GnProvider *provider;
-
-  g_assert (GN_IS_MANAGER (self));
-  g_assert (GN_IS_ITEM (item));
-
-  provider = g_object_get_data (G_OBJECT (item), "provider");
-
-  if (GN_IS_NOTE (item))
-    {
-      if (gn_item_is_new (item))
-        {
-          g_list_store_insert_sorted (self->notes_store, item,
-                                      gn_item_compare, NULL);
-
-          /* FIXME: A temporary hack before we settle on the design */
-          g_signal_emit (self, signals[PROVIDER_ADDED], 0, provider);
-        }
-      else
-        {
-          GListModel *model;
-          guint position;
-
-          model = G_LIST_MODEL (self->notes_store);
-
-          /*
-           * FIXME: The item title may have changed. Should we actually
-           * remove the item and insert sorted? What if the note is being
-           * edited in non-main window (where is the user also have a main
-           * window with the note list)?
-           */
-          if (gn_manager_get_item_position (self, model, item, &position))
-            g_list_model_items_changed (model, position, 1, 1);
-        }
-    }
-}
-
-static void
-gn_manager_item_trashed_cb (GnManager *self,
-                            GnItem    *item)
-{
-  guint position;
-
-  /*
-   * TODO: Handle notebooks. But as we don't have notebook trash
-   * feature (yet), we may not need that.
-   */
-  if (gn_manager_get_item_position (self, G_LIST_MODEL (self->notes_store),
-                                    item, &position))
-    g_list_store_remove (self->notes_store, position);
-  else
-    g_queue_remove (self->notes_queue, item);
-
-  g_list_store_insert_sorted (self->trash_notes_store, item,
-                              gn_item_compare, NULL);
-}
-
-static void
 gn_manager_save_item_cb (GObject      *object,
                          GAsyncResult *result,
                          gpointer      user_data)
@@ -243,27 +185,6 @@ gn_manager_save_item_cb (GObject      *object,
 
   if (!gn_provider_save_item_finish (provider, result, &error))
     g_warning ("Failed to save item: %s", error->message);
-}
-
-static void
-gn_manager_load_more_items (GnManager  *self,
-                            GListStore *store,
-                            GQueue     *queue)
-{
-  GnItem *item;
-  int i = 0;
-
-  g_assert (GN_IS_MANAGER (self));
-  g_assert (G_IS_LIST_STORE (store));
-
-  while ((item = g_queue_pop_head (queue)))
-    {
-      g_list_store_append (store, item);
-
-      i++;
-      if (i >= MAX_ITEMS_TO_LOAD)
-        break;
-    }
 }
 
 static void
@@ -284,8 +205,8 @@ gn_manager_search_complete_cb (GObject      *object,
     self->search_queue = g_steal_pointer (&search_data->search_queue);
 
   g_list_store_remove_all (self->search_store);
-  gn_manager_load_more_items (self, self->search_store,
-                              self->search_queue);
+  /* gn_manager_load_more_items (self, self->search_store, */
+  /*                             self->search_queue); */
 }
 
 static void
@@ -382,33 +303,20 @@ gn_manager_do_search_async (GnManager           *self,
     g_task_run_in_thread (task, gn_manager_full_search);
 }
 
-
-static void
-gn_manager_save_items_to_queue (GnManager  *self,
-                                GList      *items,
-                                GQueue     *queue,
-                                GListStore *store)
-{
-  for (GList *l = items; l != NULL; l = l->next)
-    g_queue_insert_sorted (queue, l->data, gn_item_compare, NULL);
-
-  gn_manager_load_more_items (self, store, queue);
-}
-
 /* Load items from the provider to the store and queue */
 static void
 gn_manager_load_items (GnManager  *self,
                        GnProvider *provider)
 {
-  GList *items;
+  GListStore *items;
 
   items = gn_provider_get_notes (provider);
-  gn_manager_save_items_to_queue (self, items, self->notes_queue,
-                                  self->notes_store);
+  if (items != NULL)
+    g_list_store_append (self->list_of_notes_store, items);
 
   items = gn_provider_get_trash_notes (provider);
-  gn_manager_save_items_to_queue (self, items, self->trash_notes_queue,
-                                  self->trash_notes_store);
+  if (items != NULL)
+    g_list_store_append (self->list_of_trash_store, items);
 }
 
 static void
@@ -496,26 +404,6 @@ gn_manager_load_goa_providers (GnManager *self)
 }
 
 static void
-gn_manager_connect_provider_signals (GnManager *self)
-{
-  g_autoptr(GList) providers = NULL;
-
-  g_assert (GN_IS_MANAGER (self));
-
-  providers = g_hash_table_get_values (self->providers);
-
-  for (GList *node = providers; node != NULL; node = node->next)
-    {
-      g_signal_connect_object (node->data, "item-added",
-                               G_CALLBACK (gn_manager_item_added_cb),
-                               self, G_CONNECT_SWAPPED);
-      g_signal_connect_object (node->data, "item-trashed",
-                               G_CALLBACK (gn_manager_item_trashed_cb),
-                               self, G_CONNECT_SWAPPED);
-    }
-}
-
-static void
 gn_manager_load_providers (GnManager *self)
 {
   GnProvider *provider;
@@ -548,8 +436,6 @@ gn_manager_load_providers (GnManager *self)
   /*   g_warning ("Error loading GNOME Online accounts: %s", error->message); */
   /* else */
   /*   gn_manager_load_goa_providers (self); */
-
-  gn_manager_connect_provider_signals (self);
 
   GN_EXIT;
 }
@@ -658,12 +544,25 @@ gn_manager_class_init (GnManagerClass *klass)
 static void
 gn_manager_init (GnManager *self)
 {
+  GtkFlattenListModel *model;
+
   self->settings = gn_settings_new (PACKAGE_ID);
 
   self->providers = g_hash_table_new_full (g_str_hash, g_str_equal,
                                            g_free, NULL);
   self->notes_queue = g_queue_new ();
-  self->notes_store = g_list_store_new (GN_TYPE_ITEM);
+  self->list_of_notes_store = g_list_store_new (G_TYPE_LIST_MODEL);
+  self->list_of_trash_store = g_list_store_new (G_TYPE_LIST_MODEL);
+  model = gtk_flatten_list_model_new (GN_TYPE_ITEM,
+                                      G_LIST_MODEL (self->list_of_notes_store));
+  self->notes_store = gtk_slice_list_model_new (G_LIST_MODEL (model),
+                                                0, MAX_ITEMS_TO_LOAD);
+  g_object_unref (model);
+  model = gtk_flatten_list_model_new (GN_TYPE_ITEM,
+                                      G_LIST_MODEL (self->list_of_trash_store));
+  self->trash_store = gtk_slice_list_model_new (G_LIST_MODEL (model),
+                                                0, MAX_ITEMS_TO_LOAD);
+  g_object_unref (model);
   self->trash_notes_queue = g_queue_new ();
   self->trash_notes_store = g_list_store_new (GN_TYPE_ITEM);
   self->provider_cancellable = g_cancellable_new ();
@@ -748,10 +647,10 @@ gn_manager_get_default_provider (GnManager *self,
  *
  * Returns: (transfer none): a #GListStore
  */
-GListStore *
+GListModel *
 gn_manager_get_notes_store (GnManager *self)
 {
-  return self->notes_store;
+  return G_LIST_MODEL (self->notes_store);
 }
 
 /**
@@ -762,10 +661,10 @@ gn_manager_get_notes_store (GnManager *self)
  *
  * Returns: (transfer none): a #GListStore
  */
-GListStore *
+GListModel *
 gn_manager_get_trash_notes_store (GnManager *self)
 {
-  return self->trash_notes_store;
+  return G_LIST_MODEL (self->trash_store);
 }
 
 /**
@@ -776,10 +675,10 @@ gn_manager_get_trash_notes_store (GnManager *self)
  *
  * Returns: (transfer none): a #GListStore
  */
-GListStore *
+GListModel *
 gn_manager_get_search_store (GnManager *self)
 {
-  return self->search_store;
+  return G_LIST_MODEL (self->search_store);
 }
 
 /**
@@ -791,11 +690,15 @@ gn_manager_get_search_store (GnManager *self)
 void
 gn_manager_load_more_notes (GnManager *self)
 {
+  guint size;
+
+  g_assert (GN_IS_MAIN_THREAD ());
   /* FIXME: use a GMutex instead? */
   g_return_if_fail (GN_IS_MAIN_THREAD ());
 
-  gn_manager_load_more_items (self, self->notes_store,
-                              self->notes_queue);
+  size = gtk_slice_list_model_get_size (self->notes_store);
+  gtk_slice_list_model_set_size (self->notes_store,
+                                 size + MAX_ITEMS_TO_LOAD);
 }
 
 /**
@@ -807,11 +710,14 @@ gn_manager_load_more_notes (GnManager *self)
 void
 gn_manager_load_more_trash_notes (GnManager *self)
 {
+  guint size;
+
   /* FIXME: use a GMutex instead? */
   g_return_if_fail (GN_IS_MAIN_THREAD ());
 
-  gn_manager_load_more_items (self, self->trash_notes_store,
-                              self->trash_notes_queue);
+  size = gtk_slice_list_model_get_size (self->trash_store);
+  gtk_slice_list_model_set_size (self->trash_store,
+                                 size + MAX_ITEMS_TO_LOAD);
 }
 
 /**
@@ -876,23 +782,28 @@ gn_manager_save_item (GnManager *self,
  */
 void
 gn_manager_queue_for_delete (GnManager  *self,
-                             GListStore *note_store,
+                             GListModel *note_store,
                              GList      *items)
 {
   guint position;
 
   g_return_if_fail (GN_IS_MANAGER (self));
-  g_return_if_fail (G_IS_LIST_STORE (note_store));
+  g_return_if_fail (G_IS_LIST_MODEL (note_store));
 
-  self->delete_store = note_store;
   self->delete_queue = items;
 
   /* FIXME: The story is very different when notebooks come into scene */
   for (GList *node = items; node != NULL; node = node->next)
     {
-      if (gn_manager_get_item_position (self, G_LIST_MODEL (note_store),
+      GListStore *notes_store;
+      GnProvider *provider;
+
+      provider = g_object_get_data (G_OBJECT (node->data), "provider");
+      notes_store = gn_provider_get_notes (provider);
+
+      if (gn_manager_get_item_position (self, G_LIST_MODEL (notes_store),
                                         node->data, &position))
-        g_list_store_remove (note_store, position);
+        g_list_store_remove (notes_store, position);
     }
 }
 
@@ -915,8 +826,16 @@ gn_manager_dequeue_delete (GnManager *self)
     return FALSE;
 
   for (GList *node = self->delete_queue; node != NULL; node = node->next)
-    g_list_store_insert_sorted (self->delete_store, node->data,
-                                gn_item_compare, NULL);
+    {
+      GListStore *notes_store;
+      GnProvider *provider;
+
+      provider = g_object_get_data (G_OBJECT (node->data), "provider");
+      notes_store = gn_provider_get_notes (provider);
+
+      g_list_store_insert_sorted (notes_store, node->data,
+                                  gn_item_compare, NULL);
+    }
 
   g_clear_pointer (&self->delete_queue, g_list_free);
   return TRUE;

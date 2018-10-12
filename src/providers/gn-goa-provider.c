@@ -52,7 +52,7 @@ struct _GnGoaProvider
   GMount           *mount;
   GFile *note_dir;
 
-  GList *notes;
+  GListStore *notes_store;
 };
 
 G_DEFINE_TYPE (GnGoaProvider, gn_goa_provider, GN_TYPE_PROVIDER)
@@ -111,10 +111,10 @@ gn_goa_provider_get_location_name (GnProvider *provider)
   return self->location_name;
 }
 
-static GList *
+static GListStore *
 gn_goa_provider_get_notes (GnProvider *provider)
 {
-  return GN_GOA_PROVIDER (provider)->notes;
+  return GN_GOA_PROVIDER (provider)->notes_store;
 }
 
 static void
@@ -234,7 +234,8 @@ gn_goa_provider_load_items (GnGoaProvider *self,
       g_object_set_data (G_OBJECT (note), "provider", GN_PROVIDER (self));
       g_object_set_data_full (G_OBJECT (note), "file", g_steal_pointer (&file),
                               g_object_unref);
-      self->notes = g_list_prepend (self->notes, note);
+      g_list_store_append (self->notes_store, note);
+      /* self->notes = g_list_prepend (self->notes, note); */
     }
 
   g_task_return_boolean (task, TRUE);
@@ -379,6 +380,7 @@ gn_goa_provider_class_init (GnGoaProviderClass *klass)
 static void
 gn_goa_provider_init (GnGoaProvider *self)
 {
+  self->notes_store = g_list_store_new (GN_TYPE_ITEM);
 }
 
 GnProvider *

@@ -86,9 +86,9 @@ struct _GnProviderClass
                                         GAsyncResult         *result,
                                         GError              **error);
 
-  GList       *(*get_notes)            (GnProvider           *self);
-  GList       *(*get_trash_notes)      (GnProvider           *self);
-  GList       *(*get_notebooks)        (GnProvider           *self);
+  GListStore  *(*get_notes)            (GnProvider           *self);
+  GListStore  *(*get_trash_notes)      (GnProvider           *self);
+  GListStore  *(*get_notebooks)        (GnProvider           *self);
 
   gchar       *(*get_uid)              (GnProvider           *self);
   const gchar *(*get_name)             (GnProvider           *self);
@@ -164,9 +164,9 @@ gboolean     gn_provider_delete_item_finish   (GnProvider           *self,
                                                GAsyncResult         *result,
                                                GError              **error);
 
-GList       *gn_provider_get_notes            (GnProvider           *self);
-GList       *gn_provider_get_trash_notes      (GnProvider           *self);
-GList       *gn_provider_get_notebooks        (GnProvider           *self);
+GListStore  *gn_provider_get_notes            (GnProvider           *self);
+GListStore  *gn_provider_get_trash_notes      (GnProvider           *self);
+GListStore  *gn_provider_get_notebooks        (GnProvider           *self);
 gboolean     gn_provider_has_loaded           (GnProvider           *self);
 
 G_END_DECLS

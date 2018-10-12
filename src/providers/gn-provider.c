@@ -144,7 +144,7 @@ gn_provider_real_get_location_name (GnProvider *self)
   return "";
 }
 
-static GList *
+static GListStore *
 gn_provider_real_get_notes (GnProvider *self)
 {
   g_assert (GN_IS_PROVIDER (self));
@@ -153,7 +153,7 @@ gn_provider_real_get_notes (GnProvider *self)
   return NULL;
 }
 
-static GList *
+static GListStore *
 gn_provider_real_get_trash_notes (GnProvider *self)
 {
   g_assert (GN_IS_PROVIDER (self));
@@ -162,7 +162,7 @@ gn_provider_real_get_trash_notes (GnProvider *self)
   return NULL;
 }
 
-static GList *
+static GListStore *
 gn_provider_real_get_notebooks (GnProvider *self)
 {
   g_assert (GN_IS_PROVIDER (self));
@@ -1005,10 +1005,10 @@ gn_provider_delete_item_finish (GnProvider   *self,
  * Returns: (transfer none) (nullable): A #GList of
  * #GnItem or %NULL if empty.
  */
-GList *
+GListStore *
 gn_provider_get_notes (GnProvider *self)
 {
-  GList *notes;
+  GListStore *notes;
 
   GN_ENTRY;
 
@@ -1030,10 +1030,10 @@ gn_provider_get_notes (GnProvider *self)
  * Returns: (transfer none) (nullable): A #GList of
  * #GnItem or %NULL if empty.
  */
-GList *
+GListStore *
 gn_provider_get_trash_notes (GnProvider *self)
 {
-  GList *notes;
+  GListStore *notes;
 
   GN_ENTRY;
 

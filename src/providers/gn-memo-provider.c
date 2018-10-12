@@ -57,7 +57,7 @@ struct _GnMemoProvider
   ECalClient *client;
   ECalClientView *client_view;
 
-  GList *notes;
+  GListStore *notes_store;
 };
 
 G_DEFINE_TYPE (GnMemoProvider, gn_memo_provider, GN_TYPE_PROVIDER)
@@ -106,10 +106,10 @@ gn_memo_provider_get_rgba (GnProvider *provider,
   return TRUE;
 }
 
-static GList *
+static GListStore *
 gn_memo_provider_get_notes (GnProvider *provider)
 {
-  return GN_MEMO_PROVIDER (provider)->notes;
+  return GN_MEMO_PROVIDER (provider)->notes_store;
 }
 
 static void
@@ -164,7 +164,8 @@ gn_memo_provider_objects_added_cb (ECalClientView *client_view,
                               g_object_ref (component),
                               g_object_unref);
 
-      self->notes = g_list_prepend (self->notes, note);
+      g_list_store_append (self->notes_store, note);
+      /* self->notes = g_list_prepend (self->notes, note); */
     }
 
   GN_EXIT;
@@ -451,6 +452,7 @@ gn_memo_provider_class_init (GnMemoProviderClass *klass)
 static void
 gn_memo_provider_init (GnMemoProvider *self)
 {
+  self->notes_store = g_list_store_new (GN_TYPE_ITEM);
 }
 
 GnProvider *

@@ -161,7 +161,7 @@ gn_window_provider_added_cb (GnWindow   *self,
                              GnProvider *provider,
                              GnManager  *manager)
 {
-  GListStore *store;
+  GListModel *store;
 
   g_assert (GN_IS_MAIN_THREAD ());
   g_assert (GN_IS_WINDOW (self));
@@ -625,7 +625,7 @@ gn_window_trash_selected_items (GnWindow *self)
 {
   GtkWidget *current_view;
   GnManager *manager;
-  GListStore *store;
+  GListModel *store;
   GList *items;
 
   g_return_if_fail (GN_IS_WINDOW (self));
