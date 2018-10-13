@@ -59,35 +59,19 @@ struct _GnManager
   GHashTable   *providers;
   GCancellable *provider_cancellable;
 
-  GQueue       *notes_queue;
-  GQueue       *notebooks_queue;
-  GQueue       *trash_notes_queue;
-  GQueue       *search_queue;
   GListStore   *list_of_notes_store;
   GListStore   *list_of_trash_store;
   GtkSliceListModel *notes_store;
   GtkSliceListModel *trash_store;
   GtkFilterListModel *search_store;
-  GListStore   *notebooks_store;
-  GListStore   *trash_notes_store;
 
   GList       *delete_queue;
 
   /* Search */
-  GCancellable *search_cancellable;
-  gchar *old_search_needle;
   gchar *search_needle;
-  gboolean search_is_narrowing;
 
   gint providers_to_load;
 };
-
-typedef struct
-{
-  GQueue *search_queue;
-  gchar *search_needle;
-  gboolean search_is_narrowing;
-} SearchData;
 
 G_DEFINE_TYPE (GnManager, gn_manager, G_TYPE_OBJECT)
 
@@ -345,12 +329,7 @@ gn_manager_dispose (GObject *object)
 
   g_clear_object (&self->settings);
 
-  g_clear_pointer (&self->notes_queue, g_queue_free);
-  g_clear_pointer (&self->notes_queue, g_queue_free);
-  g_clear_pointer (&self->notes_queue, g_queue_free);
   g_clear_object (&self->notes_store);
-  g_clear_object (&self->notebooks_store);
-  g_clear_object (&self->trash_notes_store);
   g_clear_pointer (&self->providers, g_hash_table_unref);
 
   G_OBJECT_CLASS (gn_manager_parent_class)->dispose (object);
@@ -443,7 +422,6 @@ gn_manager_init (GnManager *self)
 
   self->providers = g_hash_table_new_full (g_str_hash, g_str_equal,
                                            g_free, NULL);
-  self->notes_queue = g_queue_new ();
   self->list_of_notes_store = g_list_store_new (G_TYPE_LIST_MODEL);
   self->list_of_trash_store = g_list_store_new (G_TYPE_LIST_MODEL);
   model = gtk_flatten_list_model_new (GN_TYPE_ITEM,
@@ -456,18 +434,11 @@ gn_manager_init (GnManager *self)
   self->trash_store = gtk_slice_list_model_new (G_LIST_MODEL (model),
                                                 0, MAX_ITEMS_TO_LOAD);
   g_object_unref (model);
-  self->trash_notes_queue = g_queue_new ();
-  self->trash_notes_store = g_list_store_new (GN_TYPE_ITEM);
   self->provider_cancellable = g_cancellable_new ();
 
-  self->search_needle = g_strdup ("");
-  self->old_search_needle = g_strdup ("");
-
-  self->search_queue = g_queue_new ();
   self->search_store = gtk_filter_list_model_new (G_LIST_MODEL (self->notes_store),
                                                   gn_manager_search_filter,
                                                   &self->search_needle, NULL);
-  self->search_cancellable = g_cancellable_new ();
 
   gn_manager_load_providers (self);
 }
