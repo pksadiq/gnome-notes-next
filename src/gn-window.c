@@ -65,7 +65,6 @@ struct _GnWindow
 
   GQueue    *view_stack;
   GtkWidget *current_view;
-  GnViewMode current_view_mode;
   gboolean   back_button_pressed;
 
   guint      undo_timeout_id;
@@ -664,14 +663,6 @@ gn_window_new_with_editor (GnApplication *application,
                                self->editor_view);
 
   return self;
-}
-
-GnViewMode
-gn_window_get_mode (GnWindow *self)
-{
-  g_return_val_if_fail (GN_IS_WINDOW (self), 0);
-
-  return self->current_view_mode;
 }
 
 void
