@@ -141,6 +141,26 @@ gn_application_command_line (GApplication            *application,
 }
 
 static void
+gn_application_window_destroy_cb (gpointer  user_data,
+                                  GObject  *where_the_object_was)
+{
+  GnApplication *self = user_data;
+  GtkWindow *window;
+
+  g_assert (GN_IS_APPLICATION (self));
+
+  window = gtk_application_get_active_window (GTK_APPLICATION (self));
+
+  if (window == NULL)
+    return;
+
+  gn_window_set_as_main (GN_WINDOW (window));
+  self->window = GN_WINDOW (window);
+  g_object_weak_ref (G_OBJECT (self->window),
+                     gn_application_window_destroy_cb, self);
+}
+
+static void
 gn_application_activate (GApplication *application)
 {
   GnApplication *self = (GnApplication *)application;
@@ -148,7 +168,8 @@ gn_application_activate (GApplication *application)
   if (self->window == NULL)
     {
       self->window = GN_WINDOW (gn_window_new (self));
-      g_object_ref (self->window);
+      g_object_weak_ref (G_OBJECT (self->window),
+                         gn_application_window_destroy_cb, self);
     }
 
   gtk_window_present (GTK_WINDOW (self->window));
