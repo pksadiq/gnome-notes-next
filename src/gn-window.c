@@ -734,5 +734,6 @@ gn_window_set_as_main (GnWindow *self)
                            self,
                            G_CONNECT_SWAPPED);
 
+  gtk_widget_show (self->nav_button_stack);
   gn_window_provider_added_cb (self, NULL, gn_manager_get_default ());
 }
