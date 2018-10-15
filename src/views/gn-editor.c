@@ -267,3 +267,11 @@ gn_editor_set_item (GnEditor *self,
 
   GN_EXIT;
 }
+
+GnNote *
+gn_editor_get_note (GnEditor *self)
+{
+  g_return_val_if_fail (GN_IS_EDITOR (self), NULL);
+
+  return GN_NOTE (self->item);
+}

@@ -33,5 +33,6 @@ G_DECLARE_FINAL_TYPE (GnEditor, gn_editor, GN, EDITOR, GtkGrid)
 GtkWidget *gn_editor_new      (void);
 void       gn_editor_set_item (GnEditor *self,
                                GnItem   *item);
+GnNote    *gn_editor_get_note (GnEditor *self);
 
 G_END_DECLS
