@@ -38,5 +38,6 @@ GnWindow *gn_window_new_with_editor       (GnApplication *application,
 GnViewMode gn_window_get_mode (GnWindow   *self);
 void       gn_window_trash_selected_items (GnWindow *self);
 GtkWidget *gn_window_steal_editor         (GnWindow *self);
+void       gn_window_set_as_main          (GnWindow *self);
 
 G_END_DECLS

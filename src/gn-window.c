@@ -166,7 +166,7 @@ gn_window_provider_added_cb (GnWindow   *self,
 
   g_assert (GN_IS_MAIN_THREAD ());
   g_assert (GN_IS_WINDOW (self));
-  g_assert (GN_IS_PROVIDER (provider));
+  g_assert (provider == NULL || GN_IS_PROVIDER (provider));
 
   store = gn_manager_get_notes_store (gn_manager_get_default ());
 
@@ -624,33 +624,25 @@ gn_window_class_init (GnWindowClass *klass)
 static void
 gn_window_init (GnWindow *self)
 {
-  GtkEventController *controller;
-
   gtk_widget_init_template (GTK_WIDGET (self));
-
-  controller = gtk_event_controller_key_new ();
-  g_signal_connect (controller, "key-pressed",
-                    G_CALLBACK (gn_window_key_press_cb),
-                    self);
-  gtk_widget_add_controller (GTK_WIDGET (self), controller);
 
   self->view_stack = g_queue_new ();
   self->current_view = self->notes_view;
-  g_signal_connect_object (gn_manager_get_default (),
-                           "provider-added",
-                           G_CALLBACK (gn_window_provider_added_cb),
-                           self,
-                           G_CONNECT_SWAPPED);
 }
 
 GnWindow *
 gn_window_new (GnApplication *application)
 {
+  GnWindow *self;
+
   g_assert (GTK_IS_APPLICATION (application));
 
-  return g_object_new (GN_TYPE_WINDOW,
+  self = g_object_new (GN_TYPE_WINDOW,
                        "application", application,
                        NULL);
+  gn_window_set_as_main (self);
+
+  return self;
 }
 
 GnWindow *
@@ -721,4 +713,26 @@ gn_window_steal_editor (GnWindow *self)
   gtk_container_remove (GTK_CONTAINER (self->editor_view), editor);
 
   return editor;
+}
+
+void
+gn_window_set_as_main (GnWindow *self)
+{
+  GtkEventController *controller;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  controller = gtk_event_controller_key_new ();
+  g_signal_connect (controller, "key-pressed",
+                    G_CALLBACK (gn_window_key_press_cb),
+                    self);
+  gtk_widget_add_controller (GTK_WIDGET (self), controller);
+
+  g_signal_connect_object (gn_manager_get_default (),
+                           "provider-added",
+                           G_CALLBACK (gn_window_provider_added_cb),
+                           self,
+                           G_CONNECT_SWAPPED);
+
+  gn_window_provider_added_cb (self, NULL, gn_manager_get_default ());
 }
