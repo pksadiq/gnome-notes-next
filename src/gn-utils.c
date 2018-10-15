@@ -450,3 +450,41 @@ gn_utils_get_other_view_type (const gchar *view)
   else
     return "list";
 }
+
+/**
+ * gn_utils_get_item_position:
+ * @model: A #GListModel
+ * @item: A #GObject or derived object.
+ * @position: (out): A location to store position
+ *
+ * Get the position of @item in @model.
+ * This is an O(n) operation.
+ *
+ * Returns: %TRUE if @item was found in @model.
+ */
+gboolean
+gn_utils_get_item_position (GListModel *model,
+                            gpointer    item,
+                            guint      *position)
+{
+  gpointer object;
+  guint i = 0;
+
+  g_return_val_if_fail (G_IS_LIST_MODEL (model), FALSE);
+  g_return_val_if_fail (item != NULL, FALSE);
+
+  /* This maybe slow. But, for now let's do. */
+  while ((object = g_list_model_get_item (model, i)))
+    {
+      if (object == (gpointer) item)
+        {
+          *position = i;
+          g_object_unref (object);
+          return TRUE;
+        }
+      g_object_unref (object);
+      i++;
+    }
+
+  return FALSE;
+}

@@ -137,34 +137,6 @@ gn_manager_decrement_pending_providers (GnManager *self)
                               properties[PROP_PROVIDERS_LOADING]);
 }
 
-static gboolean
-gn_manager_get_item_position (GnManager  *self,
-                              GListModel *model,
-                              GnItem     *item,
-                              guint      *position)
-{
-  gpointer object;
-  guint i = 0;
-
-  g_assert (GN_IS_MANAGER (self));
-  g_assert (G_IS_LIST_MODEL (model));
-  g_assert (GN_IS_ITEM (item));
-  g_assert (position != NULL);
-
-  /* This maybe slow. But, for now let's do. */
-  while ((object = g_list_model_get_item (model, i)))
-    {
-      if (object == (gpointer) item)
-        {
-          *position = i;
-          return TRUE;
-        }
-      i++;
-    }
-
-  return FALSE;
-}
-
 static void
 gn_manager_save_item_cb (GObject      *object,
                          GAsyncResult *result,
@@ -667,8 +639,8 @@ gn_manager_queue_for_delete (GnManager  *self,
       provider = g_object_get_data (G_OBJECT (node->data), "provider");
       notes_store = gn_provider_get_notes (provider);
 
-      if (gn_manager_get_item_position (self, G_LIST_MODEL (notes_store),
-                                        node->data, &position))
+      if (gn_utils_get_item_position (G_LIST_MODEL (notes_store),
+                                      node->data, &position))
         g_list_store_remove (notes_store, position);
     }
 }
