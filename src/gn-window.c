@@ -612,6 +612,27 @@ gn_window_new (GnApplication *application)
                        NULL);
 }
 
+GnWindow *
+gn_window_new_with_editor (GnApplication *application,
+                           GtkWidget     *editor)
+{
+  GnWindow *self;
+
+  g_assert (GTK_IS_APPLICATION (application));
+
+  self = g_object_new (GN_TYPE_WINDOW,
+                       "application", application,
+                       NULL);
+  gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
+  g_object_unref (editor);
+
+  gtk_widget_hide (self->nav_button_stack);
+  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
+                               self->editor_view);
+
+  return self;
+}
+
 GnViewMode
 gn_window_get_mode (GnWindow *self)
 {
@@ -641,4 +662,22 @@ gn_window_trash_selected_items (GnWindow *self)
 
   gn_manager_queue_for_delete (manager, store, items);
   gn_window_show_undo_revealer (self);
+}
+
+GtkWidget *
+gn_window_steal_editor (GnWindow *self)
+{
+  GtkWidget *editor;
+
+  g_return_val_if_fail (GN_IS_WINDOW (self), NULL);
+
+  editor = gtk_bin_get_child (GTK_BIN (self->editor_view));
+  g_return_val_if_fail (editor != NULL, NULL);
+  g_object_ref (editor);
+
+  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
+                               self->notes_view);
+  gtk_container_remove (GTK_CONTAINER (self->editor_view), editor);
+
+  return editor;
 }
