@@ -329,6 +329,14 @@
     <child>
       <object class="GtkBox">
         <property name="orientation">vertical</property>
+
+        <child>
+          <object class="GtkModelButton" id="new_editor_button">
+            <property name="text" translatable="yes">_Open in new window</property>
+            <property name="action-name">app.detach-editor</property>
+          </object>
+        </child>
+
       </object> <!-- ./GtkBox -->
     </child>
   </object>

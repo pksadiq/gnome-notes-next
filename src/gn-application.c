@@ -40,6 +40,8 @@
 struct _GnApplication
 {
   GtkApplication  parent_instance;
+
+  GnWindow *window;
 };
 
 G_DEFINE_TYPE (GnApplication, gn_application, GTK_TYPE_APPLICATION)
@@ -58,6 +60,23 @@ static GOptionEntry cmd_options[] = {
   { NULL }
 };
 
+static void
+gn_application_detach_editor_window (GSimpleAction *action,
+                                     GVariant      *parameter,
+                                     gpointer       user_data)
+{
+  GnApplication *self = user_data;
+  GnWindow *window;
+  GtkWidget *editor;
+
+  g_assert (GN_IS_APPLICATION (self));
+
+  editor = gn_window_steal_editor (self->window);
+  window = gn_window_new_with_editor (self, editor);
+
+  gtk_window_present (GTK_WINDOW (window));
+}
+
 static gint
 gn_application_handle_local_options (GApplication *application,
                                      GVariantDict *options)
@@ -72,11 +91,26 @@ gn_application_handle_local_options (GApplication *application,
 }
 
 static void
+gn_application_add_actions (GnApplication *self)
+{
+  static const GActionEntry application_entries[] = {
+    { "detach-editor", gn_application_detach_editor_window },
+  };
+
+  g_assert (GN_IS_APPLICATION (self));
+
+  g_action_map_add_action_entries (G_ACTION_MAP (self), application_entries,
+                                   G_N_ELEMENTS (application_entries), self);
+}
+
+static void
 gn_application_startup (GApplication *application)
 {
   g_autoptr(GtkCssProvider) css_provider = NULL;
 
   G_APPLICATION_CLASS (gn_application_parent_class)->startup (application);
+
+  gn_application_add_actions (GN_APPLICATION (application));
 
   css_provider = gtk_css_provider_new ();
   gtk_css_provider_load_from_resource (css_provider,
@@ -109,14 +143,15 @@ gn_application_command_line (GApplication            *application,
 static void
 gn_application_activate (GApplication *application)
 {
-  GtkWindow *window;
+  GnApplication *self = (GnApplication *)application;
 
-  window = gtk_application_get_active_window (GTK_APPLICATION (application));
+  if (self->window == NULL)
+    {
+      self->window = GN_WINDOW (gn_window_new (self));
+      g_object_ref (self->window);
+    }
 
-  if (window == NULL)
-    window = GTK_WINDOW (gn_window_new (GN_APPLICATION (application)));
-
-  gtk_window_present (window);
+  gtk_window_present (GTK_WINDOW (self->window));
 }
 
 static void
