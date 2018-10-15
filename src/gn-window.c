@@ -409,6 +409,34 @@ gn_window_main_view_changed (GnWindow   *self,
     }
 }
 
+static GnWindow *
+gn_window_get_note_window (GnWindow *self,
+                           GnNote   *note)
+{
+  GtkApplication *application;
+  GtkWidget *child;
+  GList *windows;
+
+  g_assert (GN_IS_WINDOW (self));
+  g_assert (GN_IS_NOTE (note));
+
+  application = GTK_APPLICATION (g_application_get_default());
+  windows = gtk_application_get_windows (application);
+
+  for (GList *node = windows; node != NULL; node = node->next)
+    {
+      GnWindow *window = GN_WINDOW (node->data);
+
+      child = gtk_bin_get_child (GTK_BIN (window->editor_view));
+
+      if (child != NULL &&
+          note == gn_editor_get_note (GN_EDITOR (child)))
+        return window;
+    }
+
+  return NULL;
+}
+
 static void
 gn_window_item_activated (GnWindow   *self,
                           GnItem     *item,
@@ -425,7 +453,18 @@ gn_window_item_activated (GnWindow   *self,
 
   if (GN_IS_NOTE (item))
     {
+      GnWindow *window;
       GtkWidget *child;
+
+      window = gn_window_get_note_window (self, GN_NOTE (item));
+
+      if (window != NULL)
+        {
+          gtk_stack_set_visible_child (GTK_STACK (window->main_view),
+                                       window->editor_view);
+          gtk_window_present (GTK_WINDOW (window));
+          return;
+        }
 
       editor = gn_editor_new ();
       gn_editor_set_item (GN_EDITOR (editor), item);
