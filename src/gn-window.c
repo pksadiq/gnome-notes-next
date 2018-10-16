@@ -557,6 +557,9 @@ gn_window_delete_items (GSimpleAction *action,
 
       items = g_list_prepend (items,
                               gn_editor_get_note (GN_EDITOR (editor)));
+
+      gn_window_show_previous_view (self);
+      gtk_container_remove (GTK_CONTAINER (self->editor_view), editor);
     }
   else
     items = gn_main_view_get_selected_items (GN_MAIN_VIEW (view));
