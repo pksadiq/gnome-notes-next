@@ -726,29 +726,6 @@ gn_window_new_with_editor (GnApplication *application,
   return self;
 }
 
-void
-gn_window_trash_selected_items (GnWindow *self)
-{
-  GtkWidget *current_view;
-  GnManager *manager;
-  GListModel *store;
-  GList *items;
-
-  g_return_if_fail (GN_IS_WINDOW (self));
-
-  current_view = gtk_stack_get_visible_child (GTK_STACK (self->main_view));
-  manager = gn_manager_get_default ();
-  items = gn_main_view_get_selected_items (GN_MAIN_VIEW (current_view));
-
-  if (current_view == self->notes_view)
-    store = gn_manager_get_notes_store (manager);
-  else
-    g_assert_not_reached ();
-
-  gn_manager_queue_for_delete (manager, store, items);
-  gn_window_show_undo_revealer (self);
-}
-
 GtkWidget *
 gn_window_steal_editor (GnWindow *self)
 {
