@@ -523,6 +523,51 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 }
 
 static void
+gn_window_delete_items (GSimpleAction *action,
+                        GVariant      *parameter,
+                        gpointer       user_data)
+{
+  GnWindow *self = user_data;
+  GtkWidget *view;
+  GnManager *manager;
+  GListModel *store;
+  GList *items = NULL;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  manager = gn_manager_get_default ();
+
+  if (self->current_view == self->editor_view ||
+      self->current_view == self->search_view)
+    view = g_queue_peek_head (self->view_stack);
+  else
+    view = self->current_view;
+
+  if (view == self->notes_view)
+    store = gn_manager_get_notes_store (manager);
+  else if (view == self->trash_view)
+    store = gn_manager_get_trash_notes_store (manager);
+  else
+    g_assert_not_reached ();
+
+  if (self->current_view == self->editor_view)
+    {
+      GtkWidget *editor;
+
+      editor = gtk_bin_get_child (GTK_BIN (self->editor_view));
+      g_assert (GN_IS_EDITOR (editor));
+
+      items = g_list_prepend (items,
+                              gn_editor_get_note (GN_EDITOR (editor)));
+    }
+  else
+    items = gn_main_view_get_selected_items (GN_MAIN_VIEW (view));
+
+  gn_manager_queue_for_delete (manager, store, items);
+  gn_window_show_undo_revealer (self);
+}
+
+static void
 gn_window_constructed (GObject *object)
 {
   GnWindow *self = GN_WINDOW (object);
@@ -621,12 +666,28 @@ gn_window_class_init (GnWindowClass *klass)
 }
 
 static void
+gn_window_add_actions (GnWindow *self)
+{
+  static const GActionEntry win_entries[] = {
+    { "delete-items", gn_window_delete_items },
+  };
+
+  g_assert (GN_IS_WINDOW (self));
+
+  g_action_map_add_action_entries (G_ACTION_MAP (self), win_entries,
+                                   G_N_ELEMENTS (win_entries), self);
+}
+
+
+static void
 gn_window_init (GnWindow *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
 
   self->view_stack = g_queue_new ();
   self->current_view = self->notes_view;
+
+  gn_window_add_actions (self);
 }
 
 GnWindow *
