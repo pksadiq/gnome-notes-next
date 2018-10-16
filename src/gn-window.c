@@ -277,13 +277,11 @@ gn_window_open_new_note (GnWindow *self)
 }
 
 static void
-gn_window_show_previous_view (GnWindow  *self,
-                              GtkWidget *widget)
+gn_window_show_previous_view (GnWindow *self)
 {
   GtkWidget *last_view;
 
   g_assert (GN_IS_WINDOW (self));
-  g_assert (GTK_IS_BUTTON (widget));
   g_assert (!g_queue_is_empty (self->view_stack));
 
   last_view = g_queue_pop_head (self->view_stack);
