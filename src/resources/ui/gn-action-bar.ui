@@ -11,7 +11,7 @@
             <child>
               <object class="GtkButton">
                 <property name="label" translatable="1">Delete</property>
-                <signal name="clicked" handler="gn_action_bar_delete_selected_items" swapped="1"/>
+                <property name="action-name">win.delete-items</property>
                 <style>
                  <class name="destructive-action"/>
                 </style>
