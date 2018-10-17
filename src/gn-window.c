@@ -691,6 +691,16 @@ gn_window_init (GnWindow *self)
   gn_window_add_actions (self);
 }
 
+
+/**
+ * gn_window_new:
+ * @application: A #GnApplication
+ *
+ * Create a new main window.  To create secondary windows
+ * to show editor see gn_window_new_with_editor().
+ *
+ * Returns: (transfer full): a #GnWindow
+ */
 GnWindow *
 gn_window_new (GnApplication *application)
 {
@@ -706,6 +716,16 @@ gn_window_new (GnApplication *application)
   return self;
 }
 
+/**
+ * gn_window_new_with_editor:
+ * @application: A #GnApplication
+ * @editor: (transfer full): A #GtkWidget
+ *
+ * Create a new window with @editor as the editor.
+ * @editor should be a #GnEditor or derived type.
+ *
+ * Returns: (transfer full): a #GnWindow
+ */
 GnWindow *
 gn_window_new_with_editor (GnApplication *application,
                            GtkWidget     *editor)
@@ -727,6 +747,21 @@ gn_window_new_with_editor (GnApplication *application,
   return self;
 }
 
+/**
+ * gn_window_steal_editor:
+ * @self: A #GnWindow
+ *
+ * Steal the #GnEditor shown in @self.  The editor
+ * will be removed from @self, and note view will be
+ * shown in @self.  This should be called only for
+ * for main windows (see gn_window_new()) or windows
+ * that are set as main (see gn_window_set_as_main()).
+ *
+ * It’s a programmer error to call this on @self
+ * that doesn’t have an editor.
+ *
+ * Returns: (transfer full): a #GtkWidget
+ */
 GtkWidget *
 gn_window_steal_editor (GnWindow *self)
 {
@@ -745,6 +780,17 @@ gn_window_steal_editor (GnWindow *self)
   return editor;
 }
 
+/**
+ * gn_window_set_as_main:
+ * @self: A #GnWindow
+ *
+ * Promote @self as main window.  This should
+ * be called only on secondary windows that
+ * shows editor.
+ *
+ * Use this to promote an editor window to main
+ * when user closes the main window.
+ */
 void
 gn_window_set_as_main (GnWindow *self)
 {
