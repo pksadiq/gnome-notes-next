@@ -337,6 +337,13 @@
           </object>
         </child>
 
+        <child>
+          <object class="GtkModelButton" id="delete_note_button">
+            <property name="text" translatable="yes">_Delete Note</property>
+            <property name="action-name">win.delete-items</property>
+          </object>
+        </child>
+
       </object> <!-- ./GtkBox -->
     </child>
   </object>
