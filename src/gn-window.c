@@ -521,6 +521,17 @@ gn_window_selection_mode_toggled (GnWindow  *self,
 }
 
 static void
+gn_window_delete_items_cb (GnWindow  *self,
+                           gint       items_count,
+                           GnManager *manager)
+{
+  g_assert (GN_IS_WINDOW (self));
+
+  gtk_window_present (GTK_WINDOW (self));
+  gn_window_show_undo_revealer (self);
+}
+
+static void
 gn_window_delete_items (GSimpleAction *action,
                         GVariant      *parameter,
                         gpointer       user_data)
@@ -565,7 +576,6 @@ gn_window_delete_items (GSimpleAction *action,
     items = gn_main_view_get_selected_items (GN_MAIN_VIEW (view));
 
   gn_manager_queue_for_delete (manager, store, items);
-  gn_window_show_undo_revealer (self);
 }
 
 static void
@@ -807,6 +817,12 @@ gn_window_set_as_main (GnWindow *self)
   g_signal_connect_object (gn_manager_get_default (),
                            "provider-added",
                            G_CALLBACK (gn_window_provider_added_cb),
+                           self,
+                           G_CONNECT_SWAPPED);
+
+  g_signal_connect_object (gn_manager_get_default (),
+                           "delete-items",
+                           G_CALLBACK (gn_window_delete_items_cb),
                            self,
                            G_CONNECT_SWAPPED);
 
