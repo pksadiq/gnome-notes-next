@@ -542,7 +542,6 @@ gn_window_delete_items (GSimpleAction *action,
                         gpointer       user_data)
 {
   GnWindow *self = user_data;
-  GtkWidget *view;
   GnManager *manager;
   GListModel *store;
   GList *items = NULL;
@@ -552,19 +551,13 @@ gn_window_delete_items (GSimpleAction *action,
   manager = gn_manager_get_default ();
 
   if (self->current_view == self->editor_view)
-    view = g_queue_peek_head (self->view_stack);
-  else
-    view = self->current_view;
-
-  store = gn_main_view_get_model (GN_MAIN_VIEW (view));
-
-  if (self->current_view == self->editor_view)
     {
       GtkWidget *editor;
 
       editor = gtk_bin_get_child (GTK_BIN (self->editor_view));
       g_assert (GN_IS_EDITOR (editor));
 
+      store = gn_editor_get_model (GN_EDITOR (editor));
       items = g_list_prepend (items,
                               gn_editor_get_note (GN_EDITOR (editor)));
 
@@ -574,7 +567,10 @@ gn_window_delete_items (GSimpleAction *action,
       gtk_container_remove (GTK_CONTAINER (self->editor_view), editor);
     }
   else
-    items = gn_main_view_get_selected_items (GN_MAIN_VIEW (view));
+    {
+      items = gn_main_view_get_selected_items (GN_MAIN_VIEW (self->current_view));
+      store = gn_main_view_get_model (GN_MAIN_VIEW (self->current_view));
+    }
 
   gn_manager_queue_for_delete (manager, store, items);
 
