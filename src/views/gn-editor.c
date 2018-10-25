@@ -45,6 +45,7 @@ struct _GnEditor
   GnSettings *settings;
 
   GnItem        *item;
+  GListModel    *model;
   GtkTextBuffer *note_buffer;
 
   GtkWidget *editor_view;
@@ -218,8 +219,9 @@ gn_editor_new (void)
 }
 
 void
-gn_editor_set_item (GnEditor *self,
-                    GnItem   *item)
+gn_editor_set_item (GnEditor   *self,
+                    GListModel *model,
+                    GnItem     *item)
 {
   g_autoptr(GtkTextBuffer) buffer = NULL;
   GnManager *manager;
@@ -230,11 +232,13 @@ gn_editor_set_item (GnEditor *self,
   GN_ENTRY;
 
   g_return_if_fail (GN_IS_EDITOR (self));
+  g_return_if_fail (G_IS_LIST_MODEL (model));
   g_return_if_fail (GN_IS_ITEM (item));
 
   if (self->item != NULL)
     GN_EXIT;
 
+  self->model = model;
   buffer = gn_note_get_buffer (GN_NOTE (item));
   manager = gn_manager_get_default ();
 
@@ -274,4 +278,12 @@ gn_editor_get_note (GnEditor *self)
   g_return_val_if_fail (GN_IS_EDITOR (self), NULL);
 
   return GN_NOTE (self->item);
+}
+
+GListModel *
+gn_editor_get_model (GnEditor *self)
+{
+  g_return_val_if_fail (GN_IS_EDITOR (self), NULL);
+
+  return self->model;
 }

@@ -264,7 +264,9 @@ gn_window_open_new_note (GnWindow *self)
   provider = g_object_get_data (G_OBJECT (item), "provider");
 
   editor = gn_editor_new ();
-  gn_editor_set_item (GN_EDITOR (editor), item);
+  gn_editor_set_item (GN_EDITOR (editor),
+                      gn_main_view_get_model (GN_MAIN_VIEW (self->current_view)),
+                      item);
 
   child = gtk_bin_get_child (GTK_BIN (self->editor_view));
   if (child != NULL)
@@ -465,7 +467,9 @@ gn_window_item_activated (GnWindow   *self,
         }
 
       editor = gn_editor_new ();
-      gn_editor_set_item (GN_EDITOR (editor), item);
+      gn_editor_set_item (GN_EDITOR (editor),
+                          gn_main_view_get_model (GN_MAIN_VIEW (self->current_view)),
+                          item);
 
       child = gtk_bin_get_child (GTK_BIN (self->editor_view));
       if (child != NULL)
