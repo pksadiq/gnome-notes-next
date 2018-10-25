@@ -546,18 +546,12 @@ gn_window_delete_items (GSimpleAction *action,
 
   manager = gn_manager_get_default ();
 
-  if (self->current_view == self->editor_view ||
-      self->current_view == self->search_view)
+  if (self->current_view == self->editor_view)
     view = g_queue_peek_head (self->view_stack);
   else
     view = self->current_view;
 
-  if (view == self->notes_view)
-    store = gn_manager_get_notes_store (manager);
-  else if (view == self->trash_view)
-    store = gn_manager_get_trash_notes_store (manager);
-  else
-    g_assert_not_reached ();
+  store = gn_main_view_get_model (GN_MAIN_VIEW (view));
 
   if (self->current_view == self->editor_view)
     {
