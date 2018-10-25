@@ -67,6 +67,7 @@ struct _GnWindow
   GtkWidget *current_view;
   gboolean   back_button_pressed;
 
+  gboolean   is_main_window;
   guint      undo_timeout_id;
 };
 
@@ -563,13 +564,18 @@ gn_window_delete_items (GSimpleAction *action,
       items = g_list_prepend (items,
                               gn_editor_get_note (GN_EDITOR (editor)));
 
-      gn_window_show_previous_view (self);
+      if (self->is_main_window)
+        gn_window_show_previous_view (self);
+
       gtk_container_remove (GTK_CONTAINER (self->editor_view), editor);
     }
   else
     items = gn_main_view_get_selected_items (GN_MAIN_VIEW (view));
 
   gn_manager_queue_for_delete (manager, store, items);
+
+  if (!self->is_main_window)
+    gtk_widget_destroy (GTK_WIDGET (self));
 }
 
 static void
@@ -820,6 +826,7 @@ gn_window_set_as_main (GnWindow *self)
                            self,
                            G_CONNECT_SWAPPED);
 
+  self->is_main_window = TRUE;
   gtk_widget_show (self->nav_button_stack);
   gn_window_provider_added_cb (self, NULL, gn_manager_get_default ());
 }
