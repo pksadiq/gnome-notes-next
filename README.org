@@ -9,7 +9,9 @@
   The code is now in pre-alpha stage. And so, merge requests and
   bug reports are currently not accepted.
 
-  Code repo: https://gitlab.com/sadiq/gnome-notes-next
+  Home page: [[https://www.sadiqpk.org/projects/notes.html]]. Please note
+  that repository URLs shall change, so please link only to the above
+  URL if you are wishing to refer this repository.
 
 * How to compile
 
