@@ -84,6 +84,7 @@ enum {
 enum {
   PROVIDER_ADDED,
   PROVIDER_REMOVED,
+  DELETE_ITEMS,
   N_SIGNALS
 };
 
@@ -383,6 +384,22 @@ gn_manager_class_init (GnManagerClass *klass)
   g_signal_set_va_marshaller (signals [PROVIDER_REMOVED],
                               G_TYPE_FROM_CLASS (klass),
                               g_cclosure_marshal_VOID__OBJECTv);
+
+  /**
+   * GnManager::delete-items:
+   * @self: a #GnManager
+   * @count: Number of items to delete
+   *
+   * The "delete-items" signal is emitted when the items are
+   * queued for deletion.
+   */
+  signals [DELETE_ITEMS] =
+    g_signal_new ("delete-items",
+                  G_TYPE_FROM_CLASS (klass),
+                  G_SIGNAL_RUN_LAST,
+                  0, NULL, NULL,
+                  g_cclosure_marshal_VOID__INT,
+                  G_TYPE_NONE, 1, G_TYPE_INT);
 }
 
 static void
@@ -624,6 +641,7 @@ gn_manager_queue_for_delete (GnManager  *self,
                              GList      *items)
 {
   guint position;
+  guint count = 0;
 
   g_return_if_fail (GN_IS_MANAGER (self));
   g_return_if_fail (G_IS_LIST_MODEL (note_store));
@@ -641,8 +659,14 @@ gn_manager_queue_for_delete (GnManager  *self,
 
       if (gn_utils_get_item_position (G_LIST_MODEL (notes_store),
                                       node->data, &position))
-        g_list_store_remove (notes_store, position);
+        {
+          g_list_store_remove (notes_store, position);
+          count++;
+        }
     }
+
+  if (count > 0)
+    g_signal_emit (self, signals[DELETE_ITEMS], 0, count);
 }
 
 /**
