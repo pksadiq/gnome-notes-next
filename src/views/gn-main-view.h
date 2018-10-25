@@ -37,6 +37,8 @@ void        gn_main_view_set_selection_mode (GnMainView *self,
 GList      *gn_main_view_get_selected_items (GnMainView *self);
 gboolean    gn_main_view_set_model          (GnMainView *self,
                                              GListModel *model);
+GListModel *gn_main_view_get_model          (GnMainView *self);
+
 void        gn_main_view_set_view           (GnMainView  *self,
                                              const gchar *view);
 

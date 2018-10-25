@@ -363,6 +363,22 @@ gn_main_view_set_model (GnMainView *self,
 }
 
 /**
+ * gn_main_view_set_model:
+ * @self: A #GnMainView
+ *
+ * Get the model set for @self,  if any.
+ *
+ * Returns: (nullable): The #GListModel set for @self
+ */
+GListModel *
+gn_main_view_get_model (GnMainView *self)
+{
+  g_return_val_if_fail (GN_IS_MAIN_VIEW (self), NULL);
+
+  return self->model;
+}
+
+/**
  * gn_main_view_set_view:
  * @self: A #GnMainView
  * @view: The view to set
