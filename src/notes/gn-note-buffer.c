@@ -49,6 +49,23 @@ struct _GnNoteBuffer
 G_DEFINE_TYPE (GnNoteBuffer, gn_note_buffer, GTK_TYPE_TEXT_BUFFER)
 
 static void
+gn_note_buffer_exclude_title (GnNoteBuffer *self,
+                              GtkTextIter  *start,
+                              GtkTextIter  *end)
+{
+  g_assert (GN_IS_NOTE_BUFFER (self));
+  g_assert (start != NULL && end != NULL);
+
+  if (gtk_text_iter_get_line (start) > 0)
+    return;
+
+  if (gtk_text_iter_get_line (end) > 0)
+    gtk_text_iter_forward_line (start);
+  else
+    *start = *end;
+}
+
+static void
 gn_note_buffer_toggle_tag (GnNoteBuffer *buffer,
                            GtkTextTag   *tag,
                            GtkTextIter  *start,
@@ -222,6 +239,7 @@ gn_note_buffer_apply_tag (GnNoteBuffer *self,
   g_return_if_fail (tag_name != NULL);
 
   gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (self), &start, &end);
+  gn_note_buffer_exclude_title (self, &start, &end);
 
   if (strcmp (tag_name, "bold") == 0)
     tag = self->tag_bold;
