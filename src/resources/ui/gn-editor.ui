@@ -79,6 +79,24 @@
           </object>
         </child>
 
+        <child>
+          <object class="GtkButton">
+            <!-- FIXME: Find and replace with the icon for remove format -->
+            <property name="icon-name">format-text-bold-symbolic</property>
+            <property name="sensitive" bind-source="bold_button" bind-property="sensitive"/>
+            <property name="can-focus">0</property>
+            <signal name="clicked" handler="gn_editor_remove_format_clicked" swapped="1" />
+            <child internal-child="accessible">
+              <object class="AtkObject">
+                <property name="accessible-name" translatable="yes">Remove formatting</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="pack-type">end</property>
+          </packing>
+        </child>
+
       </object> <!-- ./GtkActionBar action_bar -->
     </child>
   </template>

@@ -99,6 +99,14 @@ gn_editor_format_clicked (GnEditor  *self,
   gtk_text_buffer_set_modified (self->note_buffer, TRUE);
 }
 
+static void
+gn_editor_remove_format_clicked (GnEditor *self)
+{
+  g_assert (GN_IS_EDITOR (self));
+
+  gn_note_buffer_remove_all_tags (GN_NOTE_BUFFER (self->note_buffer));
+}
+
 static gboolean
 gn_editor_save_note (gpointer user_data)
 {
@@ -168,6 +176,7 @@ gn_editor_class_init (GnEditorClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnEditor, underline_button);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_editor_format_clicked);
+  gtk_widget_class_bind_template_callback (widget_class, gn_editor_remove_format_clicked);
 }
 
 static void
