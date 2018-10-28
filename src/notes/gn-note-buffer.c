@@ -255,6 +255,23 @@ gn_note_buffer_apply_tag (GnNoteBuffer *self,
   gn_note_buffer_toggle_tag (self, tag, &start, &end);
 }
 
+void
+gn_note_buffer_remove_all_tags (GnNoteBuffer *self)
+{
+  GtkTextIter start, end;
+
+  g_return_if_fail (GN_IS_NOTE_BUFFER (self));
+
+  gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (self), &start, &end);
+  gn_note_buffer_exclude_title (self, &start, &end);
+
+  if (gtk_text_iter_equal (&start, &end))
+    return;
+
+  gtk_text_buffer_remove_all_tags (GTK_TEXT_BUFFER (self), &start, &end);
+  gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (self), TRUE);
+}
+
 const gchar *
 gn_note_buffer_get_name_for_tag (GnNoteBuffer *self,
                                  GtkTextTag   *tag)

@@ -31,6 +31,7 @@ G_DECLARE_FINAL_TYPE (GnNoteBuffer, gn_note_buffer, GN, NOTE_BUFFER, GtkTextBuff
 GnNoteBuffer *gn_note_buffer_new (void);
 void          gn_note_buffer_apply_tag (GnNoteBuffer *self,
                                         const gchar  *tag_name);
+void          gn_note_buffer_remove_all_tags  (GnNoteBuffer *self);
 const gchar  *gn_note_buffer_get_name_for_tag (GnNoteBuffer *self,
                                                GtkTextTag   *tag);
 
