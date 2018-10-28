@@ -49,7 +49,6 @@ struct _GnEditor
   GtkTextBuffer *note_buffer;
 
   GtkWidget *editor_view;
-  GtkWidget *cut_button;
 
   GtkWidget *bold_button;
   GtkWidget *italic_button;
@@ -75,36 +74,6 @@ gn_editor_selection_changed_cb (GnEditor *self)
     {
       gtk_widget_set_sensitive (self->bold_button, FALSE);
     }
-}
-
-static void
-gn_editor_copy_or_cut (GnEditor  *self,
-                       GtkWidget *button)
-{
-  GdkClipboard *clipboard;
-
-  g_assert (GN_IS_EDITOR (self));
-  g_assert (GTK_IS_BUTTON (button));
-
-  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self));
-
-  if (button == self->cut_button)
-    gtk_text_buffer_cut_clipboard (self->note_buffer, clipboard, TRUE);
-  else /* copy_button */
-    gtk_text_buffer_copy_clipboard (self->note_buffer, clipboard);
-
-}
-
-static void
-gn_editor_paste (GnEditor *self)
-{
-  GdkClipboard *clipboard;
-
-  g_assert (GN_IS_EDITOR (self));
-
-  clipboard = gtk_widget_get_clipboard (GTK_WIDGET (self));
-  gtk_text_buffer_paste_clipboard (self->note_buffer, clipboard,
-                                   NULL, TRUE);
 }
 
 static void
@@ -193,14 +162,10 @@ gn_editor_class_init (GnEditorClass *klass)
                                                "ui/gn-editor.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnEditor, editor_view);
-  gtk_widget_class_bind_template_child (widget_class, GnEditor, cut_button);
   gtk_widget_class_bind_template_child (widget_class, GnEditor, bold_button);
   gtk_widget_class_bind_template_child (widget_class, GnEditor, italic_button);
   gtk_widget_class_bind_template_child (widget_class, GnEditor, strikethrough_button);
   gtk_widget_class_bind_template_child (widget_class, GnEditor, underline_button);
-
-  gtk_widget_class_bind_template_callback (widget_class, gn_editor_copy_or_cut);
-  gtk_widget_class_bind_template_callback (widget_class, gn_editor_paste);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_editor_format_clicked);
 }
@@ -252,9 +217,6 @@ gn_editor_set_item (GnEditor   *self,
                            self, G_CONNECT_SWAPPED);
   gn_editor_selection_changed_cb (self);
 
-  g_object_bind_property (buffer, "has-selection",
-                          self->cut_button, "sensitive",
-                          G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
   g_signal_connect_object (buffer, "modified-changed",
                            G_CALLBACK (gn_editor_buffer_modified_cb),
                            self, G_CONNECT_SWAPPED);

@@ -22,38 +22,6 @@
          <class name="osd"/>
         </style>
 
-        <!-- XXX: Do we need cut/copy/paste? On systems with keyboard, Ctrl+[XCV]
-        is better. On touch systems, a popover will be shown with those actions. -->
-        <child>
-          <object class="GtkButtonBox">
-            <property name="layout-style">expand</property>
-            <child>
-              <object class="GtkButton" id="cut_button">
-                <property name="label" translatable="1">Cut</property>
-                <property name="can-focus">0</property>
-                <signal name="clicked" handler="gn_editor_copy_or_cut" swapped="1" />
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="copy_button">
-                <property name="label" translatable="1">Copy</property>
-                <property name="can-focus">0</property>
-                <property name="sensitive" bind-source="cut_button" bind-property="sensitive"/>
-                <signal name="clicked" handler="gn_editor_copy_or_cut" swapped="1" />
-              </object>
-            </child>
-            <child>
-              <object class="GtkButton" id="paste_button">
-                <property name="label" translatable="1">Paste</property>
-                <property name="can-focus">0</property>
-                <property name="sensitive" bind-source="editor_view"
-                          bind-property="editable" bind-flags="default|sync-create"/>
-                <signal name="clicked" handler="gn_editor_paste" swapped="1" />
-              </object>
-            </child>
-          </object> <!-- ./GtkButtonBox -->
-        </child>
-
         <child type="center">
           <object class="GtkButtonBox">
             <property name="layout-style">expand</property>
