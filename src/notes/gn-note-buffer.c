@@ -95,6 +95,8 @@ gn_note_buffer_toggle_tag (GnNoteBuffer *buffer,
   else
     gtk_text_buffer_apply_tag (GTK_TEXT_BUFFER (buffer), tag,
                                start, end);
+
+  gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (buffer), TRUE);
 }
 
 static void
@@ -240,6 +242,9 @@ gn_note_buffer_apply_tag (GnNoteBuffer *self,
 
   gtk_text_buffer_get_selection_bounds (GTK_TEXT_BUFFER (self), &start, &end);
   gn_note_buffer_exclude_title (self, &start, &end);
+
+  if (gtk_text_iter_equal (&start, &end))
+    return;
 
   if (strcmp (tag_name, "bold") == 0)
     tag = self->tag_bold;
