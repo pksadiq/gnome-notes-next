@@ -363,7 +363,7 @@ gn_main_view_set_model (GnMainView *self,
 }
 
 /**
- * gn_main_view_set_model:
+ * gn_main_view_get_model:
  * @self: A #GnMainView
  *
  * Get the model set for @self,  if any.
