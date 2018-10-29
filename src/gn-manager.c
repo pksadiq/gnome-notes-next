@@ -537,45 +537,6 @@ gn_manager_get_search_store (GnManager *self)
 }
 
 /**
- * gn_manager_load_more_notes:
- * @self: A #GnManager
- *
- * Load more notes to the store from the queue, if any.
- */
-void
-gn_manager_load_more_notes (GnManager *self)
-{
-  guint size;
-
-  g_assert (GN_IS_MAIN_THREAD ());
-  /* FIXME: use a GMutex instead? */
-  g_return_if_fail (GN_IS_MAIN_THREAD ());
-
-  size = gtk_slice_list_model_get_size (self->notes_store);
-  gtk_slice_list_model_set_size (self->notes_store,
-                                 size + MAX_ITEMS_TO_LOAD);
-}
-
-/**
- * gn_manager_load_more_trash_notes:
- * @self: A #GnManager
- *
- * Load more trash notes to the store from the queue, if any.
- */
-void
-gn_manager_load_more_trash_notes (GnManager *self)
-{
-  guint size;
-
-  /* FIXME: use a GMutex instead? */
-  g_return_if_fail (GN_IS_MAIN_THREAD ());
-
-  size = gtk_slice_list_model_get_size (self->trash_store);
-  gtk_slice_list_model_set_size (self->trash_store,
-                                 size + MAX_ITEMS_TO_LOAD);
-}
-
-/**
  * gn_manager_new_note:
  * @self: A #GnManager
  *
