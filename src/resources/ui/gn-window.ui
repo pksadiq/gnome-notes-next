@@ -221,6 +221,7 @@
                         </style>
                         <child>
                           <object class="GtkStack" id="main_view">
+                            <property name="homogeneous">0</property>
                             <signal name="notify::visible-child" handler="gn_window_main_view_changed"
                                     swapped="1"/>
                             <child>
