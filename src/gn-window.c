@@ -38,6 +38,8 @@
 #include "gn-window.h"
 #include "gn-trace.h"
 
+#define MAX_ITEMS_TO_LOAD 30
+
 struct _GnWindow
 {
   GtkApplicationWindow parent_instance;
@@ -196,6 +198,8 @@ gn_window_load_more_items (GnWindow          *self,
                            GtkScrolledWindow *scrolled_window)
 {
   GtkWidget *current_view;
+  GListModel *model;
+  guint size;
 
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_SCROLLED_WINDOW (scrolled_window));
@@ -205,9 +209,11 @@ gn_window_load_more_items (GnWindow          *self,
     return;
 
   current_view = gtk_stack_get_visible_child (GTK_STACK (self->main_view));
+  model = gn_main_view_get_model (GN_MAIN_VIEW (current_view));
 
-  if (current_view == self->notes_view)
-    gn_manager_load_more_notes (gn_manager_get_default ());
+  size = gtk_slice_list_model_get_size (GTK_SLICE_LIST_MODEL (model));
+  gtk_slice_list_model_set_size (GTK_SLICE_LIST_MODEL (model),
+                                 size + MAX_ITEMS_TO_LOAD);
 }
 
 static gboolean
