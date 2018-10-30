@@ -165,18 +165,32 @@ static void
 test_plain_note_search (void)
 {
   g_autoptr(GnPlainNote) plain_note = NULL;
+  GnNote *note;
   GnItem *item;
 
   plain_note = gn_plain_note_new_from_data ("Some Randomly\nlong test 😊");
   g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
 
   item = GN_ITEM (plain_note);
+  note = GN_NOTE (plain_note);
 
   g_assert_true (gn_item_match (item, "Some"));
   g_assert_true (gn_item_match (item, "some"));
   g_assert_true (gn_item_match (item, "soME"));
   g_assert_true (gn_item_match (item, "long test"));
   g_assert_false (gn_item_match (item, "invalid"));
+
+  gn_item_set_title (item, "ഒരു തലക്കെട്ടു");
+  g_assert_true (gn_item_match (item, "തല"));
+
+  gn_item_set_title (item, "Русский");
+  g_assert_true (gn_item_match (item, "руссКИЙ"));
+
+  gn_note_set_text_content (note, "ß ഉള്ളടക്കം");
+  g_assert_true (gn_item_match (item, "руссКИЙ"));
+  g_assert_true (gn_item_match (item, "ss"));
+  g_assert_true (gn_item_match (item, "ഉള"));
+  g_assert_false (gn_item_match (item, "ഉള്ളി"));
 }
 
 int
