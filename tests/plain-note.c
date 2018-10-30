@@ -75,6 +75,7 @@ test_plain_note_empty (void)
   g_assert_false (has_color);
 
   g_assert_true (gn_item_is_new (item));
+  g_assert_true (gn_item_get_features (item) == GN_FEATURE_NONE);
 
   test_plain_note_with_change (plain_note);
 }
