@@ -111,23 +111,32 @@ gn_plain_note_get_markup (GnNote *note)
 {
   GnPlainNote *self = GN_PLAIN_NOTE (note);
   const gchar *title = NULL;
+  GString *markup;
   g_autofree gchar *title_markup = NULL;
   g_autofree gchar *content = NULL;
 
   g_assert (GN_IS_NOTE (note));
 
   title = gn_item_get_title (GN_ITEM (note));
+
+  if (title[0] == '\0' && self->content == NULL)
+    return NULL;
+
+  markup = g_string_new_len (NULL, 10);
+
   if (title[0] != '\0')
-    title_markup = g_markup_escape_text (title, -1);
+    {
+      title_markup = g_markup_escape_text (title, -1);
+      g_string_append_printf (markup, "<b>%s</b>", title_markup);
+    }
 
   if (self->content != NULL)
-    content = g_markup_escape_text (self->content, -1);
+    {
+      content = g_markup_escape_text (self->content, -1);
+      g_string_append_printf (markup,"\n\n%s", content);
+    }
 
-  if (title_markup != NULL)
-    return g_strconcat ("<b>", title_markup, "</b>\n\n",
-                        content, NULL);
-  else
-    return NULL;
+  return g_string_free (markup, FALSE);
 }
 
 gboolean
