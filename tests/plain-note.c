@@ -193,6 +193,21 @@ test_plain_note_search (void)
   g_assert_false (gn_item_match (item, "ഉള്ളി"));
 }
 
+static void
+test_plain_note_time (void)
+{
+  g_autoptr(GnPlainNote) plain_note = NULL;
+  GnItem *item;
+
+  plain_note = gn_plain_note_new_from_data (NULL);
+  g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
+
+  item = GN_ITEM (plain_note);
+
+  g_assert_cmpint (gn_item_get_creation_time (item), ==, 0);
+  g_assert_cmpint (gn_item_get_modification_time (item), ==, 0);
+}
+
 int
 main (int   argc,
       char *argv[])
@@ -203,6 +218,7 @@ main (int   argc,
   g_test_add_func ("/note/plain/title", test_plain_note_title);
   g_test_add_func ("/note/plain/content", test_plain_note_content);
   g_test_add_func ("/note/plain/search", test_plain_note_search);
+  g_test_add_func ("/note/plain/time", test_plain_note_time);
 
   return g_test_run ();
 }
