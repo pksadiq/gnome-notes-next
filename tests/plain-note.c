@@ -18,11 +18,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-#include <glib.h>
-
-#include "notes/gn-item.h"
-#include "notes/gn-note.h"
-#include "notes/gn-plain-note.h"
+#include "gn-plain-note.h"
 
 static void
 test_plain_note_with_change (GnPlainNote *plain_note)
