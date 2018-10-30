@@ -162,6 +162,42 @@ test_plain_note_content (void)
 }
 
 static void
+test_plain_note_markup (void)
+{
+  g_autoptr(GnPlainNote) plain_note = NULL;
+  GnNote *note;
+  GnItem *item;
+  gchar *markup;
+
+  plain_note = gn_plain_note_new_from_data (NULL);
+  g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
+
+  item = GN_ITEM (plain_note);
+  note = GN_NOTE (plain_note);
+
+  markup = gn_note_get_markup (note);
+  g_assert_null (markup);
+
+  gn_item_set_title (item, "<html> tag & no content");
+  markup = gn_note_get_markup (note);
+  g_assert_cmpstr (markup, ==, "<b>&lt;html&gt; tag &amp; no content</b>");
+  g_free (markup);
+
+  gn_note_set_text_content (note, "\" It doesn't have <tag> \"");
+  markup = gn_note_get_markup (note);
+  g_assert_cmpstr (markup, ==,
+                   "<b>&lt;html&gt; tag &amp; no content</b>\n\n"
+                   "&quot; It doesn&apos;t have &lt;tag&gt; &quot;");
+  g_free (markup);
+
+  gn_item_set_title (item, "");
+  markup = gn_note_get_markup (note);
+  g_assert_cmpstr (markup, ==,
+                   "\n\n&quot; It doesn&apos;t have &lt;tag&gt; &quot;");
+  g_free (markup);
+}
+
+static void
 test_plain_note_search (void)
 {
   g_autoptr(GnPlainNote) plain_note = NULL;
@@ -217,6 +253,7 @@ main (int   argc,
   g_test_add_func ("/note/plain/empty", test_plain_note_empty);
   g_test_add_func ("/note/plain/title", test_plain_note_title);
   g_test_add_func ("/note/plain/content", test_plain_note_content);
+  g_test_add_func ("/note/plain/markup", test_plain_note_markup);
   g_test_add_func ("/note/plain/search", test_plain_note_search);
   g_test_add_func ("/note/plain/time", test_plain_note_time);
 
