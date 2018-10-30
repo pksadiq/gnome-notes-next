@@ -613,6 +613,7 @@ gboolean
 gn_item_match (GnItem      *self,
                const gchar *needle)
 {
+  g_autofree gchar *casefold_needle = NULL;
   gboolean ret;
 
   GN_ENTRY;
@@ -620,7 +621,8 @@ gn_item_match (GnItem      *self,
   g_return_val_if_fail (GN_IS_ITEM (self), FALSE);
   g_return_val_if_fail (needle != NULL, FALSE);
 
-  ret = GN_ITEM_GET_CLASS (self)->match (self, needle);
+  casefold_needle = g_utf8_casefold (needle, -1);
+  ret = GN_ITEM_GET_CLASS (self)->match (self, casefold_needle);
 
   GN_RETURN (ret);
 }
