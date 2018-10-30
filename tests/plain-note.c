@@ -38,16 +38,40 @@ test_plain_note_with_change (GnPlainNote *plain_note)
   uid = gn_item_get_uid (item);
   g_assert_cmpstr (uid, ==, "test-uid");
 
+  g_assert_true (gn_item_is_modified (item));
+  gn_item_unset_modified (item);
+  g_assert_false (gn_item_is_modified (item));
+
   gn_item_set_title (item, "test title");
   title = gn_item_get_title (item);
   g_assert_cmpstr (title, ==, "test title");
 
+  g_assert_true (gn_item_is_modified (item));
+  gn_item_unset_modified (item);
+  g_assert_false (gn_item_is_modified (item));
+
+  /*
+   * FIXME: plain notes won’t have color feature.
+   * This exists just to satisfy evolution memos
+   * which have color feature, and are plain notes.
+   * This feature may better fit in provider class.
+   */
   gdk_rgba_parse (&rgba, "#123");
   gn_item_set_rgba (item, &rgba);
   has_color = gn_item_get_rgba (item, &new_rgba);
   g_assert_true (has_color);
   g_assert (gdk_rgba_equal (&rgba, &new_rgba));
 
+  g_assert_true (gn_item_is_modified (item));
+  gn_item_unset_modified (item);
+  g_assert_false (gn_item_is_modified (item));
+
+  /* Setting the same color shouldn’t change anything */
+  gn_item_set_rgba (item, &rgba);
+  has_color = gn_item_get_rgba (item, &new_rgba);
+  g_assert_true (has_color);
+  g_assert (gdk_rgba_equal (&rgba, &new_rgba));
+  g_assert_false (gn_item_is_modified (item));
 }
 
 static void
@@ -75,6 +99,7 @@ test_plain_note_empty (void)
   g_assert_false (has_color);
 
   g_assert_true (gn_item_is_new (item));
+  g_assert_false (gn_item_is_modified (item));
   g_assert_true (gn_item_get_features (item) == GN_FEATURE_NONE);
 
   test_plain_note_with_change (plain_note);
