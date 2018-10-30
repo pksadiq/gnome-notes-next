@@ -136,6 +136,24 @@ test_plain_note_content (void)
   test_plain_note_with_change (plain_note);
 }
 
+static void
+test_plain_note_search (void)
+{
+  g_autoptr(GnPlainNote) plain_note = NULL;
+  GnItem *item;
+
+  plain_note = gn_plain_note_new_from_data ("Some Randomly\nlong test 😊");
+  g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
+
+  item = GN_ITEM (plain_note);
+
+  g_assert_true (gn_item_match (item, "Some"));
+  g_assert_true (gn_item_match (item, "some"));
+  g_assert_true (gn_item_match (item, "soME"));
+  g_assert_true (gn_item_match (item, "long test"));
+  g_assert_false (gn_item_match (item, "invalid"));
+}
+
 int
 main (int   argc,
       char *argv[])
@@ -145,6 +163,7 @@ main (int   argc,
   g_test_add_func ("/note/plain/empty", test_plain_note_empty);
   g_test_add_func ("/note/plain/title", test_plain_note_title);
   g_test_add_func ("/note/plain/content", test_plain_note_content);
+  g_test_add_func ("/note/plain/search", test_plain_note_search);
 
   return g_test_run ();
 }
