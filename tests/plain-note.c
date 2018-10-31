@@ -162,6 +162,44 @@ test_plain_note_content (void)
 }
 
 static void
+test_plain_note_buffer (void)
+{
+  g_autoptr(GnPlainNote) plain_note = NULL;
+  g_autoptr(GtkTextBuffer) buffer = NULL;
+  GnNote *note;
+  GnItem *item;
+  const gchar *title;
+  g_autofree gchar *content = NULL;
+
+  plain_note = gn_plain_note_new_from_data (NULL);
+  g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
+
+  item = GN_ITEM (plain_note);
+  note = GN_NOTE (plain_note);
+  buffer = gtk_text_buffer_new (NULL);
+
+  gn_note_set_content_from_buffer (note, buffer);
+  title = gn_item_get_title (item);
+  g_assert_cmpstr (title, ==, "");
+  content = gn_note_get_raw_content (note);
+  g_assert_null (content);
+
+  gtk_text_buffer_set_text (buffer, "Title \t only", -1);
+  gn_note_set_content_from_buffer (note, buffer);
+  title = gn_item_get_title (item);
+  g_assert_cmpstr (title, ==, "Title \t only");
+  content = gn_note_get_raw_content (note);
+  g_assert_null (content);
+
+  gtk_text_buffer_set_text (buffer, "Title\nand content", -1);
+  gn_note_set_content_from_buffer (note, buffer);
+  title = gn_item_get_title (item);
+  g_assert_cmpstr (title, ==, "Title");
+  content = gn_note_get_raw_content (note);
+  g_assert_cmpstr (content, ==, "and content");
+}
+
+static void
 test_plain_note_markup (void)
 {
   g_autoptr(GnPlainNote) plain_note = NULL;
@@ -253,6 +291,7 @@ main (int   argc,
   g_test_add_func ("/note/plain/empty", test_plain_note_empty);
   g_test_add_func ("/note/plain/title", test_plain_note_title);
   g_test_add_func ("/note/plain/content", test_plain_note_content);
+  g_test_add_func ("/note/plain/buffer", test_plain_note_buffer);
   g_test_add_func ("/note/plain/markup", test_plain_note_markup);
   g_test_add_func ("/note/plain/search", test_plain_note_search);
   g_test_add_func ("/note/plain/time", test_plain_note_time);
