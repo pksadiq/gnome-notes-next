@@ -106,6 +106,45 @@ test_plain_note_empty (void)
 }
 
 static void
+test_plain_note_new (void)
+{
+  GnPlainNote *plain_note;
+  GnNote *note;
+  GnItem *item;
+  const gchar *title;
+  gchar *content;
+
+  plain_note = gn_plain_note_new_from_data (NULL);
+  g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
+  item = GN_ITEM (plain_note);
+  note = GN_NOTE (plain_note);
+
+  g_assert (GN_IS_ITEM (item));
+  title = gn_item_get_title (item);
+  g_assert_cmpstr (title, ==, "");
+
+  content = gn_note_get_raw_content (note);
+  g_assert_null (content);
+  content = gn_note_get_text_content (note);
+  g_assert_null (content);
+  g_object_unref (plain_note);
+
+  plain_note = gn_plain_note_new_from_data ("");
+  g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
+  item = GN_ITEM (plain_note);
+  note = GN_NOTE (plain_note);
+
+  title = gn_item_get_title (item);
+  g_assert_cmpstr (title, ==, "");
+
+  content = gn_note_get_raw_content (note);
+  g_assert_null (content);
+  content = gn_note_get_text_content (note);
+  g_assert_null (content);
+  g_object_unref (plain_note);
+}
+
+static void
 test_plain_note_title (void)
 {
   g_autoptr(GnPlainNote) plain_note = NULL;
@@ -289,6 +328,7 @@ main (int   argc,
   g_test_init (&argc, &argv, NULL);
 
   g_test_add_func ("/note/plain/empty", test_plain_note_empty);
+  g_test_add_func ("/note/plain/new", test_plain_note_new);
   g_test_add_func ("/note/plain/title", test_plain_note_title);
   g_test_add_func ("/note/plain/content", test_plain_note_content);
   g_test_add_func ("/note/plain/buffer", test_plain_note_buffer);
