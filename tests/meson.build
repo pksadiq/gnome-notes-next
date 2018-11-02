@@ -14,6 +14,7 @@ test_items = [
   'utils',
   'settings',
   'plain-note',
+  'xml-note',
   'note-buffer'
 ]
 

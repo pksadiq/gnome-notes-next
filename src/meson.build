@@ -61,6 +61,7 @@ libsrc = [
   'notes/gn-item.c',
   'notes/gn-note.c',
   'notes/gn-plain-note.c',
+  'notes/gn-xml-note.c',
   'notes/gn-note-buffer.c'
 ]
 
