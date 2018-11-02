@@ -101,7 +101,7 @@ test_xml_note_update_from_file (const gchar *xml_file_name)
 static void
 test_xml_note_parse (gconstpointer user_data)
 {
-  GnXmlNote *xml_note;
+  g_autoptr(GnXmlNote) xml_note = NULL;
   GnNote *note;
   GnItem *item;
   const gchar *title;
