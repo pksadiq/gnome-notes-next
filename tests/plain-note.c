@@ -180,7 +180,7 @@ test_plain_note_content (void)
   GnItem *item;
   const gchar *uid;
   const gchar *title;
-  g_autofree gchar *content = NULL;
+  gchar *content;
 
   plain_note = gn_plain_note_new_from_data ("Some Randomly\nlong test 😊");
   g_assert (GN_IS_PLAIN_NOTE (plain_note));
@@ -196,6 +196,11 @@ test_plain_note_content (void)
 
   content = gn_note_get_raw_content (note);
   g_assert_cmpstr (content, ==, "long test 😊");
+  g_free (content);
+
+  content = gn_note_get_text_content (note);
+  g_assert_cmpstr (content, ==, "long test 😊");
+  g_free (content);
 
   test_plain_note_with_change (plain_note);
 }
