@@ -4,7 +4,6 @@
 <note version="0.3" xmlns:link="http://beatniksoftware.com/tomboy/link" xmlns:size="http://beatniksoftware.com/tomboy/size" xmlns="http://beatniksoftware.com/tomboy">
   <title>This is a test note</title>
   <text xml:space="preserve"><note-content version="0.1">This is a test note
-
 simply a test note
 </note-content></text>
   <last-change-date>2018-11-02T09:00:23.6670000+05:30</last-change-date>
