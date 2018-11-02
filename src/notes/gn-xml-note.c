@@ -490,7 +490,8 @@ gn_xml_note_update_text_content (GnXmlNote *self)
   else
     {
       content_start = strchr (self->raw_content, '\n');
-      content_start++;
+      if (content_start)
+        content_start++;
     }
 
 
