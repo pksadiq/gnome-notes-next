@@ -45,7 +45,6 @@
           </object>
         </child>
 
-        <!-- Note Label -->
       </object>
     </child> <!-- ./GtkGrid -->
   </template>
