@@ -116,6 +116,10 @@ test_xml_note_parse (gconstpointer user_data)
 
   title = gn_item_get_title (item);
   g_assert_cmpstr (title, ==, test_note.title);
+
+  content = gn_note_get_text_content (note);
+  g_assert_cmpstr (content, ==, test_note.text_content);
+  g_free (content);
 }
 
 int
