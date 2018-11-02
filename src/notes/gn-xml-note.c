@@ -478,7 +478,10 @@ gn_xml_note_update_text_content (GnXmlNote *self)
   g_autofree gchar *content = NULL;
   g_assert (GN_IS_XML_NOTE (self));
 
-  g_free (self->text_content);
+  g_clear_pointer (&self->text_content, g_free);
+
+  if (self->raw_content == NULL)
+    return;
 
   content = gn_utils_get_text_from_xml (self->raw_content);
   self->text_content = g_utf8_casefold (content, -1);
