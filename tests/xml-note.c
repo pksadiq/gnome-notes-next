@@ -96,6 +96,10 @@ test_xml_note_update_from_file (const gchar *xml_file_name)
   g_file_get_contents (file_name, &test_note.text_content, NULL, &error);
   g_free (file_name);
   g_assert_no_error (error);
+
+  /* We use NULL to refer empty content */
+  if (*test_note.text_content == '\0')
+    g_clear_pointer (&test_note.text_content, g_free);
 }
 
 static void
