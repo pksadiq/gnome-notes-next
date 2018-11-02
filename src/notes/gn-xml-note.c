@@ -475,7 +475,7 @@ gn_xml_note_finalize (GObject *object)
 static void
 gn_xml_note_update_text_content (GnXmlNote *self)
 {
-  g_autofree gchar *content;
+  g_autofree gchar *content = NULL;
   g_assert (GN_IS_XML_NOTE (self));
 
   g_free (self->text_content);
