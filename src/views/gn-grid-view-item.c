@@ -43,7 +43,6 @@ struct _GnGridViewItem
   GnItem *item;
 
   GtkWidget *preview_label;
-  GtkWidget *title_label;
   GtkWidget *check_box;
 
   gboolean selected;
@@ -76,7 +75,6 @@ gn_grid_view_item_class_init (GnGridViewItemClass *klass)
                                                "ui/gn-grid-view-item.ui");
 
   gtk_widget_class_bind_template_child (widget_class, GnGridViewItem, preview_label);
-  gtk_widget_class_bind_template_child (widget_class, GnGridViewItem, title_label);
   gtk_widget_class_bind_template_child (widget_class, GnGridViewItem, check_box);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_grid_view_item_toggled);
@@ -96,7 +94,6 @@ gn_grid_view_item_new (gpointer data,
   GnItem *item = data;
   GObject *object = user_data;
   g_autofree gchar *markup = NULL;
-  const gchar *title;
   GdkRGBA rgba;
 
   GN_ENTRY;
@@ -104,7 +101,6 @@ gn_grid_view_item_new (gpointer data,
   g_return_val_if_fail (GN_IS_ITEM (item), NULL);
 
   self = g_object_new (GN_TYPE_GRID_VIEW_ITEM, NULL);
-  title = gn_item_get_title (item);
   markup = gn_note_get_markup (GN_NOTE (item));
   self->item = item;
 
@@ -115,8 +111,6 @@ gn_grid_view_item_new (gpointer data,
   if (!gn_item_get_rgba (item, &rgba))
     gn_settings_get_rgba (gn_manager_get_settings (gn_manager_get_default ()),
                           &rgba);
-
-  gtk_label_set_label (GTK_LABEL (self->title_label), title);
 
   g_object_set (G_OBJECT (self->preview_label),
                 "rgba", &rgba,
