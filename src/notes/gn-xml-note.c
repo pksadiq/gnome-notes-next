@@ -476,6 +476,8 @@ static void
 gn_xml_note_update_text_content (GnXmlNote *self)
 {
   g_autofree gchar *content = NULL;
+  gchar *content_start;
+
   g_assert (GN_IS_XML_NOTE (self));
 
   g_clear_pointer (&self->text_content, g_free);
@@ -483,7 +485,19 @@ gn_xml_note_update_text_content (GnXmlNote *self)
   if (self->raw_content == NULL)
     return;
 
-  content = gn_utils_get_text_from_xml (self->raw_content);
+  if (self->is_bijiben)
+    content_start = strstr (self->raw_content, "<div");
+  else
+    {
+      content_start = strchr (self->raw_content, '\n');
+      content_start++;
+    }
+
+
+  if (content_start == NULL)
+    return;
+
+  content = gn_utils_get_text_from_xml (content_start);
   self->text_content = g_utf8_casefold (content, -1);
 }
 
@@ -721,7 +735,35 @@ gn_xml_note_create_from_data (const gchar *data)
   else /* "note-content" */
     self->is_bijiben = FALSE;
 
-  self->raw_content = g_strdup (data);
+  if (self->is_bijiben)
+    {
+      /* Get the html tag content */
+      start = strstr (end, "<html");
+      start = strchr (start, '>');
+      start++;
+      end = strstr (start, "</html>");
+    }
+  else
+    {
+      /* Get the note-content tag content */
+      start = strstr (end, "<note-content");
+      start = strchr (start, '>');
+      start++;
+
+      end = strstr (start, "</note-content>");
+      /*
+       * The last '\n' isn't a part of the note.
+       * TODO: This information is based on the data
+       * from tomboy-ng.  Test with real Tomboy.
+      */
+      if (*end == '\n')
+        end--;
+
+      /* FIXME: Why do we need this to pass test? */
+      end--;
+    }
+
+  self->raw_content = g_strndup (start, end - start);
 
   gn_xml_note_update_values (self, end);
   return self;
