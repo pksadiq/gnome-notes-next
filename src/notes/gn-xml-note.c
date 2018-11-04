@@ -827,7 +827,12 @@ gn_xml_note_parse_as_tomboy (GnXmlNote     *self,
           if (content && *content)
             {
               g_string_append (self->text_content, content);
-              /* Remove that last \n */
+              /*
+               * Remove that last \n
+               *
+               * XXX: It shouldn't be a problem to end the content with \n
+               * Remove this?
+               */
               self->text_content->len--;
               self->text_content->str[self->text_content->len] = '\0';
             }
