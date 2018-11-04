@@ -476,7 +476,7 @@ gn_xml_note_finalize (GObject *object)
   g_free (self->raw_content);
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
-  if (self->text_content)
+  if (self->markup)
     g_string_free (self->markup, TRUE);
 
   xml_reader_free (self->xml_reader);
