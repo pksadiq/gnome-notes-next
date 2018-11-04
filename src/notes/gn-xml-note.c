@@ -821,9 +821,10 @@ gn_xml_note_parse_as_tomboy (GnXmlNote     *self,
           content = xml_reader_get_value (xml_reader);
           /* The first line is the note title, skip that */
           content = strchr (content, '\n');
-          content++;
-
           if (content)
+            content++;
+
+          if (content && *content)
             {
               g_string_append (self->text_content, content);
               /* Remove that last \n */
