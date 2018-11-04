@@ -877,7 +877,7 @@ gn_xml_note_parse_xml (GnXmlNote *self)
             g_return_if_fail (inner_xml != NULL);
 
             xml_reader = xml_reader_new (inner_xml, strlen (inner_xml));
-            g_return_if_fail (inner_xml != NULL);
+            g_return_if_fail (xml_reader != NULL);
 
             self->raw_content = inner_xml;
 
