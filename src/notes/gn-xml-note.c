@@ -26,6 +26,7 @@
 
 #include "gn-utils.h"
 #include "gn-note-buffer.h"
+#include "gn-macro.h"
 #include "gn-xml-note.h"
 #include "gn-trace.h"
 
@@ -57,15 +58,18 @@
 
 #define COMMON_XML_HEAD "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
 #define BIJIBEN_XML_NS "http://projects.gnome.org/bijiben"
+#define TOMBOY_XML_NS  "http://beatniksoftware.com/tomboy"
 
 struct _GnXmlNote
 {
   GnNote parent_instance;
 
-  gchar *raw_content;
-  gchar *text_content;
-  gchar *markup;
-  gchar *title;
+  xmlTextReader *xml_reader;
+  xmlDoc  *xml_doc;
+  gchar   *raw_content;
+  GString *text_content;
+  GString *markup;
+  gchar   *title;
 
   /* TRUE: Bijiben XML.  FALSE: Tomboy XML */
   gboolean is_bijiben;
@@ -451,8 +455,14 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   g_free (self->raw_content);
   self->raw_content = g_string_free (raw_content, FALSE);
-  g_clear_pointer (&self->text_content, g_free);
-  g_clear_pointer (&self->markup, g_free);
+  if (self->text_content)
+    g_string_free (self->text_content, TRUE);
+  self->text_content = NULL;
+  /* g_clear_pointer (&self->text_content, g_free); */
+  /* g_clear_pointer (&self->markup, g_free); */
+  if (self->markup)
+    g_string_free (self->markup, TRUE);
+  self->markup = NULL;
 }
 
 static void
@@ -464,8 +474,10 @@ gn_xml_note_finalize (GObject *object)
 
   g_free (self->title);
   g_free (self->raw_content);
-  g_free (self->text_content);
-  g_free (self->markup);
+  if (self->text_content)
+    g_string_free (self->text_content, TRUE);
+  if (self->text_content)
+    g_string_free (self->markup, TRUE);
 
   G_OBJECT_CLASS (gn_xml_note_parent_class)->finalize (object);
 
@@ -480,7 +492,9 @@ gn_xml_note_update_text_content (GnXmlNote *self)
 
   g_assert (GN_IS_XML_NOTE (self));
 
-  g_clear_pointer (&self->text_content, g_free);
+  if (self->text_content)
+    g_string_free (self->text_content, TRUE);
+  self->text_content = NULL;
 
   if (self->raw_content == NULL)
     return;
@@ -498,8 +512,8 @@ gn_xml_note_update_text_content (GnXmlNote *self)
   if (content_start == NULL)
     return;
 
-  content = gn_utils_get_text_from_xml (content_start);
-  self->text_content = g_utf8_casefold (content, -1);
+  /* content = gn_utils_get_text_from_xml (content_start); */
+  /* self->text_content = g_utf8_casefold (content, -1); */
 }
 
 static gchar *
@@ -512,7 +526,15 @@ gn_xml_note_get_text_content (GnNote *note)
   if (self->text_content == NULL)
     gn_xml_note_update_text_content (self);
 
-  return g_strdup (self->text_content);
+  if (self->text_content == NULL ||
+      self->text_content->len == 0)
+    return NULL;
+
+  /* FIXME: Check tests */
+  if (*self->text_content->str == '\0')
+    return NULL;
+
+  return g_strdup (self->text_content->str);
 }
 
 static gchar *
@@ -533,26 +555,8 @@ gn_xml_note_set_text_content (GnNote      *note,
 
   g_assert (GN_IS_XML_NOTE (self));
 
-  g_free (self->text_content);
-  self->text_content = g_strdup (content);
-}
-
-static void
-gn_xml_note_update_markup (GnXmlNote *self)
-{
-  g_autofree gchar *content = NULL;
-
-  g_assert (GN_IS_XML_NOTE (self));
-
-  if (self->raw_content == NULL)
-    return;
-
-  if (self->is_bijiben)
-    content = gn_utils_get_markup_from_bijiben (self->raw_content,
-                                                GN_NOTE_MARKUP_LINES_MAX);
-
-  g_free (self->markup);
-  self->markup = g_steal_pointer (&content);
+  /* g_free (self->text_content); */
+  /* self->text_content = g_strdup (content); */
 }
 
 static gchar *
@@ -562,10 +566,7 @@ gn_xml_note_get_markup (GnNote *note)
 
   g_assert (GN_IS_NOTE (note));
 
-  if (self->markup == NULL)
-    gn_xml_note_update_markup (self);
-
-  return g_strdup (self->markup);
+  return g_strdup (self->markup->str);
 }
 
 static const gchar *
@@ -590,7 +591,7 @@ gn_xml_note_match (GnItem      *item,
   if (self->text_content == NULL)
     gn_xml_note_update_text_content (self);
 
-  if (strstr (self->text_content, needle) != NULL)
+  if (strstr (self->text_content->str, needle) != NULL)
     return TRUE;
 
   return FALSE;
@@ -628,6 +629,8 @@ gn_xml_note_class_init (GnXmlNoteClass *klass)
 static void
 gn_xml_note_init (GnXmlNote *self)
 {
+  self->text_content = g_string_new ("");
+  self->markup = g_string_new ("");
   self->is_bijiben = TRUE;
 }
 
@@ -691,6 +694,194 @@ gn_xml_note_update_values (GnXmlNote   *self,
   g_free (value);
 }
 
+static void
+gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
+                              xmlTextReader *xml_reader)
+{
+  g_assert (GN_IS_XML_NOTE (self));
+
+  /*
+   * The text until the first <div> tag is the title
+   * of the note.  We don't need that, so simply skip.
+   */
+  while (xml_reader_read (xml_reader) == 1)
+    {
+      const gchar *tag;
+      int type;
+
+      type = xml_reader_get_node_type (xml_reader);
+      tag = xml_reader_get_name (xml_reader);
+
+      if (tag == NULL ||
+          g_str_equal (tag, "div") ||
+          g_str_equal (tag, "br"))
+        break;
+
+      continue;
+      /*
+       * TODO: allow the code below when we break bijiben
+       * compatibility
+       */
+      /*
+       * If the value of the tag contain a '\n', the title
+       * ends there, the rest of the value is the part of
+       * the content.
+       */
+      if (type == XML_TEXT_NODE)
+        {
+          const gchar *content;
+
+          content = xml_reader_get_value (xml_reader);
+          if (content)
+            content = strchr (content, '\n');
+
+          if (content == NULL)
+            continue;
+
+          /* Skip '\n' */
+          content++;
+          g_string_append (self->text_content, content);
+          g_string_append (self->markup, content);
+          break;
+        }
+    }
+
+  while (xml_reader_read (xml_reader) == 1)
+    {
+      const gchar *tag;
+      const gchar *content;
+      int type;
+
+      type = xml_reader_get_node_type (xml_reader);
+      tag = xml_reader_get_name (xml_reader);
+
+      if (tag == NULL)
+        continue;
+
+      switch (type)
+        {
+        case XML_TEXT_NODE:
+          content = xml_reader_get_value (xml_reader);
+
+          if (content)
+            {
+              g_string_append (self->text_content, content);
+              g_string_append (self->markup, content);
+            }
+          break;
+
+          /* FIXME: Simplify */
+        case XML_ELEMENT_NODE:
+          if ((content = xml_reader_get_name (xml_reader)))
+            {
+              if (g_str_equal (content, "br"))
+                g_string_append_c (self->markup, '\n');
+              else if (!g_str_equal (content, "span") &&
+                       !g_str_equal (content, "body") &&
+                       !g_str_equal (content, "html"))
+                g_string_append_printf (self->markup, "<%s>", content);
+            }
+          break;
+
+        case XML_ELEMENT_DECL:
+          if ((content = xml_reader_get_name (xml_reader)))
+            if (!g_str_equal (content, "span") &&
+                !g_str_equal (content, "body") &&
+                !g_str_equal (content, "html"))
+              g_string_append_printf (self->markup, "</%s>", content);
+          break;
+
+        default:
+          break;
+        }
+    }
+}
+
+static void
+gn_xml_note_parse_as_tomboy (GnXmlNote     *self,
+                             xmlTextReader *xml_reader)
+{
+  g_assert (GN_IS_XML_NOTE (self));
+
+  while (xml_reader_read (xml_reader) == 1)
+    {
+      const gchar *tag;
+      const gchar *content;
+      int type;
+
+      type = xml_reader_get_node_type (xml_reader);
+      tag = xml_reader_get_name (xml_reader);
+
+      if (tag == NULL)
+        continue;
+
+      switch (type)
+        {
+        case XML_TEXT_NODE:
+          content = xml_reader_get_value (xml_reader);
+          /* The first line is the note title, skip that */
+          content = strchr (content, '\n');
+          content++;
+
+          if (content)
+            {
+              g_string_append (self->text_content, content);
+              /* Remove that last \n */
+              self->text_content->len--;
+              self->text_content->str[self->text_content->len] = '\0';
+            }
+        }
+    }
+}
+
+static void
+gn_xml_note_parse_xml (GnXmlNote *self)
+{
+  g_assert (GN_IS_XML_NOTE (self));
+
+  g_string_append (self->markup, "<markup>");
+
+  while (xml_reader_read (self->xml_reader) == 1)
+    if (xml_reader_get_node_type (self->xml_reader) == XML_ELEMENT_NODE)
+      {
+        const gchar *tag;
+        g_autofree gchar *content = NULL;
+
+        tag = xml_reader_get_name (self->xml_reader);
+        g_return_if_fail (tag != NULL);
+
+        if (g_strcmp0 (tag, "title") == 0)
+          {
+            content = xml_reader_dup_string (self->xml_reader);
+            if (content == NULL)
+              continue;
+
+            gn_item_set_title (GN_ITEM (self), content);
+            g_string_append_printf (self->markup, "<b>%s</b>\n", content);
+          }
+        else if (g_strcmp0 (tag, "text") == 0)
+          {
+            gchar *inner_xml;
+            xmlTextReader *xml_reader;
+
+            inner_xml = xml_reader_dup_inner_xml (self->xml_reader);
+            g_return_if_fail (inner_xml != NULL);
+
+            xml_reader = xml_reader_new (inner_xml, strlen (inner_xml));
+            g_return_if_fail (inner_xml != NULL);
+
+            self->raw_content = inner_xml;
+
+            if (self->is_bijiben)
+              gn_xml_note_parse_as_bijiben (self, xml_reader);
+            else
+              gn_xml_note_parse_as_tomboy (self, xml_reader);
+          }
+      }
+
+  g_string_append (self->markup, "</markup>");
+}
+
 /*
  * This is a stupid parser.  All we need to get is the
  * title, and the boundaries of note content.
@@ -699,75 +890,32 @@ gn_xml_note_update_values (GnXmlNote   *self,
 static GnXmlNote *
 gn_xml_note_create_from_data (const gchar *data)
 {
-  g_autofree gchar *title = NULL;
-  g_autofree gchar *content = NULL;
-  gchar *start, *end;
-  GnXmlNote *self;
+  xmlNode *root_node;
+  g_autoptr(GnXmlNote) self = NULL;
 
   g_assert (data != NULL);
 
-  start = strstr (data, "<title>");
-  g_return_val_if_fail (start != NULL, NULL);
+  self = g_object_new (GN_TYPE_XML_NOTE, NULL);
 
-  /* Let's begin finding the title */
-  start = start + strlen ("<title>");
-
-  /* Find the start of </title> (That is, <title> close tag) */
-  end = strchr (start, '<');
-  g_return_val_if_fail (end != NULL, NULL);
+  self->xml_reader = xml_reader_new (data, strlen (data));
+  g_return_val_if_fail (self->xml_reader != NULL, NULL);
 
   /*
-   * This isn't the real title.  It may have (1), (2), etc. as
-   * suffix when there is a conflict with other titles
+   * TODO: Profile this.  May be we can avoid xml_doc_new()
+   * because we only use xml_reader_new()
    */
-  title = g_strndup (start, end - start);
+  self->xml_doc = xml_doc_new (data, strlen (data));
+  g_return_val_if_fail (self->xml_doc != NULL, NULL);
 
-  self = g_object_new (GN_TYPE_XML_NOTE,
-                       "title", title,
-                       NULL);
+  root_node = xml_doc_get_root_element (self->xml_doc);
+  g_return_val_if_fail (root_node != NULL, NULL);
 
-  /*
-   * Check if we have a match for "note-content"
-   * (if note is a tomboy note), or "html" (if note is in old
-   * bijiben format).
-   */
-  if (strstr (end, "<html"))
-    self->is_bijiben = TRUE;
-  else /* "note-content" */
+  if (g_strcmp0 ((gchar *)root_node->ns->href, TOMBOY_XML_NS) == 0)
     self->is_bijiben = FALSE;
 
-  if (self->is_bijiben)
-    {
-      /* Get the html tag content */
-      start = strstr (end, "<html");
-      start = strchr (start, '>');
-      start++;
-      end = strstr (start, "</html>");
-    }
-  else
-    {
-      /* Get the note-content tag content */
-      start = strstr (end, "<note-content");
-      start = strchr (start, '>');
-      start++;
+  gn_xml_note_parse_xml (self);
 
-      end = strstr (start, "</note-content>");
-      /*
-       * The last '\n' isn't a part of the note.
-       * TODO: This information is based on the data
-       * from tomboy-ng.  Test with real Tomboy.
-      */
-      if (*end == '\n')
-        end--;
-
-      /* FIXME: Why do we need this to pass test? */
-      end--;
-    }
-
-  self->raw_content = g_strndup (start, end - start);
-
-  gn_xml_note_update_values (self, end);
-  return self;
+  return g_steal_pointer (&self);
 }
 
 /**
