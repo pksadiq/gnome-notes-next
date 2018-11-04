@@ -479,6 +479,9 @@ gn_xml_note_finalize (GObject *object)
   if (self->text_content)
     g_string_free (self->markup, TRUE);
 
+  xml_reader_free (self->xml_reader);
+  xml_doc_free (self->xml_doc);
+
   G_OBJECT_CLASS (gn_xml_note_parent_class)->finalize (object);
 
   GN_EXIT;
@@ -882,6 +885,8 @@ gn_xml_note_parse_xml (GnXmlNote *self)
               gn_xml_note_parse_as_bijiben (self, xml_reader);
             else
               gn_xml_note_parse_as_tomboy (self, xml_reader);
+
+            xml_reader_free (xml_reader);
           }
       }
 
@@ -904,6 +909,7 @@ gn_xml_note_create_from_data (const gchar *data)
   self = g_object_new (GN_TYPE_XML_NOTE, NULL);
 
   self->xml_reader = xml_reader_new (data, strlen (data));
+
   g_return_val_if_fail (self->xml_reader != NULL, NULL);
 
   /*
@@ -911,6 +917,7 @@ gn_xml_note_create_from_data (const gchar *data)
    * because we only use xml_reader_new()
    */
   self->xml_doc = xml_doc_new (data, strlen (data));
+
   g_return_val_if_fail (self->xml_doc != NULL, NULL);
 
   root_node = xml_doc_get_root_element (self->xml_doc);

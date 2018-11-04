@@ -32,6 +32,7 @@ G_BEGIN_DECLS
 
 #define xml_reader_new(_data, _size)   (xmlReaderForMemory (_data, _size, "", "UTF-8", \
                                                           XML_PARSE_RECOVER | XML_PARSE_NONET))
+#define xml_reader_free(_reader)       (xmlFreeTextReader (_reader))
 /* #define xml_reader_get_doc(_reader)    (xmlTextReaderCurrentDoc (_reader)) */
 
 #define xml_reader_read(_reader)           (xmlTextReaderRead (_reader))
