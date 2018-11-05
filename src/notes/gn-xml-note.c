@@ -780,6 +780,7 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
               if (g_str_equal (content, "br"))
                 g_string_append_c (self->markup, '\n');
               else if (!g_str_equal (content, "span") &&
+                       !g_str_equal (content, "div") &&
                        !g_str_equal (content, "body") &&
                        !g_str_equal (content, "html"))
                 g_string_append_printf (self->markup, "<%s>", content);
@@ -789,6 +790,7 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
         case XML_ELEMENT_DECL:
           if ((content = xml_reader_get_name (xml_reader)))
             if (!g_str_equal (content, "span") &&
+                !g_str_equal (content, "div") &&
                 !g_str_equal (content, "body") &&
                 !g_str_equal (content, "html"))
               g_string_append_printf (self->markup, "</%s>", content);
