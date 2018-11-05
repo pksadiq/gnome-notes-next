@@ -139,7 +139,7 @@ main (int   argc,
 
   g_test_add_func ("/note/xml/empty", test_xml_note_empty);
 
-  path = g_test_build_filename (G_TEST_DIST, "xml-note", NULL);
+  path = g_test_build_filename (G_TEST_DIST, "xml-notes", NULL);
   dir = g_dir_open (path, 0, &error);
   g_assert_no_error (error);
 
@@ -154,7 +154,7 @@ main (int   argc,
 
       test_path = g_strdup_printf ("/note/xml/parse/%s", file_name);
       g_test_add_data_func_full (test_path,
-                                 g_test_build_filename (G_TEST_DIST, "xml-note",
+                                 g_test_build_filename (G_TEST_DIST, "xml-notes",
                                                         file_name, NULL),
                                  test_xml_note_parse,
                                  g_free);
