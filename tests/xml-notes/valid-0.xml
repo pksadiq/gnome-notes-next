@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- Created using bijiben 3.30 -->
+<!-- TEST case: title only, no formatting -->
 <note version="1" xmlns:link="http://projects.gnome.org/bijiben/link" xmlns:size="http://projects.gnome.org/bijiben/size" xmlns="http://projects.gnome.org/bijiben">
   <title>Note with title only</title>
   <text xml:space="preserve"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" href="Default.css" type="text/css" /><script language="javascript" src="bijiben.js"></script></head><body contenteditable="true" id="editable" style="color: white;">Note with title only</body></html></text>

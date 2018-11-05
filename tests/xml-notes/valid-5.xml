@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Created using tomboy-ng -->
-<!-- TEST case: simple note, no formatting -->
+<!-- TEST case: title and content, no formatting -->
 <note version="0.3" xmlns:link="http://beatniksoftware.com/tomboy/link" xmlns:size="http://beatniksoftware.com/tomboy/size" xmlns="http://beatniksoftware.com/tomboy">
-  <title>This is a test note</title>
-  <text xml:space="preserve"><note-content version="0.1">This is a test note
-simply a test note
+  <title>Note Title</title>
+  <text xml:space="preserve"><note-content version="0.1">Note Title
+Note content
 </note-content></text>
   <last-change-date>2018-11-02T09:00:23.6670000+05:30</last-change-date>
   <last-metadata-change-date>2018-11-02T09:00:23.6670000+05:30</last-metadata-change-date>

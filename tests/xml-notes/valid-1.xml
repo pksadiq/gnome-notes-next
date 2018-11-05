@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Created using tomboy-ng -->
+<!-- TEST case: title only, no formatting -->
 <note version="0.3" xmlns:link="http://beatniksoftware.com/tomboy/link" xmlns:size="http://beatniksoftware.com/tomboy/size" xmlns="http://beatniksoftware.com/tomboy">
   <title>Note with title only</title>
   <text xml:space="preserve"><note-content version="0.1">Note with title only
