@@ -126,6 +126,46 @@ test_xml_note_parse (gconstpointer user_data)
   g_free (content);
 }
 
+static void
+test_xml_note_update_markup_from_file (const gchar *markup_file_name)
+{
+  g_autoptr(GError) error = NULL;
+  g_autofree gchar *file_name_prefix = NULL;
+  g_autofree gchar *file_name = NULL;
+  gchar *end;
+
+  g_assert_true (g_str_has_suffix (markup_file_name, ".markup"));
+  test_xml_note_free ();
+
+  file_name_prefix = g_strdup (markup_file_name);
+  end = strrchr (file_name_prefix, '.');
+  *end = '\0';
+
+  g_file_get_contents (markup_file_name, &test_note.markup, NULL, &error);
+  g_assert_no_error (error);
+
+  file_name = g_strconcat (file_name_prefix, ".xml", NULL);
+  g_file_get_contents (file_name, &test_note.file_content, NULL, &error);
+  g_assert_no_error (error);
+}
+
+static void
+test_xml_note_markup (gconstpointer user_data)
+{
+  g_autoptr(GnXmlNote) xml_note = NULL;
+  GnNote *note;
+  g_autofree gchar *markup = NULL;
+
+  test_xml_note_update_markup_from_file (user_data);
+
+  xml_note = gn_xml_note_new_from_data (test_note.file_content);
+  g_assert_true (GN_IS_XML_NOTE (xml_note));
+  note = GN_NOTE (xml_note);
+
+  markup = gn_note_get_markup (note);
+  g_assert_cmpstr (markup, ==, test_note.markup);
+}
+
 int
 main (int   argc,
       char *argv[])
@@ -156,6 +196,23 @@ main (int   argc,
       g_test_add_data_func_full (test_path,
                                  g_build_filename (path, file_name, NULL),
                                  test_xml_note_parse,
+                                 g_free);
+    }
+
+  g_assert_cmpint (errno, ==, 0);
+  g_dir_rewind (dir);
+
+  while ((file_name = g_dir_read_name (dir)) != NULL)
+    {
+      g_autofree gchar *test_path = NULL;
+
+      if (!g_str_has_suffix (file_name, ".markup"))
+        continue;
+
+      test_path = g_strdup_printf ("/note/xml/markup/%s", file_name);
+      g_test_add_data_func_full (test_path,
+                                 g_build_filename (path, file_name, NULL),
+                                 test_xml_note_markup,
                                  g_free);
     }
 
