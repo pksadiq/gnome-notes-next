@@ -1,19 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!-- Created using bijiben 3.30 -->
-<!-- TEST case: simple note, no formatting -->
-<note version="1" xmlns:link="http://projects.gnome.org/bijiben/link" xmlns:size="http://projects.gnome.org/bijiben/size" xmlns="http://projects.gnome.org/bijiben">
-  <title>This is a test note</title>
-  <text xml:space="preserve"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" href="Default.css" type="text/css" /><script language="javascript" src="bijiben.js"></script></head><body contenteditable="true" id="editable" style="color: white;">This is a test note<div>simply a test note</div></body></html></text>
-  <last-change-date>2018-11-02T05:49:37Z</last-change-date>
-  <last-metadata-change-date>2018-11-02T05:49:30Z</last-metadata-change-date>
-  <create-date>2018-11-02T05:49:04Z</create-date>
-  <cursor-position>0</cursor-position>
-  <selection-bound-position>0</selection-bound-position>
-  <width>0</width>
-  <height>0</height>
+<?xml version="1.0" encoding="utf-8"?>
+<note version="0.3" xmlns:link="http://beatniksoftware.com/tomboy/link" xmlns:size="http://beatniksoftware.com/tomboy/size" xmlns="http://beatniksoftware.com/tomboy">
+  <title>Note with title only</title>
+  <text xml:space="preserve"><note-content version="0.1">Note with title only
+</note-content></text>
+  <last-change-date>2018-11-02T14:19:57.3370000+05:30</last-change-date>
+  <last-metadata-change-date>2018-11-02T14:19:57.3370000+05:30</last-metadata-change-date>
+  <create-date>2018-11-02T14:19:57.3370000+05:30</create-date>
+  <cursor-position>1</cursor-position>
+  <selection-bound-position>1</selection-bound-position>
+  <width>1000</width>
+  <height>626</height>
   <x>0</x>
   <y>0</y>
-  <color>rgb(150,12,12)</color>
- <tags/>
   <open-on-startup>False</open-on-startup>
- </note>
+</note>
