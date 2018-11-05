@@ -72,8 +72,10 @@ test_xml_note_empty (void)
 static void
 test_xml_note_update_from_file (const gchar *xml_file_name)
 {
+  g_auto(GStrv) split_content = NULL;
   g_autoptr(GError) error = NULL;
   g_autofree gchar *file_name_prefix = NULL;
+  g_autofree gchar *content = NULL;
   gchar *file_name;
   gchar *end;
 
@@ -87,19 +89,17 @@ test_xml_note_update_from_file (const gchar *xml_file_name)
   g_file_get_contents (xml_file_name, &test_note.file_content, NULL, &error);
   g_assert_no_error (error);
 
-  file_name = g_strconcat (file_name_prefix, ".title", NULL);
-  g_file_get_contents (file_name, &test_note.title, NULL, &error);
-  g_free (file_name);
-  g_assert_no_error (error);
-
   file_name = g_strconcat (file_name_prefix, ".content", NULL);
-  g_file_get_contents (file_name, &test_note.text_content, NULL, &error);
+  g_file_get_contents (file_name, &content, NULL, &error);
   g_free (file_name);
   g_assert_no_error (error);
 
-  /* We use NULL to refer empty content */
-  if (*test_note.text_content == '\0')
-    g_clear_pointer (&test_note.text_content, g_free);
+  /* We shall have at most 2 parts: title and content */
+  split_content = g_strsplit (content, "\n", 2);
+
+  test_note.title = g_strdup (split_content[0]);
+  if (test_note.title)
+    test_note.text_content = g_strdup (split_content[1]);
 }
 
 static void
