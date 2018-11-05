@@ -70,7 +70,7 @@ test_xml_note_empty (void)
 }
 
 static void
-test_xml_note_update_from_file (const gchar *xml_file_name)
+test_xml_note_update_content_from_file (const gchar *xml_file_name)
 {
   g_auto(GStrv) split_content = NULL;
   g_autoptr(GError) error = NULL;
@@ -111,7 +111,7 @@ test_xml_note_parse (gconstpointer user_data)
   const gchar *title;
   gchar *content;
 
-  test_xml_note_update_from_file (user_data);
+  test_xml_note_update_content_from_file (user_data);
 
   xml_note = gn_xml_note_new_from_data (test_note.file_content);
   g_assert_true (GN_IS_XML_NOTE (xml_note));
