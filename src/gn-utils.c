@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <stdio.h>
+
 #include "gn-utils.h"
 #include "gn-trace.h"
 
@@ -487,4 +489,23 @@ gn_utils_get_item_position (GListModel *model,
     }
 
   return FALSE;
+}
+
+/**
+ * gn_utils_unix_time_to_iso:
+ * @unix_time: seconds since Epoch
+ *
+ * Get ISO8601 string representing the given @unix_time.
+ * @unix_time is assumed to be in UTC.
+ *
+ * Returns: A new string.  Free with g_free().
+ */
+gchar *
+gn_utils_unix_time_to_iso (gint64 unix_time)
+{
+  g_autoptr (GDateTime) date_time = NULL;
+
+  date_time = g_date_time_new_from_unix_utc (unix_time);
+
+  return g_date_time_format (date_time, "%FT%TZ");
 }

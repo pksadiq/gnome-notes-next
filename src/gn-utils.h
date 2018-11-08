@@ -35,5 +35,6 @@ const gchar *gn_utils_get_other_view_type    (const gchar *view);
 gboolean     gn_utils_get_item_position      (GListModel *model,
                                               gpointer    item,
                                               guint      *position);
+gchar       *gn_utils_unix_time_to_iso       (gint64      unix_time);
 
 G_END_DECLS
