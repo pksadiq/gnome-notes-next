@@ -29,6 +29,7 @@ struct Note
   gchar *text_content;
   gchar *raw_content;
   gchar *markup;
+  GList *notebooks;
   GnFeature features;
   GdkRGBA rgba;
   gint64 creation_time;
@@ -90,6 +91,22 @@ test_xml_note_update_content_from_file (const gchar *xml_file_name)
   g_file_get_contents (xml_file_name, &test_note.file_content, NULL, &error);
   g_assert_no_error (error);
 
+  start = strstr (test_note.file_content, "<create-date>");
+  g_assert_true (start != NULL);
+  start = start + strlen ("<create-date>");
+
+  end = strstr (start, "</create-date>");
+  g_assert_true (end != NULL);
+
+  str = g_strndup (start, end - start);
+  date_time = g_date_time_new_from_iso8601 (str, NULL);
+  g_free (str);
+  g_assert_true (date_time != NULL);
+
+  test_note.creation_time = g_date_time_to_unix (date_time);
+  g_date_time_unref (date_time);
+  g_assert_cmpint (test_note.creation_time, >, 0);
+
   start = strstr (test_note.file_content, "<last-change-date>");
   g_assert_true (start != NULL);
   start = start + strlen ("<last-change-date>");
@@ -140,7 +157,7 @@ test_xml_note_parse (gconstpointer user_data)
   const gchar *title;
   gchar *content;
   GdkRGBA rgba;
-  guint64 modification_time;
+  guint64 modification_time, creation_time;
 
   test_xml_note_update_content_from_file (user_data);
 
@@ -159,6 +176,10 @@ test_xml_note_parse (gconstpointer user_data)
   modification_time = gn_item_get_modification_time (item);
   g_assert_cmpint (modification_time, >, 0);
   g_assert_cmpint (modification_time, ==, test_note.modification_time);
+
+  creation_time = gn_item_get_creation_time (item);
+  g_assert_cmpint (creation_time, >, 0);
+  g_assert_cmpint (creation_time, ==, test_note.creation_time);
 
   if (gn_item_get_rgba (item, &rgba))
     g_assert_true (gdk_rgba_equal (&test_note.rgba, &rgba));
