@@ -22,6 +22,7 @@
 
 #include <glib-object.h>
 #include <libxml/xmlreader.h>
+#include <libxml/xmlwriter.h>
 
 G_BEGIN_DECLS
 
@@ -99,6 +100,79 @@ static inline gchar *
 xml_reader_dup_string (xmlTextReader *reader)
 {
   return (gchar *)xmlTextReaderReadString (reader);
+}
+
+static inline xmlBuffer *
+xml_buffer_new (void)
+{
+  return xmlBufferCreate ();
+}
+
+static inline xmlTextWriter *
+xml_writer_new (xmlBuffer *buffer)
+{
+  return xmlNewTextWriterMemory (buffer, 0);
+}
+
+static inline gint
+xml_writer_start_doc (xmlTextWriter *writer)
+{
+  return xmlTextWriterStartDocument (writer, "1.0", "utf-8", NULL);
+}
+
+static inline gint
+xml_writer_start_tag (xmlTextWriter *writer,
+                      const gchar   *tag)
+{
+  return xmlTextWriterStartElement (writer, (const xmlChar *)tag);
+}
+
+static inline gint
+xml_writer_end_tag (xmlTextWriter *writer)
+{
+  return xmlTextWriterEndElement (writer);
+}
+
+static inline gint
+xml_writer_write_raw (xmlTextWriter *writer,
+                      const gchar   *str)
+{
+  return xmlTextWriterWriteRaw (writer, (const xmlChar *)str);
+}
+
+static inline gint
+xml_writer_write_string (xmlTextWriter *writer,
+                         const gchar   *str)
+{
+  return xmlTextWriterWriteString (writer, (const xmlChar *)str);
+}
+
+static inline void
+xml_writer_add_tag (xmlTextWriter *writer,
+                    const gchar   *tag_name,
+                    const gchar   *content)
+{
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_start_tag (writer, tag_name);
+  xml_writer_write_string (writer, content);
+  xml_writer_end_tag (writer);
+}
+
+static inline gint
+xml_writer_write_attribute (xmlTextWriter *writer,
+                            const gchar   *prefix,
+                            const gchar   *name,
+                            const gchar   *content)
+{
+  return xmlTextWriterWriteAttributeNS (writer, (const xmlChar *)prefix,
+                                        (const xmlChar *)name, NULL,
+                                        (const xmlChar *)content);
+}
+
+static inline gint
+xml_writer_end_doc (xmlTextWriter *writer)
+{
+  return xmlTextWriterEndDocument (writer);
 }
 
 G_END_DECLS
