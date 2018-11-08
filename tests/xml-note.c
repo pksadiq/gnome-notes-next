@@ -106,6 +106,18 @@ test_xml_note_update_content_from_file (const gchar *xml_file_name)
   g_date_time_unref (date_time);
   g_assert_cmpint (test_note.modification_time, >, 0);
 
+  start = strstr (test_note.file_content, "<color>");
+  if (start != NULL)
+    {
+      start = start + strlen ("<color>");
+
+      end = strstr (start, "</color>");
+      g_assert_true (end != NULL);
+
+      str = g_strndup (start, end - start);
+      g_assert_true (gdk_rgba_parse (&test_note.rgba, str));
+    }
+
   file_name = g_strconcat (file_name_prefix, ".content", NULL);
   g_file_get_contents (file_name, &content, NULL, &error);
   g_free (file_name);
@@ -127,6 +139,7 @@ test_xml_note_parse (gconstpointer user_data)
   GnItem *item;
   const gchar *title;
   gchar *content;
+  GdkRGBA rgba;
   guint64 modification_time;
 
   test_xml_note_update_content_from_file (user_data);
@@ -146,6 +159,9 @@ test_xml_note_parse (gconstpointer user_data)
   modification_time = gn_item_get_modification_time (item);
   g_assert_cmpint (modification_time, >, 0);
   g_assert_cmpint (modification_time, ==, test_note.modification_time);
+
+  if (gn_item_get_rgba (item, &rgba))
+    g_assert_true (gdk_rgba_equal (&test_note.rgba, &rgba));
 }
 
 static void
