@@ -884,6 +884,22 @@ gn_xml_note_parse_xml (GnXmlNote *self)
             g_object_set (G_OBJECT (self), "modification-time",
                           modification_time, NULL);
           }
+        else if (g_strcmp0 (tag, "color") == 0)
+          {
+            GdkRGBA rgba;
+
+            content = xml_reader_dup_string (self->xml_reader);
+            if (content == NULL)
+              continue;
+
+            if (!gdk_rgba_parse (&rgba, content))
+              {
+                g_warning ("Failed to parse color: %s", content);
+                continue;
+              }
+
+            gn_item_set_rgba (GN_ITEM (self), &rgba);
+          }
         else if (g_strcmp0 (tag, "text") == 0)
           {
             gchar *inner_xml;
