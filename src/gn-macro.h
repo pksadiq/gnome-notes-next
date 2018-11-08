@@ -25,20 +25,80 @@
 
 G_BEGIN_DECLS
 
-#define xml_doc_new(_data, _size)      (xmlReadMemory (_data, _size, "", "UTF-8", \
-                                                       XML_PARSE_RECOVER | XML_PARSE_NONET))
-#define xml_doc_free(_doc)             (xmlFreeDoc (_doc))
-#define xml_doc_get_root_element(_doc) (xmlDocGetRootElement (_doc))
+static inline xmlDoc *
+xml_doc_new (const gchar *data,
+             gint         size)
+{
+  return xmlReadMemory (data, size , "", "utf-8",
+                        XML_PARSE_RECOVER | XML_PARSE_NONET);
+}
 
-#define xml_reader_new(_data, _size)   (xmlReaderForMemory (_data, _size, "", "UTF-8", \
-                                                          XML_PARSE_RECOVER | XML_PARSE_NONET))
-#define xml_reader_free(_reader)       (xmlFreeTextReader (_reader))
-/* #define xml_reader_get_doc(_reader)    (xmlTextReaderCurrentDoc (_reader)) */
+static inline void
+xml_doc_free (xmlDoc *doc)
+{
+  xmlFreeDoc (doc);
+}
 
-#define xml_reader_read(_reader)           (xmlTextReaderRead (_reader))
-#define xml_reader_dup_inner_xml(_reader)  ((gchar *)xmlTextReaderReadInnerXml (_reader))
-#define xml_reader_get_node_type(_reader)  (xmlTextReaderNodeType (_reader))
-#define xml_reader_get_name(_reader)       ((const gchar *)xmlTextReaderConstName (_reader))
-#define xml_reader_get_value(_reader)      ((const gchar *)xmlTextReaderConstValue (_reader))
-#define xml_reader_dup_string(_reader)     ((gchar *)xmlTextReaderReadString (_reader))
+static inline xmlNode *
+xml_doc_get_root_element (xmlDoc *doc)
+{
+  return xmlDocGetRootElement (doc);
+}
+
+static inline xmlTextReader *
+xml_reader_new (const gchar *data,
+                gint         size)
+{
+  return xmlReaderForMemory (data, size, "", "utf-8",
+                             XML_PARSE_RECOVER | XML_PARSE_NONET);
+}
+
+static inline void
+xml_reader_free (xmlTextReader *reader)
+{
+  xmlFreeTextReader (reader);
+}
+
+static inline gint
+xml_reader_read (xmlTextReader *reader)
+{
+  return xmlTextReaderRead (reader);
+}
+
+static inline xmlDoc *
+xml_reader_get_doc (xmlTextReader *reader)
+{
+  return xmlTextReaderCurrentDoc (reader);
+}
+
+static inline const gchar *
+xml_reader_get_name (xmlTextReader *reader)
+{
+  return (const gchar *)xmlTextReaderConstName (reader);
+}
+
+static inline const gchar *
+xml_reader_get_value (xmlTextReader *reader)
+{
+  return (const gchar *)xmlTextReaderConstValue (reader);
+}
+
+static inline gint
+xml_reader_get_node_type (xmlTextReader *reader)
+{
+  return xmlTextReaderNodeType (reader);
+}
+
+static inline gchar *
+xml_reader_dup_inner_xml (xmlTextReader *reader)
+{
+  return (gchar *)xmlTextReaderReadInnerXml (reader);
+}
+
+static inline gchar *
+xml_reader_dup_string (xmlTextReader *reader)
+{
+  return (gchar *)xmlTextReaderReadString (reader);
+}
+
 G_END_DECLS
