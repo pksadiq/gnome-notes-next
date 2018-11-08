@@ -902,6 +902,20 @@ gn_xml_note_parse_xml (GnXmlNote *self)
             g_object_set (G_OBJECT (self), "modification-time",
                           modification_time, NULL);
           }
+        else if (g_strcmp0 (tag, "last-metadata-change-date") == 0)
+          {
+            GDateTime *date_time;
+            gint64 modification_time;
+
+            content = xml_reader_dup_string (self->xml_reader);
+            if (content == NULL)
+              continue;
+
+            date_time = g_date_time_new_from_iso8601 (content, NULL);
+            modification_time = g_date_time_to_unix (date_time);
+            g_object_set (G_OBJECT (self), "meta-modification-time",
+                          modification_time, NULL);
+          }
         else if (g_strcmp0 (tag, "color") == 0)
           {
             GdkRGBA rgba;
