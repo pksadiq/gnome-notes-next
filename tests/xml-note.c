@@ -76,8 +76,9 @@ test_xml_note_update_content_from_file (const gchar *xml_file_name)
   g_autoptr(GError) error = NULL;
   g_autofree gchar *file_name_prefix = NULL;
   g_autofree gchar *content = NULL;
+  GDateTime *date_time;
   gchar *file_name;
-  gchar *end;
+  gchar *start, *end, *str;
 
   g_assert_true (g_str_has_suffix (xml_file_name, ".xml"));
   test_xml_note_free ();
@@ -88,6 +89,22 @@ test_xml_note_update_content_from_file (const gchar *xml_file_name)
 
   g_file_get_contents (xml_file_name, &test_note.file_content, NULL, &error);
   g_assert_no_error (error);
+
+  start = strstr (test_note.file_content, "<last-change-date>");
+  g_assert_true (start != NULL);
+  start = start + strlen ("<last-change-date>");
+
+  end = strstr (start, "</last-change-date>");
+  g_assert_true (end != NULL);
+
+  str = g_strndup (start, end - start);
+  date_time = g_date_time_new_from_iso8601 (str, NULL);
+  g_free (str);
+  g_assert_true (date_time != NULL);
+
+  test_note.modification_time = g_date_time_to_unix (date_time);
+  g_date_time_unref (date_time);
+  g_assert_cmpint (test_note.modification_time, >, 0);
 
   file_name = g_strconcat (file_name_prefix, ".content", NULL);
   g_file_get_contents (file_name, &content, NULL, &error);
@@ -110,6 +127,7 @@ test_xml_note_parse (gconstpointer user_data)
   GnItem *item;
   const gchar *title;
   gchar *content;
+  guint64 modification_time;
 
   test_xml_note_update_content_from_file (user_data);
 
@@ -124,6 +142,10 @@ test_xml_note_parse (gconstpointer user_data)
   content = gn_note_get_text_content (note);
   g_assert_cmpstr (content, ==, test_note.text_content);
   g_free (content);
+
+  modification_time = gn_item_get_modification_time (item);
+  g_assert_cmpint (modification_time, >, 0);
+  g_assert_cmpint (modification_time, ==, test_note.modification_time);
 }
 
 static void
