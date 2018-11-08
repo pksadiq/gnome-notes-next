@@ -34,6 +34,7 @@ struct Note
   GdkRGBA rgba;
   gint64 creation_time;
   gint64 modification_time;
+  gint64 meta_modification_time;
 } test_note;
 
 static void
@@ -123,6 +124,22 @@ test_xml_note_update_content_from_file (const gchar *xml_file_name)
   g_date_time_unref (date_time);
   g_assert_cmpint (test_note.modification_time, >, 0);
 
+  start = strstr (test_note.file_content, "<last-metadata-change-date>");
+  g_assert_true (start != NULL);
+  start = start + strlen ("<last-metadata-change-date>");
+
+  end = strstr (start, "</last-metadata-change-date>");
+  g_assert_true (end != NULL);
+
+  str = g_strndup (start, end - start);
+  date_time = g_date_time_new_from_iso8601 (str, NULL);
+  g_free (str);
+  g_assert_true (date_time != NULL);
+
+  test_note.meta_modification_time = g_date_time_to_unix (date_time);
+  g_date_time_unref (date_time);
+  g_assert_cmpint (test_note.modification_time, >, 0);
+
   start = strstr (test_note.file_content, "<color>");
   if (start != NULL)
     {
@@ -176,6 +193,10 @@ test_xml_note_parse (gconstpointer user_data)
   modification_time = gn_item_get_modification_time (item);
   g_assert_cmpint (modification_time, >, 0);
   g_assert_cmpint (modification_time, ==, test_note.modification_time);
+
+  modification_time = gn_item_get_meta_modification_time (item);
+  g_assert_cmpint (modification_time, >, 0);
+  g_assert_cmpint (modification_time, ==, test_note.meta_modification_time);
 
   creation_time = gn_item_get_creation_time (item);
   g_assert_cmpint (creation_time, >, 0);
