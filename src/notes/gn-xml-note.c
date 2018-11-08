@@ -70,6 +70,7 @@ struct _GnXmlNote
   GString *text_content;
   GString *markup;
   gchar   *title;
+  GHashTable *labels;
 
   /* TRUE: Bijiben XML.  FALSE: Tomboy XML */
   gboolean is_bijiben;
@@ -474,6 +475,7 @@ gn_xml_note_finalize (GObject *object)
 
   g_free (self->title);
   g_free (self->raw_content);
+  g_hash_table_destroy (self->labels);
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
   if (self->markup)
@@ -634,6 +636,8 @@ gn_xml_note_init (GnXmlNote *self)
 {
   self->text_content = g_string_new ("");
   self->markup = g_string_new ("");
+  self->labels = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                        g_free, NULL);
   self->is_bijiben = TRUE;
 }
 
@@ -899,6 +903,21 @@ gn_xml_note_parse_xml (GnXmlNote *self)
               }
 
             gn_item_set_rgba (GN_ITEM (self), &rgba);
+          }
+        else if (g_strcmp0 (tag, "tag") == 0)
+          {
+            content = xml_reader_dup_string (self->xml_reader);
+
+            if (content == NULL ||
+                g_str_has_prefix (content, "system:template"))
+              continue;
+
+            if (g_str_has_prefix (content, "system:notebook:"))
+              {
+                gchar *label = content + strlen ("system:notebook:");
+
+                g_hash_table_add (self->labels, g_strdup (label));
+              }
           }
         else if (g_strcmp0 (tag, "text") == 0)
           {
