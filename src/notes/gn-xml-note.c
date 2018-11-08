@@ -874,6 +874,20 @@ gn_xml_note_parse_xml (GnXmlNote *self)
             gn_item_set_title (GN_ITEM (self), content);
             g_string_append_printf (self->markup, "<b>%s</b>\n", content);
           }
+        else if (g_strcmp0 (tag, "create-date") == 0)
+          {
+            GDateTime *date_time;
+            gint64 creation_time;
+
+            content = xml_reader_dup_string (self->xml_reader);
+            if (content == NULL)
+              continue;
+
+            date_time = g_date_time_new_from_iso8601 (content, NULL);
+            creation_time = g_date_time_to_unix (date_time);
+            g_object_set (G_OBJECT (self), "creation-time",
+                          creation_time, NULL);
+          }
         else if (g_strcmp0 (tag, "last-change-date") == 0)
           {
             GDateTime *date_time;
