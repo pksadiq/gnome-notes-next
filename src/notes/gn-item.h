@@ -57,6 +57,7 @@ void         gn_item_set_rgba              (GnItem        *self,
 
 gint64       gn_item_get_creation_time     (GnItem        *self);
 gint64       gn_item_get_modification_time (GnItem        *self);
+gint64       gn_item_get_meta_modification_time (GnItem        *self);
 
 gboolean     gn_item_is_modified           (GnItem        *self);
 void         gn_item_unset_modified        (GnItem        *self);

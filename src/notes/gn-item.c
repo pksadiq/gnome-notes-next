@@ -43,6 +43,7 @@ typedef struct
 
   /* The last modified time of the item */
   gint64 modification_time;
+  gint64 meta_modification_time;
 
   /* The creation time of the item */
   gint64 creation_time;
@@ -58,6 +59,7 @@ enum {
   PROP_RGBA,
   PROP_CREATION_TIME,
   PROP_MODIFICATION_TIME,
+  PROP_META_MODIFICATION_TIME,
   PROP_MODIFIED,
   N_PROPS
 };
@@ -95,6 +97,10 @@ gn_item_get_property (GObject    *object,
       g_value_set_int64 (value, priv->modification_time);
       break;
 
+    case PROP_META_MODIFICATION_TIME:
+      g_value_set_int64 (value, priv->meta_modification_time);
+      break;
+
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -129,6 +135,10 @@ gn_item_set_property (GObject      *object,
 
     case PROP_MODIFICATION_TIME:
       priv->modification_time = g_value_get_int64 (value);
+      break;
+
+    case PROP_META_MODIFICATION_TIME:
+      priv->meta_modification_time = g_value_get_int64 (value);
       break;
 
     case PROP_MODIFIED:
@@ -279,6 +289,17 @@ gn_item_class_init (GnItemClass *klass)
     g_param_spec_int64 ("modification-time",
                         "Modification Time",
                         "The Unix time in seconds the item was last modified",
+                        0, G_MAXINT64, 0,
+                        G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
+
+  /**
+   * GnItem:meta-modification-time:
+   *
+   */
+  properties[PROP_META_MODIFICATION_TIME] =
+    g_param_spec_int64 ("meta-modification-time",
+                        "Metadata Modification Time",
+                        "The Unix time in seconds the item meta-data was last modified",
                         0, G_MAXINT64, 0,
                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
@@ -518,6 +539,28 @@ gn_item_get_modification_time (GnItem *self)
   g_return_val_if_fail (GN_IS_ITEM (self), 0);
 
   return priv->modification_time;
+}
+
+/**
+ * gn_item_get_meta_modification_time:
+ * @self: a #GnItem
+ *
+ * Get the meta-data (eg: color, tag, etc.) modification
+ * time of the item.
+ *
+ * see gn_item_get_modification_time() for details.
+ *
+ * Returns: a signed integer representing metadata
+ * modification time
+ */
+gint64
+gn_item_get_meta_modification_time (GnItem *self)
+{
+  GnItemPrivate *priv = gn_item_get_instance_private (self);
+
+  g_return_val_if_fail (GN_IS_ITEM (self), 0);
+
+  return priv->meta_modification_time;
 }
 
 /**
