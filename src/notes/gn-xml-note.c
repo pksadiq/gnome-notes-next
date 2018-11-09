@@ -664,12 +664,12 @@ gn_xml_note_get_raw_content (GnNote *note)
   if (self->raw_content == NULL)
     {
       g_autofree gchar *content = NULL;
-      gn_xml_note_update_raw_xml (self);
 
       if (self->raw_inner_xml == NULL ||
           *self->raw_inner_xml == '\0')
         return NULL;
 
+      gn_xml_note_update_raw_xml (self);
       content = gn_note_get_text_content (GN_NOTE (self));
 
       if (content)
