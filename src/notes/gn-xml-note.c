@@ -129,7 +129,7 @@ gn_xml_note_get_buffer (GnNote *note)
 
   g_assert (GN_IS_XML_NOTE (self));
 
-  start = end= self->raw_content;
+  start = end = self->raw_inner_xml;
   buffer = GTK_TEXT_BUFFER (gn_note_buffer_new ());
 
   if (start == NULL)
