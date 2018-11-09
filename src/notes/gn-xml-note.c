@@ -66,7 +66,10 @@ struct _GnXmlNote
 
   xmlTextReader *xml_reader;
   xmlDoc  *xml_doc;
-  gchar   *raw_content;
+  xmlBuffer *xml_buffer;
+  xmlTextWriter *xml_writer;
+  gchar   *raw_inner_xml; /* xml data of the <text> tag */
+  gchar   *raw_content;   /* full xml data that will be saved as file */
   GString *text_content;
   GString *markup;
   gchar   *title;
@@ -311,6 +314,141 @@ gn_xml_note_close_tag (GnXmlNote    *self,
 }
 
 static void
+gn_xml_note_update_raw_xml (GnXmlNote *self)
+{
+  xmlTextWriter *writer;
+  GnItem *item;
+  gchar *str;
+  GdkRGBA rgba;
+  gint64 unix_time;
+
+  g_assert (GN_IS_XML_NOTE (self));
+
+  if (self->raw_inner_xml == NULL ||
+      *self->raw_inner_xml == '\0')
+    return;
+
+  self->xml_buffer = xml_buffer_new ();
+  self->xml_writer = xml_writer_new (self->xml_buffer);
+  writer = self->xml_writer;
+  item = GN_ITEM (self);
+
+  xml_writer_start_doc (writer);
+  xml_writer_start_tag (writer, "note");
+  xml_writer_write_attribute (writer, NULL, "version", "1");
+  xml_writer_write_attribute (writer, "xmlns", "link",
+                              BIJIBEN_XML_NS "/link");
+  xml_writer_write_attribute (writer, "xmlns", "size",
+                              BIJIBEN_XML_NS "/size");
+  xml_writer_write_attribute (writer, NULL, "xmlns",
+                              BIJIBEN_XML_NS);
+
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "title",
+                      gn_item_get_title (GN_ITEM (self)));
+
+  unix_time = gn_item_get_modification_time (item);
+  str = gn_utils_unix_time_to_iso (unix_time);
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "last-change-date", str);
+  g_free (str);
+
+  unix_time = gn_item_get_meta_modification_time (item);
+  str = gn_utils_unix_time_to_iso (unix_time);
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "last-metadata-change-date", str);
+  g_free (str);
+
+  unix_time = gn_item_get_creation_time (item);
+  str = gn_utils_unix_time_to_iso (unix_time);
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "create-date", str);
+  g_free (str);
+
+  /* XXX: Just for backward compatibility */
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "cursor-position", "0");
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "selection-bound-position", "0");
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "width", "0");
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "height", "0");
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "x", "0");
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "y", "0");
+
+  if (gn_item_get_rgba (item, &rgba))
+    {
+      str = gdk_rgba_to_string (&rgba);
+      xml_writer_write_raw (writer, "\n");
+      xml_writer_add_tag (writer, "color", str);
+    }
+
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_start_tag (writer, "tags");
+
+  if (g_hash_table_size (self->labels) > 0)
+    {
+      GList *labels = g_hash_table_get_keys (self->labels);
+
+      for (GList *node = labels; node != NULL; node = node->next)
+        {
+          g_autofree gchar *label = g_strconcat ("system:notebook:",
+                                                 node->data, NULL);
+          xml_writer_write_raw (writer, "\n");
+          xml_writer_add_tag (writer, "tag", label);
+        }
+    }
+
+  xml_writer_end_tag (writer);
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_add_tag (writer, "open-on-startup", "False");
+
+  xml_writer_write_raw (writer, "\n");
+  xml_writer_start_tag (writer, "text");
+  xml_writer_write_attribute (writer, "xml", "space", "preserve");
+
+  /*
+   * XXX: Much of these are simply to keep backward compatibility.
+   * We have no use of these tags anymore.
+   */
+  xml_writer_start_tag (writer, "html");
+  xml_writer_write_attribute (writer, NULL, "xmlns",
+                              "http://www.w3.org/1999/xhtml");
+
+  xml_writer_start_tag (writer, "head");
+  xml_writer_write_raw (writer,
+                        "<link rel=\"stylesheet\" href=\"Default.css\" "
+                        "type=\"text/css\"/><script language=\"javascript\""
+                        " src=\"bijiben.js\"></script>");
+  xml_writer_end_tag (writer);
+
+  xml_writer_start_tag (writer, "body");
+  xml_writer_write_attribute (writer, NULL, "contenteditable", "true");
+  xml_writer_write_attribute (writer, NULL, "id", "editable");
+  xml_writer_write_attribute (writer, NULL, "style", "color: white;");
+
+  xml_writer_write_string (writer, gn_item_get_title (item));
+
+  gchar *content = gn_note_get_text_content (GN_NOTE (self));
+
+  if (content)
+    {
+      xml_writer_write_raw (writer, "<br/>");
+      xml_writer_write_string (writer, content);
+
+      g_free (content);
+    }
+
+  xml_writer_end_doc (writer);
+
+  self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
+  g_clear_pointer (&self->raw_inner_xml, g_free);
+}
+
+static void
 gn_xml_note_set_content_from_buffer (GnNote        *note,
                                      GtkTextBuffer *buffer)
 {
@@ -548,6 +686,9 @@ gn_xml_note_get_raw_content (GnNote *note)
   GnXmlNote *self = GN_XML_NOTE (note);
 
   g_assert (GN_IS_NOTE (note));
+
+  if (self->raw_content == NULL)
+    gn_xml_note_update_raw_xml (self);
 
   return g_strdup (self->raw_content);
 }
@@ -958,7 +1099,7 @@ gn_xml_note_parse_xml (GnXmlNote *self)
             xml_reader = xml_reader_new (inner_xml, strlen (inner_xml));
             g_return_if_fail (xml_reader != NULL);
 
-            self->raw_content = inner_xml;
+            self->raw_inner_xml = inner_xml;
 
             if (self->is_bijiben)
               gn_xml_note_parse_as_bijiben (self, xml_reader);
@@ -1001,6 +1142,8 @@ gn_xml_note_create_from_data (const gchar *data)
 
   root_node = xml_doc_get_root_element (self->xml_doc);
   g_return_val_if_fail (root_node != NULL, NULL);
+
+  /* self->raw_xml_data = g_strdup (data); */
 
   if (g_strcmp0 ((gchar *)root_node->ns->href, TOMBOY_XML_NS) == 0)
     self->is_bijiben = FALSE;
