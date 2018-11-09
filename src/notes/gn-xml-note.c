@@ -701,7 +701,12 @@ gn_xml_note_get_markup (GnNote *note)
 
   g_assert (GN_IS_NOTE (note));
 
-  return g_strdup (self->markup->str);
+
+  if (self->markup &&
+      self->markup->str)
+    return g_strdup (self->markup->str);
+
+  return g_strdup ("");
 }
 
 static const gchar *
