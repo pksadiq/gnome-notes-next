@@ -423,21 +423,6 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
   xml_writer_write_attribute (writer, NULL, "style", "color: white;");
 
   xml_writer_write_string (writer, gn_item_get_title (item));
-
-  gchar *content = gn_note_get_text_content (GN_NOTE (self));
-
-  if (content)
-    {
-      xml_writer_write_raw (writer, "<br/>");
-      xml_writer_write_string (writer, content);
-
-      g_free (content);
-    }
-
-  xml_writer_end_doc (writer);
-
-  self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
-  g_clear_pointer (&self->raw_inner_xml, g_free);
 }
 
 static void
@@ -677,7 +662,27 @@ gn_xml_note_get_raw_content (GnNote *note)
   g_assert (GN_IS_NOTE (note));
 
   if (self->raw_content == NULL)
-    gn_xml_note_update_raw_xml (self);
+    {
+      g_autofree gchar *content = NULL;
+      gn_xml_note_update_raw_xml (self);
+
+      if (self->raw_inner_xml == NULL ||
+          *self->raw_inner_xml == '\0')
+        return NULL;
+
+      content = gn_note_get_text_content (GN_NOTE (self));
+
+      if (content)
+        {
+          xml_writer_write_raw (self->xml_writer, "<br/>");
+          xml_writer_write_string (self->xml_writer, content);
+        }
+
+      xml_writer_end_doc (self->xml_writer);
+
+      self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
+      g_clear_pointer (&self->raw_inner_xml, g_free);
+    }
 
   return g_strdup (self->raw_content);
 }
