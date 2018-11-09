@@ -152,7 +152,6 @@ xml_writer_add_tag (xmlTextWriter *writer,
                     const gchar   *tag_name,
                     const gchar   *content)
 {
-  xml_writer_write_raw (writer, "\n");
   xml_writer_start_tag (writer, tag_name);
   xml_writer_write_string (writer, content);
   xml_writer_end_tag (writer);
