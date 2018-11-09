@@ -913,8 +913,11 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
 
           if (content)
             {
+              g_autofree gchar *markup = NULL;
+
               g_string_append (self->text_content, content);
-              g_string_append (self->markup, content);
+              markup = g_markup_escape_text (content, -1);
+              g_string_append (self->markup, markup);
             }
           break;
 
