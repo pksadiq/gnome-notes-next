@@ -835,7 +835,11 @@ static void
 gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
                               xmlTextReader *xml_reader)
 {
+  GQueue *tags_queue;
+
   g_assert (GN_IS_XML_NOTE (self));
+
+  tags_queue = g_queue_new ();
 
   /*
    * The text until the first <div> tag is the title
@@ -885,12 +889,10 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
 
   while (xml_reader_read (xml_reader) == 1)
     {
-      GQueue *tags_queue;
       const gchar *tag;
       const gchar *content;
       int type;
 
-      tags_queue = g_queue_new ();
       type = xml_reader_get_node_type (xml_reader);
       tag = xml_reader_get_name (xml_reader);
 
