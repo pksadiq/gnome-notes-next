@@ -4,13 +4,6 @@
 <last-change-date>2018-11-02T05:49:37Z</last-change-date>
 <last-metadata-change-date>2018-11-02T05:49:30Z</last-metadata-change-date>
 <create-date>2018-11-02T05:49:04Z</create-date>
-<cursor-position>0</cursor-position>
-<selection-bound-position>0</selection-bound-position>
-<width>0</width>
-<height>0</height>
-<x>0</x>
-<y>0</y>
 <color>rgb(150,12,12)</color>
-<tags/>
-<open-on-startup>False</open-on-startup>
-<text xml:space="preserve"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" href="Default.css" type="text/css"/><script language="javascript" src="bijiben.js"></script></head><body contenteditable="true" id="editable" style="color: white;">Note Title<br/>Note content</body></html></text></note>
+<text xml:space="preserve"><html xmlns="http://www.w3.org/1999/xhtml"><body>Note Title
+Note content</body></html></text></note>

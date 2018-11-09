@@ -353,20 +353,6 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
   xml_writer_add_tag (writer, "create-date", str);
   g_free (str);
 
-  /* XXX: Just for backward compatibility */
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "cursor-position", "0");
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "selection-bound-position", "0");
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "width", "0");
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "height", "0");
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "x", "0");
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "y", "0");
-
   if (gn_item_get_rgba (item, &rgba))
     {
       str = gdk_rgba_to_string (&rgba);
@@ -374,12 +360,12 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
       xml_writer_add_tag (writer, "color", str);
     }
 
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_start_tag (writer, "tags");
-
   if (g_hash_table_size (self->labels) > 0)
     {
       GList *labels = g_hash_table_get_keys (self->labels);
+
+      xml_writer_write_raw (writer, "\n");
+      xml_writer_start_tag (writer, "tags");
 
       for (GList *node = labels; node != NULL; node = node->next)
         {
@@ -389,10 +375,6 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
           xml_writer_add_tag (writer, "tag", label);
         }
     }
-
-  xml_writer_end_tag (writer);
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "open-on-startup", "False");
 
   xml_writer_write_raw (writer, "\n");
   xml_writer_start_tag (writer, "text");
@@ -406,18 +388,7 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
   xml_writer_write_attribute (writer, NULL, "xmlns",
                               "http://www.w3.org/1999/xhtml");
 
-  xml_writer_start_tag (writer, "head");
-  xml_writer_write_raw (writer,
-                        "<link rel=\"stylesheet\" href=\"Default.css\" "
-                        "type=\"text/css\"/><script language=\"javascript\""
-                        " src=\"bijiben.js\"></script>");
-  xml_writer_end_tag (writer);
-
   xml_writer_start_tag (writer, "body");
-  xml_writer_write_attribute (writer, NULL, "contenteditable", "true");
-  xml_writer_write_attribute (writer, NULL, "id", "editable");
-  xml_writer_write_attribute (writer, NULL, "style", "color: white;");
-
   xml_writer_write_string (writer, gn_item_get_title (item));
 }
 
@@ -456,7 +427,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   if (gtk_text_iter_get_line (&iter) == 0)
     goto end;
   else
-    xml_writer_write_raw (self->xml_writer, "<br/>\n");
+    xml_writer_write_raw (self->xml_writer, "\n");
 
   do
     {
@@ -464,9 +435,6 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
       GSList *node;
 
       c = gtk_text_iter_get_char (&iter);
-
-      if (c == '\n')
-        g_string_append (raw_content, "<br />");
 
       /* First, we have to handle tags that are closed */
       tags = gtk_text_iter_get_toggled_tags (&iter, FALSE);
@@ -618,7 +586,7 @@ gn_xml_note_get_raw_content (GnNote *note)
 
       if (content)
         {
-          xml_writer_write_raw (self->xml_writer, "<br/>");
+          xml_writer_write_raw (self->xml_writer, "\n");
           xml_writer_write_string (self->xml_writer, content);
         }
 
@@ -810,13 +778,11 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
       if (tag == NULL ||
           g_str_equal (tag, "div") ||
           g_str_equal (tag, "br"))
-        break;
+        {
+          g_string_append_c (self->markup, '\n');
+          break;
+        }
 
-      continue;
-      /*
-       * TODO: allow the code below when we break bijiben
-       * compatibility
-       */
       /*
        * If the value of the tag contain a '\n', the title
        * ends there, the rest of the value is the part of
@@ -833,8 +799,6 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
           if (content == NULL)
             continue;
 
-          /* Skip '\n' */
-          content++;
           g_string_append (self->text_content, content);
           g_string_append (self->markup, content);
           break;

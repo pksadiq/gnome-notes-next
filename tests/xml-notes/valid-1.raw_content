@@ -4,12 +4,4 @@
 <last-change-date>2018-11-02T08:49:57Z</last-change-date>
 <last-metadata-change-date>2018-11-02T08:49:57Z</last-metadata-change-date>
 <create-date>2018-11-02T08:49:57Z</create-date>
-<cursor-position>0</cursor-position>
-<selection-bound-position>0</selection-bound-position>
-<width>0</width>
-<height>0</height>
-<x>0</x>
-<y>0</y>
-<tags/>
-<open-on-startup>False</open-on-startup>
-<text xml:space="preserve"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" href="Default.css" type="text/css"/><script language="javascript" src="bijiben.js"></script></head><body contenteditable="true" id="editable" style="color: white;">Note with title only</body></html></text></note>
+<text xml:space="preserve"><html xmlns="http://www.w3.org/1999/xhtml"><body>Note with title only</body></html></text></note>
