@@ -456,7 +456,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   if (gtk_text_iter_get_line (&iter) == 0)
     goto end;
   else
-    xml_writer_write_raw (self->xml_writer, "\n");
+    xml_writer_write_raw (self->xml_writer, "<br/>");
 
   do
     {
