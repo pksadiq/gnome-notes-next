@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<note version="1" xmlns:link="http://projects.gnome.org/bijiben/link" xmlns:size="http://projects.gnome.org/bijiben/size" xmlns="http://projects.gnome.org/bijiben">
+<title>Note with title only</title>
+<last-change-date>2018-11-02T08:48:53Z</last-change-date>
+<last-metadata-change-date>2018-11-02T08:48:53Z</last-metadata-change-date>
+<create-date>2018-11-02T08:48:45Z</create-date>
+<cursor-position>0</cursor-position>
+<selection-bound-position>0</selection-bound-position>
+<width>0</width>
+<height>0</height>
+<x>0</x>
+<y>0</y>
+<color>rgb(150,12,12)</color>
+<tags/>
+<open-on-startup>False</open-on-startup>
+<text xml:space="preserve"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" href="Default.css" type="text/css"/><script language="javascript" src="bijiben.js"></script></head><body contenteditable="true" id="editable" style="color: white;">Note with title only</body></html></text></note>

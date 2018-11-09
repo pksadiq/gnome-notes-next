@@ -152,6 +152,11 @@ test_xml_note_update_content_from_file (const gchar *xml_file_name)
       g_assert_true (gdk_rgba_parse (&test_note.rgba, str));
     }
 
+  file_name = g_strconcat (file_name_prefix, ".raw_content", NULL);
+  /* This is allowed to fail */
+  g_file_get_contents (file_name, &test_note.raw_content, NULL, NULL);
+  g_free (file_name);
+
   file_name = g_strconcat (file_name_prefix, ".content", NULL);
   g_file_get_contents (file_name, &content, NULL, &error);
   g_free (file_name);
@@ -204,6 +209,11 @@ test_xml_note_parse (gconstpointer user_data)
 
   if (gn_item_get_rgba (item, &rgba))
     g_assert_true (gdk_rgba_equal (&test_note.rgba, &rgba));
+
+  content = gn_note_get_raw_content (note);
+  if (test_note.raw_content)
+    g_assert_cmpstr (content, ==, test_note.raw_content);
+  g_free (content);
 }
 
 static void
