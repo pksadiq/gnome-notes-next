@@ -316,10 +316,6 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
 
   g_assert (GN_IS_XML_NOTE (self));
 
-  if (self->raw_inner_xml == NULL ||
-      *self->raw_inner_xml == '\0')
-    return;
-
   self->xml_buffer = xml_buffer_new ();
   self->xml_writer = xml_writer_new (self->xml_buffer);
   writer = self->xml_writer;
@@ -433,10 +429,6 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   GQueue *tags_queue;
   GString *raw_content;
   g_autofree gchar *content = NULL;
-  GTimeVal time_val = {0, 0};
-  GdkRGBA rgba;
-  g_autofree gchar *color = NULL;
-  gchar *time_str;
   GtkTextIter start, end, iter;
   gunichar c;
 
@@ -451,29 +443,20 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   content = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
   gn_item_set_title (GN_ITEM (note), content);
 
-  /*
-   * FIXME: This is really bad.  May be we should use single quotes.
-   * Or better, may be we should use libxml or e_xml_document from eds.
-   * We don't require most of the tags used here.  But for compatibility
-   * with older Bijiben, we keep those as such.  May be we can remove
-   * them after 10 years from now (2018 May).
-   */
-  g_string_append (raw_content, COMMON_XML_HEAD "\n<note version=\"1\" "
-                   "xmlns:link=\"" BIJIBEN_XML_NS "/link\" "
-                   "xmlns:size=\"" BIJIBEN_XML_NS "/size\" "
-                   "xmlns=\""BIJIBEN_XML_NS"\">\n");
-  g_string_append_printf (raw_content, "<title>%s</title>\n", content);
-  g_string_append (raw_content,
-                   "<text xml:space=\"preserve\"><html "
-                   "xmlns=\"http://www.w3.org/1999/xhtml\">"
-                   "<head><link rel=\"stylesheet\" href=\"Default.css\" "
-                   "type=\"text/css\"/><script language=\"javascript\" "
-                   "src=\"bijiben.js\"/></head><body contenteditable=\"true\" "
-                   "id=\"editable\" style=\"color: black;\">");
+  gn_xml_note_update_raw_xml (self);
 
-  /* Temporarily disable "title" tag */
-  gtk_text_buffer_remove_tag_by_name (buffer, "title", &start, &end);
-  iter = start;
+  gtk_text_iter_forward_char (&end);
+  iter = start = end;
+
+  /*
+   * We moved one character past the last character in the title.
+   * And if we are still at line 0 (first line), it means we have
+   * no more content
+   */
+  if (gtk_text_iter_get_line (&iter) == 0)
+    goto end;
+  else
+    xml_writer_write_raw (self->xml_writer, "\n");
 
   do
     {
@@ -522,57 +505,18 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   g_queue_free (tags_queue);
 
-  g_string_append (raw_content, "</body></html></text>");
+  if (raw_content && raw_content->str)
+    xml_writer_write_raw (self->xml_writer, raw_content->str);
 
-  time_val.tv_sec = gn_item_get_modification_time (GN_ITEM (self));
-  time_str = g_time_val_to_iso8601 (&time_val);
-  g_string_append_printf (raw_content,
-                          "<last-change-date>%s</last-change-date>",
-                          time_str);
-  g_free (time_str);
+ end:
+  xml_writer_end_doc (self->xml_writer);
 
-  time_val.tv_sec = gn_item_get_modification_time (GN_ITEM (self));
-  time_str = g_time_val_to_iso8601 (&time_val);
-  g_string_append_printf (raw_content,
-                          "<last-metadata-change-date>%s"
-                          "</last-metadata-change-date>",
-                          time_str);
-  g_free (time_str);
+  self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
+  g_clear_pointer (&self->raw_inner_xml, g_free);
 
-  time_val.tv_sec = gn_item_get_creation_time (GN_ITEM (self));
-  time_str = g_time_val_to_iso8601 (&time_val);
-  g_string_append_printf (raw_content,
-                          "<create-date>%s</create-date>",
-                          time_str);
-  g_free (time_str);
-
-  g_string_append (raw_content, "<cursor-position>0</cursor-position>"
-                   "<selection-bound-position>0</selection-bound-position>"
-                   "<width>0</width>"
-                   "<height>0</height>"
-                   "<x>0</x>"
-                   "<y>0</y>");
-
-  gn_item_get_rgba (GN_ITEM (self), &rgba);
-  color = gdk_rgba_to_string (&rgba);
-  g_string_append_printf (raw_content, "<color>%s</color>", color);
-
-  g_string_append (raw_content, "<tags/>"
-                   "<open-on-startup>False</open-on-startup>"
-                   "</note>");
-
-  /* Add the removed "title" tag */
-  gtk_text_buffer_get_start_iter (buffer, &start);
-  gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
-  gtk_text_buffer_apply_tag_by_name (buffer, "title", &start, &end);
-
-  g_free (self->raw_content);
-  self->raw_content = g_string_free (raw_content, FALSE);
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
   self->text_content = NULL;
-  /* g_clear_pointer (&self->text_content, g_free); */
-  /* g_clear_pointer (&self->markup, g_free); */
   if (self->markup)
     g_string_free (self->markup, TRUE);
   self->markup = NULL;
