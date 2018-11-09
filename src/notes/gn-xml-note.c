@@ -1008,12 +1008,15 @@ gn_xml_note_parse_xml (GnXmlNote *self)
 
         if (g_strcmp0 (tag, "title") == 0)
           {
+            g_autofree gchar *markup = NULL;
+
             content = xml_reader_dup_string (self->xml_reader);
             if (content == NULL)
               continue;
 
             gn_item_set_title (GN_ITEM (self), content);
-            g_string_append_printf (self->markup, "<b>%s</b>\n", content);
+            markup = g_markup_printf_escaped ("<b>%s</b>\n", content);
+            g_string_append (self->markup, markup);
           }
         else if (g_strcmp0 (tag, "create-date") == 0)
           {
