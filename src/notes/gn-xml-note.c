@@ -885,10 +885,12 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
 
   while (xml_reader_read (xml_reader) == 1)
     {
+      GQueue *tags_queue;
       const gchar *tag;
       const gchar *content;
       int type;
 
+      tags_queue = g_queue_new ();
       type = xml_reader_get_node_type (xml_reader);
       tag = xml_reader_get_name (xml_reader);
 
@@ -920,7 +922,10 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
                        !g_str_equal (content, "div") &&
                        !g_str_equal (content, "body") &&
                        !g_str_equal (content, "html"))
-                g_string_append_printf (self->markup, "<%s>", content);
+                {
+                  g_queue_push_head (tags_queue, (gchar *)g_intern_string (tag));
+                  g_string_append_printf (self->markup, "<%s>", content);
+                }
             }
           break;
 
@@ -930,7 +935,7 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
                 !g_str_equal (content, "div") &&
                 !g_str_equal (content, "body") &&
                 !g_str_equal (content, "html"))
-              g_string_append_printf (self->markup, "</%s>", content);
+              gn_xml_note_close_tag (self, self->markup, content, tags_queue);
           break;
 
         default:
