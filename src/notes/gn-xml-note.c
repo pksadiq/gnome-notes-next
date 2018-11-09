@@ -261,24 +261,23 @@ gn_xml_note_get_buffer (GnNote *note)
 }
 
 static void
-gn_xml_note_close_tag (GnXmlNote    *self,
-                       GnNoteBuffer *note_buffer,
-                       GString      *raw_content,
-                       GtkTextTag   *tag,
-                       GQueue       *tags_queue)
+gn_xml_note_close_tag (GnXmlNote   *self,
+                       GString     *raw_content,
+                       const gchar *tag_name,
+                       GQueue      *tags_queue)
 {
   GList *last_tag;
   GList *node;
-  const gchar *tag_name;
 
   g_assert (GN_IS_XML_NOTE (self));
-  g_assert (GN_IS_NOTE_BUFFER (note_buffer));
   g_assert (raw_content != NULL);
-  g_assert (tag != NULL);
+  g_assert (tag_name != NULL);
+  g_assert (tags_queue != NULL);
 
-  last_tag = g_queue_find (tags_queue, tag);
+  last_tag = g_queue_find (tags_queue, g_intern_string (tag_name));
 
-  g_assert (last_tag != NULL);
+  if (last_tag == NULL)
+    return;
 
   /*
    * First, we have to close the tags in the reverse order it is opened.
@@ -289,14 +288,10 @@ gn_xml_note_close_tag (GnXmlNote    *self,
    * <b><s><i>some text</i></s></b> and not <b><s><i>some text</b>...
    */
   for (node = tags_queue->head; node != last_tag; node = node->next)
-    {
-      tag_name = gn_note_buffer_get_name_for_tag (note_buffer, node->data);
-      g_string_append_printf (raw_content, "</%s>", tag_name);
-    }
+    g_string_append_printf (raw_content, "</%s>", (gchar *)node->data);
 
-    /* From the previous example: we are now closing </b> */
-    tag_name = gn_note_buffer_get_name_for_tag (note_buffer, last_tag->data);
-    g_string_append_printf (raw_content, "</%s>", tag_name);
+  /* From the previous example: we are now closing </b> */
+  g_string_append_printf (raw_content, "</%s>", tag_name);
 
     /*
      * To make the XML valid, we have to open the closed tags that aren't
@@ -305,10 +300,7 @@ gn_xml_note_close_tag (GnXmlNote    *self,
      * order. This results in: <b><s><i>some text</i></s></b><s><i>
      */
   for (node = node->prev; node != NULL; node = node->prev)
-    {
-      tag_name = gn_note_buffer_get_name_for_tag (note_buffer, node->data);
-      g_string_append_printf (raw_content, "<%s>", tag_name);
-    }
+    g_string_append_printf (raw_content, "<%s>", (gchar *)node->data);
 
   g_queue_delete_link (tags_queue, last_tag);
 }
@@ -513,8 +505,11 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
       for (node = tags; node != NULL; node = node->next)
         {
           GtkTextTag *tag = node->data;
-          gn_xml_note_close_tag (self, GN_NOTE_BUFFER (buffer),
-                                 raw_content, tag, tags_queue);
+          const gchar *tag_name;
+
+          tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
+                                                      tag);
+          gn_xml_note_close_tag (self, raw_content, tag_name, tags_queue);
         }
 
       g_slist_free (tags);
@@ -529,7 +524,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
           tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
                                                       tag);
           g_string_append_printf (raw_content, "<%s>", tag_name);
-          g_queue_push_head (tags_queue, tag);
+          g_queue_push_head (tags_queue, (gchar *)g_intern_string (tag_name));
         }
 
       g_slist_free (tags);
@@ -538,13 +533,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
     } while (gtk_text_iter_forward_char (&iter));
 
   for (GList *node = tags_queue->head; node != NULL; node = node->next)
-    {
-      const gchar *tag_name;
-
-      tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
-                                                  node->data);
-      g_string_append_printf (raw_content, "</%s>", tag_name);
-    }
+    g_string_append_printf (raw_content, "</%s>", (gchar *)node->data);
 
   g_queue_free (tags_queue);
 
