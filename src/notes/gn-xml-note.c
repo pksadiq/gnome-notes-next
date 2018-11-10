@@ -438,6 +438,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
       gchar str[6];
       GSList *tags;
       GSList *node;
+      gint length;
 
       c = gtk_text_iter_get_char (&iter);
 
@@ -470,8 +471,9 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
       g_slist_free (tags);
 
-      g_unichar_to_utf8 (c, str);
-      escaped = g_markup_escape_text (str, -1);
+
+      length = g_unichar_to_utf8 (c, str);
+      escaped = g_markup_escape_text (str, length);
 
       g_string_append (raw_content, escaped);
     } while (gtk_text_iter_forward_char (&iter));
