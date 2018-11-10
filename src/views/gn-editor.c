@@ -55,6 +55,9 @@ struct _GnEditor
   GtkWidget *strikethrough_button;
   GtkWidget *underline_button;
 
+  GtkWidget *editor_menu;
+  GtkWidget *detach_button;
+
   guint save_timeout_id;
 };
 
@@ -173,6 +176,8 @@ gn_editor_class_init (GnEditorClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnEditor, italic_button);
   gtk_widget_class_bind_template_child (widget_class, GnEditor, strikethrough_button);
   gtk_widget_class_bind_template_child (widget_class, GnEditor, underline_button);
+  gtk_widget_class_bind_template_child (widget_class, GnEditor, editor_menu);
+  gtk_widget_class_bind_template_child (widget_class, GnEditor, detach_button);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_editor_format_clicked);
   gtk_widget_class_bind_template_callback (widget_class, gn_editor_remove_format_clicked);
@@ -256,4 +261,24 @@ gn_editor_get_model (GnEditor *self)
   g_return_val_if_fail (GN_IS_EDITOR (self), NULL);
 
   return self->model;
+}
+
+GtkWidget *
+gn_editor_get_menu (GnEditor *self)
+{
+  g_return_val_if_fail (GN_IS_EDITOR (self), NULL);
+
+  return self->editor_menu;
+}
+
+void
+gn_editor_set_detached (GnEditor *self,
+                        gboolean  detached)
+{
+  g_return_if_fail (GN_IS_EDITOR (self));
+
+  if (detached)
+    gtk_widget_hide (self->detach_button);
+  else
+    gtk_widget_show (self->detach_button);
 }

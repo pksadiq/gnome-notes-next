@@ -36,5 +36,8 @@ void       gn_editor_set_item (GnEditor   *self,
                                GnItem     *item);
 GnNote    *gn_editor_get_note (GnEditor *self);
 GListModel *gn_editor_get_model (GnEditor *self);
+GtkWidget  *gn_editor_get_menu  (GnEditor *self);
+void        gn_editor_set_detached (GnEditor *self,
+                                    gboolean  detached);
 
 G_END_DECLS

@@ -50,8 +50,8 @@ struct _GnWindow
   GtkWidget *view_button_stack;
   GtkWidget *menu_button;
   GtkWidget *main_menu;
-  GtkWidget *editor_menu;
-  GtkWidget *new_editor_button;
+  /* GtkWidget *editor_menu; */
+  /* GtkWidget *new_editor_button; */
   GtkWidget *undo_revealer;
 
   GtkWidget *select_button;
@@ -394,11 +394,17 @@ gn_window_main_view_changed (GnWindow   *self,
 
   if (child == self->editor_view)
     {
+      GtkWidget *editor;
+      GtkWidget *editor_menu;
+
       gtk_widget_hide (self->view_button_stack);
       gtk_widget_hide (self->search_button);
       gtk_widget_hide (self->select_button);
+
+      editor = gtk_bin_get_child (GTK_BIN (child));
+      editor_menu = gn_editor_get_menu (GN_EDITOR (editor));
       gtk_menu_button_set_popover (GTK_MENU_BUTTON (self->menu_button),
-                                   self->editor_menu);
+                                   editor_menu);
       gtk_button_set_icon_name (GTK_BUTTON (self->menu_button),
                                 "view-more-symbolic");
     }
@@ -651,8 +657,8 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, menu_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_menu);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_menu);
-  gtk_widget_class_bind_template_child (widget_class, GnWindow, new_editor_button);
+  /* gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_menu); */
+  /* gtk_widget_class_bind_template_child (widget_class, GnWindow, new_editor_button); */
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
@@ -756,6 +762,7 @@ gn_window_new_with_editor (GnApplication *application,
   gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
   g_object_unref (editor);
 
+  gn_editor_set_detached (GN_EDITOR (editor), TRUE);
   gtk_widget_hide (self->nav_button_stack);
   gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                self->editor_view);
@@ -811,6 +818,7 @@ void
 gn_window_set_as_main (GnWindow *self)
 {
   GtkEventController *controller;
+  GtkWidget *editor;
 
   g_assert (GN_IS_WINDOW (self));
 
@@ -819,6 +827,10 @@ gn_window_set_as_main (GnWindow *self)
                     G_CALLBACK (gn_window_key_press_cb),
                     self);
   gtk_widget_add_controller (GTK_WIDGET (self), controller);
+
+  editor = gtk_bin_get_child (GTK_BIN (self->editor_view));
+  if (editor != NULL)
+    gn_editor_set_detached (GN_EDITOR (editor), FALSE);
 
   g_signal_connect_object (gn_manager_get_default (),
                            "provider-added",
