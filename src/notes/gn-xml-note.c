@@ -144,6 +144,9 @@ gn_xml_note_get_buffer (GnNote *note)
   end = strstr (end, "<body");
   end = strchr (end, '>');
   end++;
+
+  if (g_str_has_prefix (end, "<div>"))
+    end += strlen ("<div>");
   start = end;
 
   while ((c = *end))
