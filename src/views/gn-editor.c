@@ -26,6 +26,7 @@
 #include "gn-note.h"
 #include "gn-note-buffer.h"
 #include "gn-manager.h"
+#include "gn-text-view.h"
 #include "gn-editor.h"
 #include "gn-trace.h"
 
@@ -166,6 +167,8 @@ gn_editor_class_init (GnEditorClass *klass)
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->dispose = gn_editor_dispose;
+
+  g_type_ensure (GN_TYPE_TEXT_VIEW);
 
   gtk_widget_class_set_template_from_resource (widget_class,
                                                "/org/sadiqpk/notes/"
