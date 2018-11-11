@@ -71,10 +71,10 @@ gn_note_get_property (GObject    *object,
     }
 }
 
-static GtkTextBuffer *
-gn_note_real_get_buffer (GnNote *self)
+static void
+gn_note_real_set_content_to_buffer (GnNote       *self,
+                                    GnNoteBuffer *buffer)
 {
-  GtkTextBuffer *buffer;
   const gchar *title;
   g_autofree gchar *raw_content = NULL;
   g_autofree gchar *full_content = NULL;
@@ -90,13 +90,12 @@ gn_note_real_get_buffer (GnNote *self)
     full_content = g_strconcat (title, "\n",
                                 raw_content, NULL);
 
-  buffer = GTK_TEXT_BUFFER (gn_note_buffer_new ());
-
   if (full_content != NULL)
-    gtk_text_buffer_set_text (buffer, full_content, -1);
-  gtk_text_buffer_set_modified (buffer, FALSE);
+    gtk_text_buffer_set_text (GTK_TEXT_BUFFER (buffer), full_content, -1);
+  else
+    gtk_text_buffer_set_text (GTK_TEXT_BUFFER (buffer), "", 0);
 
-  return buffer;
+  gtk_text_buffer_set_modified (GTK_TEXT_BUFFER (buffer), FALSE);
 }
 
 static const gchar *
@@ -112,7 +111,7 @@ gn_note_class_init (GnNoteClass *klass)
 
   object_class->get_property = gn_note_get_property;
 
-  klass->get_buffer = gn_note_real_get_buffer;
+  klass->set_content_to_buffer = gn_note_real_set_content_to_buffer;
   klass->get_extension = gn_note_real_get_extension;
 
   /**
@@ -265,27 +264,24 @@ gn_note_set_content_from_buffer (GnNote        *self,
 }
 
 /**
- * gn_note_get_buffer:
+ * gn_note_set_content_to_buffer:
  * @self: a #GnNote
  *
- * Create a new #GtkTextBuffer from #GnNote.
- * @self should have title and content set.
- *
- * Returns: (transfer full): A buffer containing note content.
- * Free with g_object_unref().
+ * Replace @buffer content with the content
+ * of @self
  */
-GtkTextBuffer *
-gn_note_get_buffer (GnNote *self)
+void
+gn_note_set_content_to_buffer (GnNote       *self,
+                               GnNoteBuffer *buffer)
 {
-  GtkTextBuffer *buffer;
-
   GN_ENTRY;
 
-  g_return_val_if_fail (GN_IS_NOTE (self), NULL);
+  g_return_if_fail (GN_IS_NOTE (self));
+  g_return_if_fail (GN_IS_NOTE_BUFFER (buffer));
 
-  buffer = GN_NOTE_GET_CLASS (self)->get_buffer (self);
+  GN_NOTE_GET_CLASS (self)->set_content_to_buffer (self, buffer);
 
-  GN_RETURN (buffer);
+  GN_EXIT;
 }
 
 /**

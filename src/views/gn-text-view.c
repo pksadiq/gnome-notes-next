@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include "gn-note-buffer.h"
 #include "gn-text-view.h"
 #include "gn-trace.h"
 
@@ -35,13 +36,41 @@
 struct _GnTextView
 {
   GtkTextView parent_instance;
+
+  GnNoteBuffer *buffer;
 };
 
 G_DEFINE_TYPE (GnTextView, gn_text_view, GTK_TYPE_TEXT_VIEW)
 
 static void
+gn_text_view_constructed (GObject *object)
+{
+  GnTextView *self = GN_TEXT_VIEW (object);
+
+  self->buffer = gn_note_buffer_new ();
+  gtk_text_view_set_buffer (GTK_TEXT_VIEW (self),
+                            GTK_TEXT_BUFFER (self->buffer));
+
+  G_OBJECT_CLASS (gn_text_view_parent_class)->constructed (object);
+}
+
+static void
+gn_text_view_finalize (GObject *object)
+{
+  GnTextView *self = GN_TEXT_VIEW (object);
+
+  g_object_unref (self->buffer);
+
+  G_OBJECT_CLASS (gn_text_view_parent_class)->finalize (object);
+}
+
+static void
 gn_text_view_class_init (GnTextViewClass *klass)
 {
+  GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+  object_class->constructed = gn_text_view_constructed;
+  object_class->finalize = gn_text_view_finalize;
 }
 
 static void

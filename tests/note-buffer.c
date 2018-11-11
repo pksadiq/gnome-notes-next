@@ -51,7 +51,9 @@ test_note_buffer_plain (void)
 
   plain_note = gn_plain_note_new_from_data ("Test\nContent");
   note = GN_NOTE (plain_note);
-  buffer = gn_note_get_buffer (note);
+
+  buffer = GTK_TEXT_BUFFER (gn_note_buffer_new ());
+  gn_note_set_content_to_buffer (note, GN_NOTE_BUFFER (buffer));
 
   g_object_get (G_OBJECT (buffer), "text", &content, NULL);
   g_assert_cmpstr (content, ==, "Test\nContent");

@@ -23,6 +23,7 @@
 #include <gtk/gtk.h>
 
 #include "gn-item.h"
+#include "gn-note-buffer.h"
 
 G_BEGIN_DECLS
 
@@ -43,7 +44,8 @@ struct _GnNoteClass
   gchar *(*get_markup)              (GnNote        *self);
   void   (*set_content_from_buffer) (GnNote        *self,
                                      GtkTextBuffer *buffer);
-  GtkTextBuffer *(*get_buffer)      (GnNote        *self);
+  void   (*set_content_to_buffer)   (GnNote        *self,
+                                     GnNoteBuffer  *buffer);
   const gchar   *(*get_extension)   (GnNote        *self);
 };
 
@@ -56,7 +58,8 @@ gchar *gn_note_get_markup              (GnNote        *self);
 
 void   gn_note_set_content_from_buffer (GnNote        *self,
                                         GtkTextBuffer *buffer);
-GtkTextBuffer *gn_note_get_buffer      (GnNote        *self);
+void   gn_note_set_content_to_buffer   (GnNote        *self,
+                                        GnNoteBuffer  *buffer);
 const gchar   *gn_note_get_extension   (GnNote        *self);
 
 G_END_DECLS

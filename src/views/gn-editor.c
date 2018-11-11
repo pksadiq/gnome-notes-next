@@ -190,6 +190,8 @@ static void
 gn_editor_init (GnEditor *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
+
+  self->note_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (self->editor_view));
 }
 
 GtkWidget *
@@ -204,7 +206,6 @@ gn_editor_set_item (GnEditor   *self,
                     GListModel *model,
                     GnItem     *item)
 {
-  g_autoptr(GtkTextBuffer) buffer = NULL;
   GnManager *manager;
   GtkTextTag *font_tag;
   GtkTextTagTable *tag_table;
@@ -216,36 +217,32 @@ gn_editor_set_item (GnEditor   *self,
   g_return_if_fail (G_IS_LIST_MODEL (model));
   g_return_if_fail (GN_IS_ITEM (item));
 
-  if (self->item != NULL)
-    GN_EXIT;
-
   self->model = model;
-  buffer = gn_note_get_buffer (GN_NOTE (item));
+  gn_note_set_content_to_buffer (GN_NOTE (item),
+                                 GN_NOTE_BUFFER (self->note_buffer));
   manager = gn_manager_get_default ();
 
   self->item = item;
-  self->note_buffer = buffer;
   self->settings = gn_manager_get_settings (manager);
 
-  gtk_text_view_set_buffer (GTK_TEXT_VIEW (self->editor_view), buffer);
-  g_signal_connect_object (buffer, "notify::has-selection",
+  g_signal_connect_object (self->note_buffer, "notify::has-selection",
                            G_CALLBACK (gn_editor_selection_changed_cb),
                            self, G_CONNECT_SWAPPED);
   gn_editor_selection_changed_cb (self);
 
-  g_signal_connect_object (buffer, "modified-changed",
+  g_signal_connect_object (self->note_buffer, "modified-changed",
                            G_CALLBACK (gn_editor_buffer_modified_cb),
                            self, G_CONNECT_SWAPPED);
 
-  tag_table = gtk_text_buffer_get_tag_table (buffer);
+  tag_table = gtk_text_buffer_get_tag_table (self->note_buffer);
   font_tag = gtk_text_tag_table_lookup (tag_table, "font");
 
   g_object_bind_property (self->settings, "font",
                           font_tag, "font",
                           G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
 
-  gtk_text_buffer_get_bounds (buffer, &start, &end);
-  gtk_text_buffer_apply_tag (buffer, font_tag, &start, &end);
+  gtk_text_buffer_get_bounds (self->note_buffer, &start, &end);
+  gtk_text_buffer_apply_tag (self->note_buffer, font_tag, &start, &end);
 
   GN_EXIT;
 }
