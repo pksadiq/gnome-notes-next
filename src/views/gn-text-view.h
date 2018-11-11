@@ -30,4 +30,9 @@ G_DECLARE_FINAL_TYPE (GnTextView, gn_text_view, GN, TEXT_VIEW, GtkTextView)
 
 GtkWidget     *gn_text_view_new      (void);
 
+void           gn_text_view_undo     (GnTextView *self);
+void           gn_text_view_redo     (GnTextView *self);
+
+void           gn_text_view_freeze_undo_redo (GnTextView *self);
+void           gn_text_view_thaw_undo_redo   (GnTextView *self);
 G_END_DECLS

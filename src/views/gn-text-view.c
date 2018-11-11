@@ -45,9 +45,31 @@ struct _GnTextView
   GList  *current_undo;
   guint   can_undo : 1;
   guint   can_redo : 1;
+
+  guint   undo_freeze_count;
 };
 
 G_DEFINE_TYPE (GnTextView, gn_text_view, GTK_TYPE_TEXT_VIEW)
+
+
+typedef enum ActionType {
+  ACTION_TYPE_TEXT_ADD,
+  ACTION_TYPE_TEXT_REMOVE,
+} ActionType;
+
+typedef struct _Action
+{
+  ActionType type;
+
+  union {
+    gchar *text;
+  };
+
+  gint start;
+  gint end;
+
+  guint can_merge : 1;
+} Action;
 
 enum {
   PROP_0,
@@ -58,6 +80,283 @@ enum {
 
 static GParamSpec *properties[N_PROPS];
 
+static void
+gn_text_view_undo_action_free (Action *action)
+{
+  if (action == NULL)
+    return;
+
+  if (action->type == ACTION_TYPE_TEXT_ADD)
+    g_free (action->text);
+
+  g_slice_free (Action, action);
+}
+
+static void
+gn_text_view_update_can_undo_redo (GnTextView *self)
+{
+  gboolean last_undo, last_redo;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+
+  last_undo = self->can_undo;
+  last_redo = self->can_redo;
+
+  if (g_queue_is_empty (self->undo_queue))
+    {
+      self->can_undo = FALSE;
+      self->can_redo = FALSE;
+
+      goto emit;
+    }
+
+  if (self->current_undo == NULL)
+    {
+      self->can_undo = TRUE;
+      self->can_redo = FALSE;
+    }
+  else
+    {
+      self->can_redo = TRUE;
+
+      if (self->current_undo->next != NULL)
+        self->can_undo = TRUE;
+      else
+        self->can_undo = FALSE;
+    }
+
+ emit:
+  if (last_undo != self->can_undo)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CAN_UNDO]);
+
+  if (last_redo != self->can_redo)
+    g_object_notify_by_pspec (G_OBJECT (self), properties[PROP_CAN_REDO]);
+}
+
+static gboolean
+gn_text_view_action_can_merge (GnTextView *self,
+                               Action     *action)
+{
+  Action *last_action;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+  g_assert (action != NULL);
+
+  if (g_queue_is_empty (self->undo_queue))
+    return FALSE;
+
+  last_action = g_queue_peek_head (self->undo_queue);
+
+  if (!last_action->can_merge ||
+      !action->can_merge ||
+      last_action->type != action->type ||
+      ABS (action->start - action->end) > 1) /* if more than 1 char changed */
+    return FALSE;
+
+  if (action->type == ACTION_TYPE_TEXT_ADD &&
+      (last_action->end != action->start ||
+       g_ascii_isspace(*action->text))) /* If begins with space */
+    return FALSE;
+
+  if (action->type == ACTION_TYPE_TEXT_REMOVE &&
+      (last_action->start != action->end ||
+       g_ascii_isspace(*last_action->text)))
+    return FALSE;
+
+  return TRUE;
+}
+
+static void
+gn_text_view_merge_text_add (Action *last_action,
+                             Action *action)
+{
+  gchar *text;
+
+  g_assert (last_action->start - last_action->end != 0);
+  g_assert (action->start - action->end != 0);
+
+  text = g_strconcat (last_action->text, action->text, NULL);
+  g_free (last_action->text);
+  last_action->text = text;
+
+  last_action->end = action->end;
+}
+
+static void
+gn_text_view_merge_text_remove (Action *last_action,
+                                Action *action)
+{
+  gchar *text;
+
+  g_assert (last_action->start - last_action->end != 0);
+  g_assert (action->start - action->end != 0);
+
+  text = g_strconcat (action->text, last_action->text, NULL);
+  g_free (last_action->text);
+  last_action->text = text;
+
+  last_action->start = action->start;
+}
+
+static gboolean
+gn_text_view_merge_action (GnTextView *self,
+                           Action     *action)
+{
+  Action *last_action;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+  g_assert (action != NULL);
+
+  if (g_queue_is_empty (self->undo_queue))
+    return FALSE;
+
+  if (self->current_undo != NULL)
+    return FALSE;
+
+  last_action = g_queue_peek_head (self->undo_queue);
+
+  /* Force to not merge for changes more than 1 character */
+  if (ABS (action->start - action->end) > 1)
+    action->can_merge = FALSE;
+
+  if (!gn_text_view_action_can_merge (self, action))
+    {
+      last_action->can_merge = FALSE;
+      return FALSE;
+    }
+
+  if (action->type == ACTION_TYPE_TEXT_ADD)
+    gn_text_view_merge_text_add (last_action, action);
+  if (action->type == ACTION_TYPE_TEXT_REMOVE)
+    gn_text_view_merge_text_remove (last_action, action);
+
+  gn_text_view_undo_action_free (action);
+
+  return TRUE;
+}
+
+static void
+gn_text_view_add_undo_action (GnTextView *self,
+                              Action     *action)
+{
+  g_assert (GN_IS_TEXT_VIEW (self));
+  g_assert (action != NULL);
+
+  if (gn_text_view_merge_action (self, action))
+    return;
+
+  if (self->current_undo != NULL)
+    {
+      self->current_undo = self->current_undo->next;
+
+      while (self->undo_queue->head != self->current_undo)
+        {
+          Action *action;
+
+          action = g_queue_pop_head (self->undo_queue);
+          gn_text_view_undo_action_free (action);
+        }
+    }
+
+  self->current_undo = NULL;
+  g_queue_push_head (self->undo_queue, action);
+
+  gn_text_view_update_can_undo_redo (self);
+}
+
+static void
+gn_text_view_insert_text_cb (GnTextView  *self,
+                             GtkTextIter *location,
+                             gchar       *text,
+                             gint         len)
+{
+  Action *action;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+
+  action = g_slice_new (Action);
+  action->type = ACTION_TYPE_TEXT_ADD;
+  action->text = g_memdup (text, len + 1);
+  action->start = gtk_text_iter_get_offset (location);
+  action->end = action->start + len;
+  action->can_merge = TRUE;
+
+  gn_text_view_add_undo_action (self, action);
+}
+
+static void
+gn_text_view_delete_range_cb (GnTextView  *self,
+                              GtkTextIter *start,
+                              GtkTextIter *end)
+{
+  Action *action;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+
+  action = g_slice_new (Action);
+  action->type = ACTION_TYPE_TEXT_REMOVE;
+  action->text = gtk_text_buffer_get_text (GTK_TEXT_BUFFER (self->buffer),
+                                           start, end, FALSE);
+  action->start = gtk_text_iter_get_offset (start);
+  action->end = gtk_text_iter_get_offset (end);
+  action->can_merge = TRUE;
+
+  gn_text_view_add_undo_action (self, action);
+}
+
+/* undo/redo actions */
+static void   gn_text_view_text_remove (GnTextView *self,
+                                       Action     *action);
+static void
+gn_text_view_text_add (GnTextView *self,
+                       Action     *action)
+{
+  GtkTextMark *mark;
+  GtkTextIter start;
+  gint length;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+  g_assert (action != NULL);
+
+  length = ABS (action->end - action->start);
+
+  gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
+                                      &start, action->start);
+
+  gtk_text_buffer_insert (GTK_TEXT_BUFFER (self->buffer),
+                          &start, action->text,
+                          ABS (action->end - action->start));
+
+  gtk_text_iter_forward_chars (&start, length);
+  gtk_text_buffer_place_cursor (GTK_TEXT_BUFFER (self->buffer), &start);
+
+  mark = gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (self->buffer));
+  gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (self), mark);
+}
+
+static void
+gn_text_view_text_remove (GnTextView *self,
+                          Action     *action)
+{
+  GtkTextMark *mark;
+  GtkTextIter start, end;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+  g_assert (action != NULL);
+
+  gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
+                                      &start, action->start);
+  gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
+                                      &end, action->end);
+
+  gtk_text_buffer_delete (GTK_TEXT_BUFFER (self->buffer),
+                          &start, &end);
+
+  gtk_text_buffer_place_cursor (GTK_TEXT_BUFFER (self->buffer), &start);
+
+  mark = gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (self->buffer));
+  gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (self), mark);
+}
 static void
 gn_text_view_get_property (GObject    *object,
                            guint       prop_id,
@@ -86,9 +385,17 @@ gn_text_view_constructed (GObject *object)
 {
   GnTextView *self = GN_TEXT_VIEW (object);
 
+  self->undo_queue = g_queue_new ();
   self->buffer = gn_note_buffer_new ();
   gtk_text_view_set_buffer (GTK_TEXT_VIEW (self),
                             GTK_TEXT_BUFFER (self->buffer));
+
+  g_signal_connect_object (self->buffer, "insert-text",
+                           G_CALLBACK (gn_text_view_insert_text_cb),
+                           self, G_CONNECT_SWAPPED);
+  g_signal_connect_object (self->buffer, "delete-range",
+                           G_CALLBACK (gn_text_view_delete_range_cb),
+                           self, G_CONNECT_SWAPPED);
 
   G_OBJECT_CLASS (gn_text_view_parent_class)->constructed (object);
 }
@@ -139,4 +446,132 @@ gn_text_view_new (void)
 {
   return g_object_new (GN_TYPE_TEXT_VIEW,
                        NULL);
+}
+
+static gboolean
+gn_text_view_may_be_overwrite (GnTextView *self,
+                               GList      *item,
+                               GList      *next_item)
+{
+  Action *action, *next_action;
+
+  if (item == NULL || next_item == NULL)
+    return FALSE;
+
+  action = item->data;
+  next_action = next_item->data;
+
+  /* We care only in place one character changes */
+  if (action->start != next_action->start ||
+      ABS (action->start - action->end) > 1 ||
+      ABS (next_action->start - next_action->end) > 1)
+    return FALSE;
+
+  if (action->type == ACTION_TYPE_TEXT_ADD &&
+      next_action->type == ACTION_TYPE_TEXT_REMOVE)
+    return TRUE;
+
+  if (action->type == ACTION_TYPE_TEXT_REMOVE &&
+      next_action->type == ACTION_TYPE_TEXT_ADD)
+    return TRUE;
+
+  return FALSE;
+}
+
+
+void
+gn_text_view_freeze_undo_redo (GnTextView *self)
+{
+  self->undo_freeze_count++;
+
+  /* We have freezed everything once already */
+  if (self->undo_freeze_count > 1)
+    return;
+
+  g_signal_handlers_block_by_func (self->buffer,
+                                   gn_text_view_insert_text_cb, self);
+  g_signal_handlers_block_by_func (self->buffer,
+                                   gn_text_view_delete_range_cb, self);
+}
+
+void
+gn_text_view_thaw_undo_redo (GnTextView *self)
+{
+  self->undo_freeze_count--;
+
+  if (self->undo_freeze_count > 0)
+    return;
+
+  g_signal_handlers_unblock_by_func (self->buffer,
+                                     gn_text_view_insert_text_cb, self);
+  g_signal_handlers_unblock_by_func (self->buffer,
+                                     gn_text_view_delete_range_cb, self);
+}
+
+void
+gn_text_view_undo (GnTextView *self)
+{
+  Action *action;
+
+  g_return_if_fail (GN_IS_TEXT_VIEW (self));
+  g_return_if_fail (!g_queue_is_empty (self->undo_queue));
+
+  if (self->current_undo == NULL)
+    self->current_undo = self->undo_queue->head;
+  else
+    self->current_undo = self->current_undo->next;
+
+  action = self->current_undo->data;
+
+  gn_text_view_freeze_undo_redo (self);
+
+  if (action->type == ACTION_TYPE_TEXT_ADD)
+    {
+      gn_text_view_text_remove (self, action);
+      if (gn_text_view_may_be_overwrite (self, self->current_undo,
+                                         self->current_undo->next))
+        {
+          self->current_undo = self->current_undo->next;
+          gn_text_view_text_add (self, self->current_undo->data);
+        }
+    }
+  if (action->type == ACTION_TYPE_TEXT_REMOVE)
+    gn_text_view_text_add (self, action);
+
+  gn_text_view_thaw_undo_redo (self);
+
+  gn_text_view_update_can_undo_redo (self);
+}
+
+void
+gn_text_view_redo (GnTextView *self)
+{
+  Action *action;
+
+  g_return_if_fail (GN_IS_TEXT_VIEW (self));
+  g_return_if_fail (!g_queue_is_empty (self->undo_queue));
+  g_return_if_fail (self->current_undo != NULL);
+
+  action = self->current_undo->data;
+
+  gn_text_view_freeze_undo_redo (self);
+
+  if (action->type == ACTION_TYPE_TEXT_ADD)
+    gn_text_view_text_add (self, action);
+  if (action->type == ACTION_TYPE_TEXT_REMOVE)
+    {
+      gn_text_view_text_remove (self, action);
+
+      if (gn_text_view_may_be_overwrite (self, self->current_undo,
+                                         self->current_undo->prev))
+        {
+          self->current_undo = self->current_undo->prev;
+          gn_text_view_text_add (self, self->current_undo->data);
+        }
+    }
+
+  gn_text_view_thaw_undo_redo (self);
+  self->current_undo = self->current_undo->prev;
+
+  gn_text_view_update_can_undo_redo (self);
 }

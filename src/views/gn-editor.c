@@ -114,12 +114,16 @@ static void
 gn_editor_undo (GnEditor *self)
 {
   g_assert (GN_IS_EDITOR (self));
+
+  gn_text_view_undo (GN_TEXT_VIEW (self->editor_view));
 }
 
 static void
 gn_editor_redo (GnEditor *self)
 {
   g_assert (GN_IS_EDITOR (self));
+
+  gn_text_view_redo (GN_TEXT_VIEW (self->editor_view));
 }
 
 static gboolean
@@ -267,6 +271,7 @@ gn_editor_set_item (GnEditor   *self,
   self->model = model;
 
   g_object_freeze_notify (G_OBJECT (self->note_buffer));
+  gn_text_view_freeze_undo_redo (GN_TEXT_VIEW (self->editor_view));
 
   if (item == NULL)
     gtk_text_buffer_set_text (GTK_TEXT_BUFFER (self->note_buffer), "", 0);
@@ -274,6 +279,7 @@ gn_editor_set_item (GnEditor   *self,
     gn_note_set_content_to_buffer (GN_NOTE (item),
                                    GN_NOTE_BUFFER (self->note_buffer));
 
+  gn_text_view_thaw_undo_redo (GN_TEXT_VIEW (self->editor_view));
   g_object_thaw_notify (G_OBJECT (self->note_buffer));
 
   GN_EXIT;
