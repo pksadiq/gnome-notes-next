@@ -257,8 +257,7 @@
                             </child>
 
                             <child>
-                              <object class="GtkFrame" id="editor_view">
-                                <property name="shadow-type">none</property>
+                              <object class="GnEditor" id="editor_view">
                               </object>
                               <packing>
                                 <property name="name">editor</property>

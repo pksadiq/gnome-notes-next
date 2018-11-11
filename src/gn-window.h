@@ -32,6 +32,12 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (GnWindow, gn_window, GN, WINDOW, GtkApplicationWindow)
 
 GnWindow *gn_window_new (GnApplication *application);
+GnWindow *gn_window_new_with_note    (GnApplication *application,
+                                      GnNote        *note,
+                                      GListModel    *model);
+gboolean  gn_window_steal_note       (GnWindow      *self,
+                                      GnNote       **note,
+                                      GListModel   **model);
 GnWindow *gn_window_new_with_editor       (GnApplication *application,
                                            GtkWidget     *editor);
 GtkWidget *gn_window_steal_editor         (GnWindow *self);

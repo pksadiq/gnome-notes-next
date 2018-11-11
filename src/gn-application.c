@@ -26,6 +26,7 @@
 
 #include "gn-manager.h"
 #include "gn-utils.h"
+#include "gn-note.h"
 #include "gn-window.h"
 #include "gn-application.h"
 #include "gn-trace.h"
@@ -67,12 +68,15 @@ gn_application_detach_editor_window (GSimpleAction *action,
 {
   GnApplication *self = user_data;
   GnWindow *window;
-  GtkWidget *editor;
+  GListModel *model;
+  GnNote *note;
 
   g_assert (GN_IS_APPLICATION (self));
 
-  editor = gn_window_steal_editor (self->window);
-  window = gn_window_new_with_editor (self, editor);
+  if (!gn_window_steal_note (self->window, &note, &model))
+    g_return_if_reached ();
+
+  window = gn_window_new_with_note (self, note, model);
 
   gtk_window_present (GTK_WINDOW (window));
 }

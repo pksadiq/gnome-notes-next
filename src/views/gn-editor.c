@@ -137,7 +137,8 @@ gn_editor_buffer_modified_cb (GnEditor      *self,
   g_assert (GN_IS_EDITOR (self));
   g_assert (GTK_IS_TEXT_BUFFER (buffer));
 
-  if (!gtk_text_buffer_get_modified (buffer))
+  if (!gtk_text_buffer_get_modified (buffer) ||
+      self->item == NULL)
     return;
 
   if (self->save_timeout_id == 0)
@@ -189,40 +190,15 @@ gn_editor_class_init (GnEditorClass *klass)
 static void
 gn_editor_init (GnEditor *self)
 {
-  gtk_widget_init_template (GTK_WIDGET (self));
-
-  self->note_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (self->editor_view));
-}
-
-GtkWidget *
-gn_editor_new (void)
-{
-  return g_object_new (GN_TYPE_EDITOR,
-                       NULL);
-}
-
-void
-gn_editor_set_item (GnEditor   *self,
-                    GListModel *model,
-                    GnItem     *item)
-{
   GnManager *manager;
   GtkTextTag *font_tag;
   GtkTextTagTable *tag_table;
-  GtkTextIter start, end
+  GtkTextIter start, end;
 
-  GN_ENTRY;
+  gtk_widget_init_template (GTK_WIDGET (self));
 
-  g_return_if_fail (GN_IS_EDITOR (self));
-  g_return_if_fail (G_IS_LIST_MODEL (model));
-  g_return_if_fail (GN_IS_ITEM (item));
-
-  self->model = model;
-  gn_note_set_content_to_buffer (GN_NOTE (item),
-                                 GN_NOTE_BUFFER (self->note_buffer));
   manager = gn_manager_get_default ();
-
-  self->item = item;
+  self->note_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (self->editor_view));
   self->settings = gn_manager_get_settings (manager);
 
   g_signal_connect_object (self->note_buffer, "notify::has-selection",
@@ -243,6 +219,48 @@ gn_editor_set_item (GnEditor   *self,
 
   gtk_text_buffer_get_bounds (self->note_buffer, &start, &end);
   gtk_text_buffer_apply_tag (self->note_buffer, font_tag, &start, &end);
+
+}
+
+GtkWidget *
+gn_editor_new (void)
+{
+  return g_object_new (GN_TYPE_EDITOR,
+                       NULL);
+}
+
+void
+gn_editor_set_item (GnEditor   *self,
+                    GListModel *model,
+                    GnItem     *item)
+{
+  GN_ENTRY;
+
+  g_return_if_fail (GN_IS_EDITOR (self));
+  g_return_if_fail (!model || G_IS_LIST_MODEL (model));
+  g_return_if_fail (!item || GN_IS_ITEM (item));
+
+  if (self->item == item)
+    GN_EXIT;
+
+  if (self->save_timeout_id != 0)
+    g_source_remove (self->save_timeout_id);
+
+  if (self->item)
+    gn_editor_save_note (self);
+
+  self->item = item;
+  self->model = model;
+
+  g_object_freeze_notify (G_OBJECT (self->note_buffer));
+
+  if (item == NULL)
+    gtk_text_buffer_set_text (GTK_TEXT_BUFFER (self->note_buffer), "", 0);
+  else
+    gn_note_set_content_to_buffer (GN_NOTE (item),
+                                   GN_NOTE_BUFFER (self->note_buffer));
+
+  g_object_thaw_notify (G_OBJECT (self->note_buffer));
 
   GN_EXIT;
 }

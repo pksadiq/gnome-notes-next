@@ -261,7 +261,6 @@ gn_window_open_new_note (GnWindow *self)
   GnItem *item;
   GnProvider *provider;
   GnManager *manager;
-  GtkWidget *editor, *child;
 
   g_assert (GN_IS_WINDOW (self));
 
@@ -269,18 +268,12 @@ gn_window_open_new_note (GnWindow *self)
   item = gn_manager_new_note (manager);
   provider = g_object_get_data (G_OBJECT (item), "provider");
 
-  editor = gn_editor_new ();
-  gn_editor_set_item (GN_EDITOR (editor),
+  gn_editor_set_item (GN_EDITOR (self->editor_view),
                       gn_main_view_get_model (GN_MAIN_VIEW (self->current_view)),
                       item);
 
-  child = gtk_bin_get_child (GTK_BIN (self->editor_view));
-  if (child != NULL)
-    gtk_container_remove (GTK_CONTAINER (self->editor_view), child);
-
   gn_window_set_title (self, _("Untitled"),
                        gn_provider_get_name (provider));
-  gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
   gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                self->editor_view);
 }
@@ -394,15 +387,13 @@ gn_window_main_view_changed (GnWindow   *self,
 
   if (child == self->editor_view)
     {
-      GtkWidget *editor;
       GtkWidget *editor_menu;
 
       gtk_widget_hide (self->view_button_stack);
       gtk_widget_hide (self->search_button);
       gtk_widget_hide (self->select_button);
 
-      editor = gtk_bin_get_child (GTK_BIN (child));
-      editor_menu = gn_editor_get_menu (GN_EDITOR (editor));
+      editor_menu = gn_editor_get_menu (GN_EDITOR (self->editor_view));
       gtk_menu_button_set_popover (GTK_MENU_BUTTON (self->menu_button),
                                    editor_menu);
       gtk_button_set_icon_name (GTK_BUTTON (self->menu_button),
@@ -426,7 +417,6 @@ gn_window_get_note_window (GnWindow *self,
                            GnNote   *note)
 {
   GtkApplication *application;
-  GtkWidget *child;
   GList *windows;
 
   g_assert (GN_IS_WINDOW (self));
@@ -439,10 +429,7 @@ gn_window_get_note_window (GnWindow *self,
     {
       GnWindow *window = GN_WINDOW (node->data);
 
-      child = gtk_bin_get_child (GTK_BIN (window->editor_view));
-
-      if (child != NULL &&
-          note == gn_editor_get_note (GN_EDITOR (child)))
+      if (note == gn_editor_get_note (GN_EDITOR (window->editor_view)))
         return window;
     }
 
@@ -454,7 +441,6 @@ gn_window_item_activated (GnWindow   *self,
                           GnItem     *item,
                           GnMainView *main_view)
 {
-  GtkWidget *editor;
   GnProvider *provider;
 
   g_assert (GN_IS_WINDOW (self));
@@ -466,7 +452,6 @@ gn_window_item_activated (GnWindow   *self,
   if (GN_IS_NOTE (item))
     {
       GnWindow *window;
-      GtkWidget *child;
 
       window = gn_window_get_note_window (self, GN_NOTE (item));
 
@@ -478,19 +463,13 @@ gn_window_item_activated (GnWindow   *self,
           return;
         }
 
-      editor = gn_editor_new ();
-      gn_editor_set_item (GN_EDITOR (editor),
+      gn_editor_set_item (GN_EDITOR (self->editor_view),
                           gn_main_view_get_model (GN_MAIN_VIEW (self->current_view)),
                           item);
-
-      child = gtk_bin_get_child (GTK_BIN (self->editor_view));
-      if (child != NULL)
-        gtk_container_remove (GTK_CONTAINER (self->editor_view), child);
 
       gn_window_set_title (self, gn_item_get_title (item),
                            gn_provider_get_name (provider));
 
-      gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
       gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                    self->editor_view);
     }
@@ -564,19 +543,16 @@ gn_window_delete_items (GSimpleAction *action,
 
   if (self->current_view == self->editor_view)
     {
-      GtkWidget *editor;
-
-      editor = gtk_bin_get_child (GTK_BIN (self->editor_view));
-      g_assert (GN_IS_EDITOR (editor));
-
-      store = gn_editor_get_model (GN_EDITOR (editor));
+      store = gn_editor_get_model (GN_EDITOR (self->editor_view));
       items = g_list_prepend (items,
-                              gn_editor_get_note (GN_EDITOR (editor)));
+                              gn_editor_get_note (GN_EDITOR (self->editor_view)));
 
       if (self->is_main_window)
-        gn_window_show_previous_view (self);
-
-      gtk_container_remove (GTK_CONTAINER (self->editor_view), editor);
+        {
+          gn_window_show_previous_view (self);
+          gn_editor_set_item (GN_EDITOR (self->editor_view),
+                              NULL, NULL);
+        }
     }
   else
     {
@@ -771,6 +747,39 @@ gn_window_new_with_editor (GnApplication *application,
 }
 
 /**
+ * gn_window_new_with_note:
+ * @application: A #GnApplication
+ * @editor: (transfer full): A #GtkWidget
+ *
+ * Create a new window with @editor as the editor.
+ * @editor should be a #GnEditor or derived type.
+ *
+ * Returns: (transfer full): a #GnWindow
+ */
+GnWindow *
+gn_window_new_with_note (GnApplication *application,
+                         GnNote        *note,
+                         GListModel    *model)
+{
+  GnWindow *self;
+
+  g_assert (GTK_IS_APPLICATION (application));
+
+  self = g_object_new (GN_TYPE_WINDOW,
+                       "application", application,
+                       NULL);
+  gn_editor_set_item (GN_EDITOR (self->editor_view),
+                      model, GN_ITEM (note));
+
+  gn_editor_set_detached (GN_EDITOR (self->editor_view), TRUE);
+  gtk_widget_hide (self->nav_button_stack);
+  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
+                               self->editor_view);
+
+  return self;
+}
+
+/**
  * gn_window_steal_editor:
  * @self: A #GnWindow
  *
@@ -818,7 +827,6 @@ void
 gn_window_set_as_main (GnWindow *self)
 {
   GtkEventController *controller;
-  GtkWidget *editor;
 
   g_assert (GN_IS_WINDOW (self));
 
@@ -828,9 +836,7 @@ gn_window_set_as_main (GnWindow *self)
                     self);
   gtk_widget_add_controller (GTK_WIDGET (self), controller);
 
-  editor = gtk_bin_get_child (GTK_BIN (self->editor_view));
-  if (editor != NULL)
-    gn_editor_set_detached (GN_EDITOR (editor), FALSE);
+  gn_editor_set_detached (GN_EDITOR (self->editor_view), FALSE);
 
   g_signal_connect_object (gn_manager_get_default (),
                            "provider-added",
@@ -847,4 +853,38 @@ gn_window_set_as_main (GnWindow *self)
   self->is_main_window = TRUE;
   gtk_widget_show (self->nav_button_stack);
   gn_window_provider_added_cb (self, NULL, gn_manager_get_default ());
+}
+
+/**
+ * gn_window_steal_note:
+ * @self: A #GnWindow
+ *
+ * Steal the note currently shown in the editor
+ * window of @self.
+ *
+ * The view of @self will be changed to note view.
+ *
+ * Returns: %TRUE if editor has a note
+ */
+gboolean
+gn_window_steal_note (GnWindow    *self,
+                      GnNote     **note,
+                      GListModel **model)
+{
+  g_return_val_if_fail (GN_IS_WINDOW (self), FALSE);
+  g_return_val_if_fail (note != NULL && model != NULL, FALSE);
+
+  *note = gn_editor_get_note (GN_EDITOR (self->editor_view));
+  *model = gn_editor_get_model (GN_EDITOR (self->editor_view));
+
+  if (*note == NULL)
+    return FALSE;
+
+  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
+                               self->notes_view);
+
+  gn_editor_set_item (GN_EDITOR (self->editor_view),
+                      NULL, NULL);
+
+  return TRUE;
 }
