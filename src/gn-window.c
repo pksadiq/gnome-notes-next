@@ -715,38 +715,6 @@ gn_window_new (GnApplication *application)
 }
 
 /**
- * gn_window_new_with_editor:
- * @application: A #GnApplication
- * @editor: (transfer full): A #GtkWidget
- *
- * Create a new window with @editor as the editor.
- * @editor should be a #GnEditor or derived type.
- *
- * Returns: (transfer full): a #GnWindow
- */
-GnWindow *
-gn_window_new_with_editor (GnApplication *application,
-                           GtkWidget     *editor)
-{
-  GnWindow *self;
-
-  g_assert (GTK_IS_APPLICATION (application));
-
-  self = g_object_new (GN_TYPE_WINDOW,
-                       "application", application,
-                       NULL);
-  gtk_container_add (GTK_CONTAINER (self->editor_view), editor);
-  g_object_unref (editor);
-
-  gn_editor_set_detached (GN_EDITOR (editor), TRUE);
-  gtk_widget_hide (self->nav_button_stack);
-  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
-                               self->editor_view);
-
-  return self;
-}
-
-/**
  * gn_window_new_with_note:
  * @application: A #GnApplication
  * @editor: (transfer full): A #GtkWidget
@@ -777,39 +745,6 @@ gn_window_new_with_note (GnApplication *application,
                                self->editor_view);
 
   return self;
-}
-
-/**
- * gn_window_steal_editor:
- * @self: A #GnWindow
- *
- * Steal the #GnEditor shown in @self.  The editor
- * will be removed from @self, and note view will be
- * shown in @self.  This should be called only for
- * for main windows (see gn_window_new()) or windows
- * that are set as main (see gn_window_set_as_main()).
- *
- * It’s a programmer error to call this on @self
- * that doesn’t have an editor.
- *
- * Returns: (transfer full): a #GtkWidget
- */
-GtkWidget *
-gn_window_steal_editor (GnWindow *self)
-{
-  GtkWidget *editor;
-
-  g_return_val_if_fail (GN_IS_WINDOW (self), NULL);
-
-  editor = gtk_bin_get_child (GTK_BIN (self->editor_view));
-  g_return_val_if_fail (editor != NULL, NULL);
-  g_object_ref (editor);
-
-  gtk_stack_set_visible_child (GTK_STACK (self->main_view),
-                               self->notes_view);
-  gtk_container_remove (GTK_CONTAINER (self->editor_view), editor);
-
-  return editor;
 }
 
 /**

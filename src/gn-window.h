@@ -38,9 +38,6 @@ GnWindow *gn_window_new_with_note    (GnApplication *application,
 gboolean  gn_window_steal_note       (GnWindow      *self,
                                       GnNote       **note,
                                       GListModel   **model);
-GnWindow *gn_window_new_with_editor       (GnApplication *application,
-                                           GtkWidget     *editor);
-GtkWidget *gn_window_steal_editor         (GnWindow *self);
 void       gn_window_set_as_main          (GnWindow *self);
 
 G_END_DECLS
