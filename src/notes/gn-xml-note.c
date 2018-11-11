@@ -143,6 +143,18 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
   mark_underline = gtk_text_mark_new ("u", TRUE);
   mark_strike = gtk_text_mark_new ("s", TRUE);
 
+  /* HACK: For the new format */
+  if (g_str_has_prefix (end, "<body"))
+    {
+      g_autofree gchar *title;
+
+      title = g_strconcat (gn_item_get_title (GN_ITEM (self)),
+                           "\n", NULL);
+
+      gtk_text_buffer_set_text (text_buffer, title, -1);
+    }
+
+
   /* Skip up to the content */
   end = strstr (end, "<body");
   end = strchr (end, '>');
@@ -492,6 +504,10 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
   g_clear_pointer (&self->raw_inner_xml, g_free);
+  /* HACK: To keep backward combatility */
+  self->raw_inner_xml = g_strconcat ("<body>",
+                                     raw_content->str,
+                                     "</body>", NULL);
 
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
