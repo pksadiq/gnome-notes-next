@@ -33,14 +33,53 @@
  * @include: "gn-text-view.h"
  */
 
+#define MAX_UNDO_LEVEL 100
+
 struct _GnTextView
 {
   GtkTextView parent_instance;
 
   GnNoteBuffer *buffer;
+
+  GQueue *undo_queue;
+  GList  *current_undo;
+  guint   can_undo : 1;
+  guint   can_redo : 1;
 };
 
 G_DEFINE_TYPE (GnTextView, gn_text_view, GTK_TYPE_TEXT_VIEW)
+
+enum {
+  PROP_0,
+  PROP_CAN_UNDO,
+  PROP_CAN_REDO,
+  N_PROPS
+};
+
+static GParamSpec *properties[N_PROPS];
+
+static void
+gn_text_view_get_property (GObject    *object,
+                           guint       prop_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
+{
+  GnTextView *self = (GnTextView *)object;
+
+  switch (prop_id)
+    {
+    case PROP_CAN_UNDO:
+      g_value_set_boolean (value, self->can_undo);
+      break;
+
+    case PROP_CAN_REDO:
+      g_value_set_boolean (value, self->can_redo);
+      break;
+
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+    }
+}
 
 static void
 gn_text_view_constructed (GObject *object)
@@ -69,8 +108,25 @@ gn_text_view_class_init (GnTextViewClass *klass)
 {
   GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+  object_class->get_property = gn_text_view_get_property;
   object_class->constructed = gn_text_view_constructed;
   object_class->finalize = gn_text_view_finalize;
+
+  properties[PROP_CAN_UNDO] =
+    g_param_spec_boolean ("can-undo",
+                          "Can undo",
+                          "If undo can be done or not",
+                          FALSE,
+                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  properties[PROP_CAN_REDO] =
+    g_param_spec_boolean ("can-redo",
+                          "Can redo",
+                          "If redo can be done or not",
+                          FALSE,
+                          G_PARAM_READABLE | G_PARAM_STATIC_STRINGS);
+
+  g_object_class_install_properties (object_class, N_PROPS, properties);
 }
 
 static void

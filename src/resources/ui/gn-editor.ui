@@ -107,6 +107,28 @@
         <property name="orientation">vertical</property>
 
         <child>
+          <object class="GtkModelButton">
+            <property name="text" translatable="yes">_Undo</property>
+            <property name="sensitive" bind-source="editor_view" bind-property="can-undo"
+                      bind-flags="sync-create" />
+            <signal name="clicked" handler="gn_editor_undo" swapped="1" />
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkModelButton">
+            <property name="text" translatable="yes">_Redo</property>
+            <property name="sensitive" bind-source="editor_view" bind-property="can-redo"
+                      bind-flags="sync-create" />
+            <signal name="clicked" handler="gn_editor_redo" swapped="1" />
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkSeparatorMenuItem" />
+        </child>
+
+        <child>
           <object class="GtkModelButton" id="detach_button">
             <property name="text" translatable="yes">_Open in new window</property>
             <property name="action-name">app.detach-editor</property>
