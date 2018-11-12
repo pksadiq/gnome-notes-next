@@ -407,6 +407,8 @@ gn_utils_get_text_from_xml (const gchar *xml)
 
           /* Skip the tag */
           start = strchr (end, '>');
+          g_return_val_if_fail (start != NULL, g_string_free (str, FALSE));
+
           start++;
           end = start;
         }
@@ -416,6 +418,7 @@ gn_utils_get_text_from_xml (const gchar *xml)
 
           start = end;
           end = strchr (end, ';');
+          g_return_val_if_fail (end != NULL, g_string_free (str, FALSE));
 
           gn_utils_append_unescaped (str, start, end);
 
