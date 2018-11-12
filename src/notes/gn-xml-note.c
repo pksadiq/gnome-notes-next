@@ -204,7 +204,7 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
               if (!gtk_text_buffer_get_mark (text_buffer, "u"))
                 gtk_text_buffer_add_mark (text_buffer, mark_underline, &end_iter);
             }
-          else if (g_str_has_prefix (end, "strike"))
+          else if (g_str_has_prefix (end, "s>"))
             {
               if (!gtk_text_buffer_get_mark (text_buffer, "s"))
                 gtk_text_buffer_add_mark (text_buffer, mark_strike, &end_iter);
@@ -226,7 +226,7 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
             {
               gn_xml_note_apply_tag_at_mark (text_buffer, mark_underline, "underline");
             }
-          else if (g_str_has_prefix (end, "/strike"))
+          else if (g_str_has_prefix (end, "/s>"))
             {
               gn_xml_note_apply_tag_at_mark (text_buffer, mark_strike, "strike");
             }
