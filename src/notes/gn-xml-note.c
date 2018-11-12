@@ -913,7 +913,7 @@ gn_xml_note_parse_xml (GnXmlNote *self)
                 g_hash_table_add (self->labels, g_strdup (label));
               }
           }
-        else if (g_strcmp0 (tag, "note-content") == 0)
+        else if (g_strcmp0 (tag, "text") == 0)
           {
             gchar *inner_xml;
             xmlTextReader *xml_reader;
