@@ -493,6 +493,8 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
   g_clear_pointer (&self->raw_inner_xml, g_free);
+  if (raw_content->str)
+    self->raw_inner_xml = g_strdup (raw_content->str);
 
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
@@ -958,7 +960,7 @@ gn_xml_note_parse_xml (GnXmlNote *self)
                 g_hash_table_add (self->labels, g_strdup (label));
               }
           }
-        else if (g_strcmp0 (tag, "text") == 0)
+        else if (g_strcmp0 (tag, "note-content") == 0)
           {
             gchar *inner_xml;
             xmlTextReader *xml_reader;
