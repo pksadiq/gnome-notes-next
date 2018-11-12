@@ -529,6 +529,8 @@ static void
 gn_xml_note_update_text_content (GnXmlNote *self)
 {
   g_autofree gchar *content = NULL;
+  g_autofree gchar *casefold_content = NULL;
+
   gchar *content_start;
 
   g_assert (GN_IS_XML_NOTE (self));
@@ -540,21 +542,16 @@ gn_xml_note_update_text_content (GnXmlNote *self)
   if (self->raw_content == NULL)
     return;
 
-  if (self->is_bijiben)
-    content_start = strstr (self->raw_content, "<div");
-  else
-    {
-      content_start = strchr (self->raw_content, '\n');
-      if (content_start)
-        content_start++;
-    }
-
-
+  content_start = strchr (self->raw_content, '\n');
   if (content_start == NULL)
     return;
 
-  /* content = gn_utils_get_text_from_xml (content_start); */
-  /* self->text_content = g_utf8_casefold (content, -1); */
+  /* Skip '\n' */
+  content_start++;
+
+  content = gn_utils_get_text_from_xml (content_start);
+  casefold_content = g_utf8_casefold (content, -1);
+  self->text_content = g_string_new (casefold_content);
 }
 
 static gchar *
@@ -584,6 +581,7 @@ gn_xml_note_get_raw_content (GnNote *note)
   GnXmlNote *self = GN_XML_NOTE (note);
 
   g_assert (GN_IS_NOTE (note));
+
 
   if (self->raw_content == NULL)
     {
