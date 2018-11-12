@@ -576,6 +576,30 @@ gn_xml_note_set_text_content (GnNote      *note,
   /* self->text_content = g_strdup (content); */
 }
 
+static void
+gn_xml_note_update_markup (GnXmlNote *self)
+{
+  const gchar *title;
+
+  g_assert (GN_IS_XML_NOTE (self));
+
+  if (self->markup)
+    g_string_free (self->markup, TRUE);
+  self->markup = NULL;
+
+  g_return_if_fail (self->raw_inner_xml);
+
+  title = gn_item_get_title (GN_ITEM (self));
+  self->markup = g_string_new ("<markup>");
+
+  if (title)
+    g_string_append_printf (self->markup, "<b>%s</b>\n\n",
+                            title);
+
+  g_string_append (self->markup, self->raw_inner_xml);
+  g_string_append (self->markup, "</markup>");
+}
+
 static gchar *
 gn_xml_note_get_markup (GnNote *note)
 {
@@ -584,11 +608,10 @@ gn_xml_note_get_markup (GnNote *note)
   g_assert (GN_IS_NOTE (note));
 
 
-  if (self->markup &&
-      self->markup->str)
-    return g_strdup (self->markup->str);
+  if (self->markup == NULL)
+    gn_xml_note_update_markup (self);
 
-  return g_strdup ("");
+  return g_strdup (self->markup->str);
 }
 
 static const gchar *
