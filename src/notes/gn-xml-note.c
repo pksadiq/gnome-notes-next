@@ -417,7 +417,6 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   GString *raw_content;
   g_autofree gchar *content = NULL;
   GtkTextIter start, end, iter;
-  gunichar c;
 
   g_assert (GN_IS_XML_NOTE (self));
   g_assert (GTK_IS_TEXT_BUFFER (buffer));
@@ -445,36 +444,40 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   else
     xml_writer_write_raw (self->xml_writer, "\n");
 
-  do
+  while (gtk_text_iter_forward_to_tag_toggle (&iter, NULL))
     {
-      g_autofree gchar *escaped = NULL;
-      gchar str[6];
       GSList *tags;
-      GSList *node;
-      gint length;
+      const gchar *tag_name;
 
-      c = gtk_text_iter_get_char (&iter);
+      if (!gtk_text_iter_equal (&iter, &start))
+        {
+          g_autofree gchar *content = NULL;
+          g_autofree gchar *markup = NULL;
+
+          content = gtk_text_buffer_get_text (buffer, &start, &iter, FALSE);
+          markup = g_markup_escape_text (content, -1);
+          g_string_append (raw_content, markup);
+
+          start = iter;
+        }
 
       /* First, we have to handle tags that are closed */
       tags = gtk_text_iter_get_toggled_tags (&iter, FALSE);
-      for (node = tags; node != NULL; node = node->next)
+      for (GSList *node = tags; node != NULL; node = node->next)
         {
           GtkTextTag *tag = node->data;
-          const gchar *tag_name;
 
           tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
                                                       tag);
           gn_xml_note_close_tag (self, raw_content, tag_name, tags_queue);
         }
-
       g_slist_free (tags);
 
       /* Now, let's handle open tags */
       tags = gtk_text_iter_get_toggled_tags (&iter, TRUE);
-      for (node = tags; node != NULL; node = node->next)
+      for (GSList *node = tags; node != NULL; node = node->next)
         {
           GtkTextTag *tag = node->data;
-          const gchar *tag_name;
 
           tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
                                                       tag);
@@ -483,13 +486,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
         }
 
       g_slist_free (tags);
-
-
-      length = g_unichar_to_utf8 (c, str);
-      escaped = g_markup_escape_text (str, length);
-
-      g_string_append (raw_content, escaped);
-    } while (gtk_text_iter_forward_char (&iter));
+    }
 
   for (GList *node = tags_queue->head; node != NULL; node = node->next)
     g_string_append_printf (raw_content, "</%s>", (gchar *)node->data);
