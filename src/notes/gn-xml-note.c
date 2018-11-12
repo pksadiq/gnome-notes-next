@@ -123,7 +123,6 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
   GtkTextBuffer *text_buffer;
   gchar *start, *end;
   GtkTextIter end_iter;
-  gboolean last_is_div = FALSE;
   gchar c;
 
   GnXmlNote *self = GN_XML_NOTE (note);
@@ -143,27 +142,6 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
   mark_underline = gtk_text_mark_new ("u", TRUE);
   mark_strike = gtk_text_mark_new ("s", TRUE);
 
-  /* HACK: For the new format */
-  if (g_str_has_prefix (end, "<body"))
-    {
-      g_autofree gchar *title;
-
-      title = g_strconcat (gn_item_get_title (GN_ITEM (self)),
-                           "\n", NULL);
-
-      gtk_text_buffer_set_text (text_buffer, title, -1);
-    }
-
-
-  /* Skip up to the content */
-  end = strstr (end, "<body");
-  end = strchr (end, '>');
-  end++;
-
-  if (g_str_has_prefix (end, "<div>"))
-    end += strlen ("<div>");
-  start = end;
-
   while ((c = *end))
     {
       if (c == '<')
@@ -174,22 +152,7 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
           /* Skip '<' */
           end++;
 
-          if (!g_str_has_prefix (end, "div"))
-            last_is_div = FALSE;
-
-          if (g_str_has_prefix (end, "div"))
-            {
-              /*
-               * "div" tag may be nested.  Only the first level
-               * should be considered as a paragraph.  The rest
-               * can safely be ignored.
-               */
-              if (!last_is_div)
-                gtk_text_buffer_insert (text_buffer, &end_iter, "\n", 1);
-
-              last_is_div = TRUE;
-            }
-          else if (g_str_has_prefix (end, "b>"))
+          if (g_str_has_prefix (end, "b>"))
             {
               if (!gtk_text_buffer_get_mark (text_buffer, "b"))
                 gtk_text_buffer_add_mark (text_buffer, mark_bold, &end_iter);
@@ -209,11 +172,6 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
               if (!gtk_text_buffer_get_mark (text_buffer, "s"))
                 gtk_text_buffer_add_mark (text_buffer, mark_strike, &end_iter);
             }
-          else if (g_str_has_prefix (end, "/div") ||
-                   g_str_has_prefix (end, "br "))
-            {
-              /* Do nothing */
-            }
           else if (g_str_has_prefix (end, "/b>"))
             {
               gn_xml_note_apply_tag_at_mark (text_buffer, mark_bold, "bold");
@@ -230,13 +188,10 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
             {
               gn_xml_note_apply_tag_at_mark (text_buffer, mark_strike, "strike");
             }
-          else if (g_str_has_prefix (end, "/body"))
-            {
-              start = end;
-              break;
-            }
 
           end = strchr (end, '>');
+          g_return_if_fail (end != NULL);
+
           end++;
           start = end;
         }
@@ -244,7 +199,6 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
         {
           gchar *str = "";
 
-          last_is_div = FALSE;
           gn_xml_note_update_buffer (self, text_buffer, start, end);
           gtk_text_buffer_get_end_iter (text_buffer, &end_iter);
 
@@ -262,14 +216,13 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
           gtk_text_buffer_insert (text_buffer, &end_iter, str, 1);
 
           end = strchr (end, ';');
+          g_return_if_fail (end != NULL);
+
           end++;
           start = end;
         }
       else
-        {
-          last_is_div = FALSE;
-          end++;
-        }
+        end++;
     }
 
   gn_xml_note_update_buffer (self, text_buffer, start, end);
