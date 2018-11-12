@@ -5,5 +5,5 @@
 <last-metadata-change-date>2018-11-08T13:23:41Z</last-metadata-change-date>
 <create-date>2018-11-08T13:23:38Z</create-date>
 <color>rgb(150,12,12)</color>
-<text xml:space="preserve"><html xmlns="http://www.w3.org/1999/xhtml"><body>
-Note with content only</body></html></text></note>
+<text xml:space="preserve"><note-content>
+Note with content only</note-content></text></note>

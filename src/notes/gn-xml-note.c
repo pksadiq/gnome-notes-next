@@ -396,15 +396,7 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
   xml_writer_start_tag (writer, "text");
   xml_writer_write_attribute (writer, "xml", "space", "preserve");
 
-  /*
-   * XXX: Much of these are simply to keep backward compatibility.
-   * We have no use of these tags anymore.
-   */
-  xml_writer_start_tag (writer, "html");
-  xml_writer_write_attribute (writer, NULL, "xmlns",
-                              "http://www.w3.org/1999/xhtml");
-
-  xml_writer_start_tag (writer, "body");
+  xml_writer_start_tag (writer, "note-content");
   xml_writer_write_string (writer, gn_item_get_title (item));
 }
 
@@ -501,10 +493,6 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
   g_clear_pointer (&self->raw_inner_xml, g_free);
-  /* HACK: To keep backward combatility */
-  self->raw_inner_xml = g_strconcat ("<body>",
-                                     raw_content->str,
-                                     "</body>", NULL);
 
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
