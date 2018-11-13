@@ -579,8 +579,6 @@ gn_xml_note_set_text_content (GnNote      *note,
 static void
 gn_xml_note_update_markup (GnXmlNote *self)
 {
-  const gchar *title;
-
   g_assert (GN_IS_XML_NOTE (self));
 
   if (self->markup)
@@ -589,12 +587,10 @@ gn_xml_note_update_markup (GnXmlNote *self)
 
   g_return_if_fail (self->raw_inner_xml);
 
-  title = gn_item_get_title (GN_ITEM (self));
   self->markup = g_string_new ("<markup>");
 
-  if (title)
-    g_string_append_printf (self->markup, "<b>%s</b>\n\n",
-                            title);
+  g_string_append_printf (self->markup, "<b>%s</b>\n\n",
+                          gn_item_get_title (GN_ITEM (item)));
 
   g_string_append (self->markup, self->raw_inner_xml);
   g_string_append (self->markup, "</markup>");
