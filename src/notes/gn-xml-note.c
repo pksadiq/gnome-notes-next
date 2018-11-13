@@ -211,6 +211,7 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
   GtkTextMark *mark_underline, *mark_strike;
   GtkTextBuffer *text_buffer;
   gchar *start, *end;
+  const gchar *title;
   GtkTextIter end_iter;
   gchar c;
 
@@ -220,7 +221,15 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
 
   text_buffer = GTK_TEXT_BUFFER (buffer);
 
-  gtk_text_buffer_set_text (text_buffer, "", 0);
+  title = gn_item_get_title (GN_ITEM (self));
+  gtk_text_buffer_set_text (text_buffer, title, -1);
+
+  if (title && self->raw_inner_xml && *self->raw_inner_xml)
+    {
+      gtk_text_buffer_get_end_iter (text_buffer, &end_iter);
+      gtk_text_buffer_insert (text_buffer, &end_iter, "\n", 1);
+    }
+
   start = end = self->raw_inner_xml;
 
   if (start == NULL)
@@ -549,8 +558,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
   g_clear_pointer (&self->raw_inner_xml, g_free);
   if (raw_content->str)
-    self->raw_inner_xml = g_strconcat (gn_item_get_title (GN_ITEM (self)),
-                                       "\n", raw_content->str, NULL);
+    self->raw_inner_xml = g_strconcat (raw_content->str, NULL);
 
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
@@ -685,16 +693,14 @@ gn_xml_note_update_markup (GnXmlNote *self)
 
   if (self->markup)
     g_string_free (self->markup, TRUE);
-  self->markup = NULL;
-
-  g_return_if_fail (self->raw_inner_xml);
 
   self->markup = g_string_new ("<markup>");
 
   g_string_append_printf (self->markup, "<b>%s</b>\n\n",
                           gn_item_get_title (GN_ITEM (self)));
 
-  g_string_append (self->markup, self->raw_inner_xml);
+  if (self->raw_inner_xml)
+    g_string_append (self->markup, self->raw_inner_xml);
   g_string_append (self->markup, "</markup>");
 }
 
@@ -773,7 +779,6 @@ static void
 gn_xml_note_init (GnXmlNote *self)
 {
   self->text_content = g_string_new ("");
-  self->markup = g_string_new ("");
   self->labels = g_hash_table_new_full (g_str_hash, g_str_equal,
                                         g_free, NULL);
   self->is_bijiben = TRUE;
@@ -783,11 +788,7 @@ static void
 gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
                               xmlTextReader *xml_reader)
 {
-  GQueue *tags_queue;
-
   g_assert (GN_IS_XML_NOTE (self));
-
-  tags_queue = g_queue_new ();
 
   /*
    * The text until the first <div> tag is the title
@@ -804,10 +805,7 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
       if (tag == NULL ||
           g_str_equal (tag, "div") ||
           g_str_equal (tag, "br"))
-        {
-          g_string_append_c (self->markup, '\n');
-          break;
-        }
+        break;
 
       /*
        * If the value of the tag contain a '\n', the title
@@ -826,8 +824,6 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
             continue;
 
           g_string_append (self->text_content, content);
-          g_string_append (self->markup, content);
-          break;
         }
     }
 
@@ -849,39 +845,7 @@ gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
           content = xml_reader_get_value (xml_reader);
 
           if (content)
-            {
-              g_autofree gchar *markup = NULL;
-
-              g_string_append (self->text_content, content);
-              markup = g_markup_escape_text (content, -1);
-              g_string_append (self->markup, markup);
-            }
-          break;
-
-          /* FIXME: Simplify */
-        case XML_ELEMENT_NODE:
-          if ((content = xml_reader_get_name (xml_reader)))
-            {
-              if (g_str_equal (content, "br"))
-                g_string_append_c (self->markup, '\n');
-              else if (!g_str_equal (content, "span") &&
-                       !g_str_equal (content, "div") &&
-                       !g_str_equal (content, "body") &&
-                       !g_str_equal (content, "html"))
-                {
-                  g_queue_push_head (tags_queue, (gchar *)g_intern_string (tag));
-                  g_string_append_printf (self->markup, "<%s>", content);
-                }
-            }
-          break;
-
-        case XML_ELEMENT_DECL:
-          if ((content = xml_reader_get_name (xml_reader)))
-            if (!g_str_equal (content, "span") &&
-                !g_str_equal (content, "div") &&
-                !g_str_equal (content, "body") &&
-                !g_str_equal (content, "html"))
-              gn_xml_note_close_tag (self, self->markup, content, tags_queue);
+            g_string_append (self->text_content, content);
           break;
 
         default:
@@ -938,8 +902,6 @@ gn_xml_note_parse_xml (GnXmlNote *self)
 {
   g_assert (GN_IS_XML_NOTE (self));
 
-  g_string_append (self->markup, "<markup>");
-
   while (xml_reader_read (self->xml_reader) == 1)
     if (xml_reader_get_node_type (self->xml_reader) == XML_ELEMENT_NODE)
       {
@@ -951,15 +913,8 @@ gn_xml_note_parse_xml (GnXmlNote *self)
 
         if (g_strcmp0 (tag, "title") == 0)
           {
-            g_autofree gchar *markup = NULL;
-
             content = xml_reader_dup_string (self->xml_reader);
-            if (content == NULL)
-              continue;
-
             gn_item_set_title (GN_ITEM (self), content);
-            markup = g_markup_printf_escaped ("<b>%s</b>\n", content);
-            g_string_append (self->markup, markup);
           }
         else if (g_strcmp0 (tag, "create-date") == 0)
           {
@@ -1036,7 +991,7 @@ gn_xml_note_parse_xml (GnXmlNote *self)
           }
         else if (g_strcmp0 (tag, "text") == 0)
           {
-            gchar *inner_xml;
+            g_autofree gchar *inner_xml = NULL;
             xmlTextReader *xml_reader;
 
             inner_xml = xml_reader_dup_inner_xml (self->xml_reader);
@@ -1045,8 +1000,6 @@ gn_xml_note_parse_xml (GnXmlNote *self)
             xml_reader = xml_reader_new (inner_xml, strlen (inner_xml));
             g_return_if_fail (xml_reader != NULL);
 
-            self->raw_inner_xml = inner_xml;
-
             if (self->is_bijiben)
               gn_xml_note_parse_as_bijiben (self, xml_reader);
             else
@@ -1054,9 +1007,23 @@ gn_xml_note_parse_xml (GnXmlNote *self)
 
             xml_reader_free (xml_reader);
           }
-      }
+        else if (g_strcmp0 (tag, "note-content") == 0)
+          {
+            g_autofree gchar *inner_xml = NULL;
+            gchar *content;
 
-  g_string_append (self->markup, "</markup>");
+            inner_xml = xml_reader_dup_inner_xml (self->xml_reader);
+            g_return_if_fail (inner_xml != NULL);
+
+            /* Skip the title */
+            content = strchr (inner_xml, '\n');
+
+            if (content)
+              content++;
+
+            self->raw_inner_xml = g_strdup (content);
+          }
+      }
 }
 
 /*
@@ -1068,7 +1035,6 @@ static GnXmlNote *
 gn_xml_note_create_from_data (const gchar *data,
                               gsize        length)
 {
-  xmlNode *root_node;
   g_autoptr(GnXmlNote) self = NULL;
   NoteFormat note_format;
 
