@@ -60,12 +60,22 @@
 #define BIJIBEN_XML_NS "http://projects.gnome.org/bijiben"
 #define TOMBOY_XML_NS  "http://beatniksoftware.com/tomboy"
 
+typedef enum
+{
+  NOTE_FORMAT_UNKNOWN,
+  NOTE_FORMAT_TOMBOY_1,
+  NOTE_FORMAT_TOMBOY_2,
+  NOTE_FORMAT_TOMBOY_3,
+  NOTE_FORMAT_BIJIBEN_1,
+  NOTE_FORMAT_BIJIBEN_2,
+  N_NOTE_FORMATS
+} NoteFormat;
+
 struct _GnXmlNote
 {
   GnNote parent_instance;
 
   xmlTextReader *xml_reader;
-  xmlDoc  *xml_doc;
   xmlBuffer *xml_buffer;
   xmlTextWriter *xml_writer;
   gchar   *raw_inner_xml; /* xml data of the <text> tag */
@@ -77,9 +87,88 @@ struct _GnXmlNote
 
   /* TRUE: Bijiben XML.  FALSE: Tomboy XML */
   gboolean is_bijiben;
+  NoteFormat note_format;
 };
 
 G_DEFINE_TYPE (GnXmlNote, gn_xml_note, GN_TYPE_NOTE)
+
+/*
+ * gn_xml_note_get_format:
+ * @data: A string
+ * @length: length of @data
+ *
+ * Get the format of the XML data passed.
+ * @data is not validated, so partial data
+ * can be given.
+ *
+ * Returns: A #NoteFormat
+ */
+NoteFormat
+gn_xml_note_get_format (const gchar *data,
+                        gsize        length)
+{
+  gchar *start, *end;
+  g_autofree gchar *note_tag = NULL;
+  gboolean is_bijiben, is_tomboy;
+
+  g_return_val_if_fail (data != NULL, NOTE_FORMAT_UNKNOWN);
+
+  /*
+   * The length checked is pure artificial, just enough
+   * to be safe from the code below which does nasty things
+   * without any checks.
+   */
+  if (length < 100)
+    return NOTE_FORMAT_UNKNOWN;
+
+  start = strstr (data, "<note ");
+  if (!start)
+    return NOTE_FORMAT_UNKNOWN;
+
+  end = strchr (start, '>');
+  if (!end)
+    return NOTE_FORMAT_UNKNOWN;
+
+  note_tag = g_strndup (start, end - start);
+
+  start = strstr (note_tag, " xmlns=\"");
+  if (!start)
+    return NOTE_FORMAT_UNKNOWN;
+  start += strlen (" xmlns=\"");
+
+  is_bijiben = is_tomboy = FALSE;
+
+  if (g_str_has_prefix (start, BIJIBEN_XML_NS "\""))
+    is_bijiben = TRUE;
+  else if (g_str_has_prefix (start, TOMBOY_XML_NS "\""))
+    is_tomboy = TRUE;
+  else
+    return NOTE_FORMAT_UNKNOWN;
+
+  start = strstr (note_tag, " version=\"");
+  if (!start)
+    return NOTE_FORMAT_UNKNOWN;
+  start += strlen (" version=\"");
+
+  if (is_bijiben)
+    {
+      if (g_str_has_prefix (start, "2" "\""))
+        return NOTE_FORMAT_BIJIBEN_2;
+      else if (g_str_has_prefix (start, "1" "\""))
+        return NOTE_FORMAT_BIJIBEN_1;
+    }
+  else
+    {
+      if (g_str_has_prefix (start, "0.3" "\""))
+        return NOTE_FORMAT_TOMBOY_3;
+      else if (g_str_has_prefix (start, "0.2" "\""))
+        return NOTE_FORMAT_TOMBOY_2;
+      else if (g_str_has_prefix (start, "0.1" "\""))
+        return NOTE_FORMAT_TOMBOY_1;
+    }
+
+  return NOTE_FORMAT_UNKNOWN;
+}
 
 static void
 gn_xml_note_update_buffer (GnXmlNote     *self,
@@ -487,7 +576,6 @@ gn_xml_note_finalize (GObject *object)
     g_string_free (self->markup, TRUE);
 
   xml_reader_free (self->xml_reader);
-  xml_doc_free (self->xml_doc);
 
   G_OBJECT_CLASS (gn_xml_note_parent_class)->finalize (object);
 
@@ -982,33 +1070,31 @@ gn_xml_note_create_from_data (const gchar *data,
 {
   xmlNode *root_node;
   g_autoptr(GnXmlNote) self = NULL;
+  NoteFormat note_format;
 
   g_assert (data != NULL);
 
   if (length == -1)
     length = strlen (data);
 
+  note_format = gn_xml_note_get_format (data, length);
+
+  g_return_val_if_fail (note_format != NOTE_FORMAT_UNKNOWN, NULL);
+
   self = g_object_new (GN_TYPE_XML_NOTE, NULL);
+  self->note_format = note_format;
+
+  if (note_format == NOTE_FORMAT_BIJIBEN_2 ||
+      note_format == NOTE_FORMAT_BIJIBEN_1)
+    self->is_bijiben = TRUE;
+  else
+    self->is_bijiben = FALSE;
 
   self->xml_reader = xml_reader_new (data, length);
 
   g_return_val_if_fail (self->xml_reader != NULL, NULL);
 
-  /*
-   * TODO: Profile this.  May be we can avoid xml_doc_new()
-   * because we only use xml_reader_new()
-   */
-  self->xml_doc = xml_doc_new (data, length);
-
-  g_return_val_if_fail (self->xml_doc != NULL, NULL);
-
-  root_node = xml_doc_get_root_element (self->xml_doc);
-  g_return_val_if_fail (root_node != NULL, NULL);
-
   /* self->raw_xml_data = g_strdup (data); */
-
-  if (g_strcmp0 ((gchar *)root_node->ns->href, TOMBOY_XML_NS) == 0)
-    self->is_bijiben = FALSE;
 
   gn_xml_note_parse_xml (self);
 
