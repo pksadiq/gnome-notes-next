@@ -174,19 +174,19 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
             }
           else if (g_str_has_prefix (end, "/b>"))
             {
-              gn_xml_note_apply_tag_at_mark (text_buffer, mark_bold, "bold");
+              gn_xml_note_apply_tag_at_mark (text_buffer, mark_bold, "b");
             }
           else if (g_str_has_prefix (end, "/i>"))
             {
-              gn_xml_note_apply_tag_at_mark (text_buffer, mark_italic, "italic");
+              gn_xml_note_apply_tag_at_mark (text_buffer, mark_italic, "i");
             }
           else if (g_str_has_prefix (end, "/u>"))
             {
-              gn_xml_note_apply_tag_at_mark (text_buffer, mark_underline, "underline");
+              gn_xml_note_apply_tag_at_mark (text_buffer, mark_underline, "u");
             }
           else if (g_str_has_prefix (end, "/s>"))
             {
-              gn_xml_note_apply_tag_at_mark (text_buffer, mark_strike, "strike");
+              gn_xml_note_apply_tag_at_mark (text_buffer, mark_strike, "s");
             }
 
           end = strchr (end, '>');

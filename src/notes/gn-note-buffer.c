@@ -174,22 +174,22 @@ gn_note_buffer_constructed (GObject *object)
   tag = gtk_text_buffer_create_tag (buffer, "font", NULL);
   self->tag_font = tag;
 
-  tag = gtk_text_buffer_create_tag (buffer, "bold",
+  tag = gtk_text_buffer_create_tag (buffer, "b",
                                     "weight", PANGO_WEIGHT_BOLD,
                                     NULL);
   self->tag_bold = tag;
 
-  tag = gtk_text_buffer_create_tag (buffer, "italic",
+  tag = gtk_text_buffer_create_tag (buffer, "i",
                                     "style", PANGO_STYLE_ITALIC,
                                     NULL);
   self->tag_italic = tag;
 
-  tag = gtk_text_buffer_create_tag (buffer, "strike",
+  tag = gtk_text_buffer_create_tag (buffer, "s",
                                     "strikethrough", TRUE,
                                     NULL);
   self->tag_strike = tag;
 
-  tag = gtk_text_buffer_create_tag (buffer, "underline",
+  tag = gtk_text_buffer_create_tag (buffer, "u",
                                     "underline", PANGO_UNDERLINE_SINGLE,
                                     NULL);
   self->tag_underline = tag;
