@@ -558,9 +558,9 @@ gn_manager_new_note (GnManager *self)
   provider = gn_manager_get_default_provider (self, FALSE);
 
   if (GN_IS_LOCAL_PROVIDER (provider))
-    item = GN_ITEM (gn_xml_note_new_from_data (NULL));
+    item = GN_ITEM (gn_xml_note_new_from_data (NULL, 0));
   else
-    item = GN_ITEM (gn_plain_note_new_from_data (NULL));
+    item = GN_ITEM (gn_plain_note_new_from_data (NULL, 0));
 
   g_object_set_data (G_OBJECT (item), "provider", provider);
 

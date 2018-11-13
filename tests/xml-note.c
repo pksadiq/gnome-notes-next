@@ -56,7 +56,7 @@ test_xml_note_empty (void)
   const gchar *title;
   gchar *content;
 
-  xml_note = gn_xml_note_new_from_data (NULL);
+  xml_note = gn_xml_note_new_from_data (NULL, 0);
   g_assert_true (GN_IS_XML_NOTE (xml_note));
   item = GN_ITEM (xml_note);
   note = GN_NOTE (xml_note);
@@ -183,7 +183,7 @@ test_xml_note_parse (gconstpointer user_data)
 
   test_xml_note_update_content_from_file (user_data);
 
-  xml_note = gn_xml_note_new_from_data (test_note.file_content);
+  xml_note = gn_xml_note_new_from_data (test_note.file_content, -1);
   g_assert_true (GN_IS_XML_NOTE (xml_note));
   item = GN_ITEM (xml_note);
   note = GN_NOTE (xml_note);
@@ -248,7 +248,7 @@ test_xml_note_markup (gconstpointer user_data)
 
   test_xml_note_update_markup_from_file (user_data);
 
-  xml_note = gn_xml_note_new_from_data (test_note.file_content);
+  xml_note = gn_xml_note_new_from_data (test_note.file_content, -1);
   g_assert_true (GN_IS_XML_NOTE (xml_note));
   note = GN_NOTE (xml_note);
 

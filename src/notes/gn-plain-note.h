@@ -30,6 +30,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GnPlainNote, gn_plain_note, GN, PLAIN_NOTE, GnNote)
 
-GnPlainNote *gn_plain_note_new_from_data (const gchar *text);
+GnPlainNote *gn_plain_note_new_from_data (const gchar *text,
+                                          gsize        length);
 
 G_END_DECLS

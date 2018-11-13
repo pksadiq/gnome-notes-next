@@ -186,13 +186,17 @@ gn_plain_note_init (GnPlainNote *self)
 
 
 static GnPlainNote *
-gn_plain_note_create_from_data (const gchar *data)
+gn_plain_note_create_from_data (const gchar *data,
+                                gsize        length)
 {
   g_auto(GStrv) split_data = NULL;
   gchar *title = NULL, *content = NULL;
   GnPlainNote *note;
 
   g_assert (data != NULL);
+
+  if (length == -1)
+    length = strlen (data);
 
   /* We shall have at most 2 parts: title and content */
   split_data = g_strsplit (data, "\n", 2);
@@ -217,6 +221,7 @@ gn_plain_note_create_from_data (const gchar *data)
 /**
  * gn_plain_note_new_from_data:
  * @data (nullable): The raw note content
+ * @length: The length of @data, or -1
  *
  * Create a new plain note from the given data.
  *
@@ -224,10 +229,11 @@ gn_plain_note_create_from_data (const gchar *data)
  * with given content.
  */
 GnPlainNote *
-gn_plain_note_new_from_data (const gchar *data)
+gn_plain_note_new_from_data (const gchar *data,
+                             gsize        length)
 {
   if (data == NULL)
     return g_object_new (GN_TYPE_PLAIN_NOTE, NULL);
 
-  return gn_plain_note_create_from_data (data);
+  return gn_plain_note_create_from_data (data, length);
 }

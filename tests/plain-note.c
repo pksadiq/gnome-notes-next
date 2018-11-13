@@ -84,7 +84,7 @@ test_plain_note_empty (void)
   const gchar *title;
   gboolean has_color;
 
-  plain_note = gn_plain_note_new_from_data (NULL);
+  plain_note = gn_plain_note_new_from_data (NULL, 0);
   g_assert (GN_IS_PLAIN_NOTE (plain_note));
 
   item = GN_ITEM (plain_note);
@@ -114,7 +114,7 @@ test_plain_note_new (void)
   const gchar *title;
   gchar *content;
 
-  plain_note = gn_plain_note_new_from_data (NULL);
+  plain_note = gn_plain_note_new_from_data (NULL, 0);
   g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
   item = GN_ITEM (plain_note);
   note = GN_NOTE (plain_note);
@@ -129,7 +129,7 @@ test_plain_note_new (void)
   g_assert_null (content);
   g_object_unref (plain_note);
 
-  plain_note = gn_plain_note_new_from_data ("");
+  plain_note = gn_plain_note_new_from_data ("", 0);
   g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
   item = GN_ITEM (plain_note);
   note = GN_NOTE (plain_note);
@@ -154,7 +154,7 @@ test_plain_note_title (void)
   const gchar *title;
   g_autofree gchar *content = NULL;
 
-  plain_note = gn_plain_note_new_from_data ("Some Randomly long test 😊");
+  plain_note = gn_plain_note_new_from_data ("Some Randomly long test 😊", -1);
   g_assert (GN_IS_PLAIN_NOTE (plain_note));
 
   item = GN_ITEM (plain_note);
@@ -182,7 +182,7 @@ test_plain_note_content (void)
   const gchar *title;
   gchar *content;
 
-  plain_note = gn_plain_note_new_from_data ("Some Randomly\nlong test 😊");
+  plain_note = gn_plain_note_new_from_data ("Some Randomly\nlong test 😊", -1);
   g_assert (GN_IS_PLAIN_NOTE (plain_note));
 
   item = GN_ITEM (plain_note);
@@ -215,7 +215,7 @@ test_plain_note_buffer (void)
   const gchar *title;
   g_autofree gchar *content = NULL;
 
-  plain_note = gn_plain_note_new_from_data (NULL);
+  plain_note = gn_plain_note_new_from_data (NULL, 0);
   g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
 
   item = GN_ITEM (plain_note);
@@ -251,7 +251,7 @@ test_plain_note_markup (void)
   GnItem *item;
   gchar *markup;
 
-  plain_note = gn_plain_note_new_from_data (NULL);
+  plain_note = gn_plain_note_new_from_data (NULL, 0);
   g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
 
   item = GN_ITEM (plain_note);
@@ -286,7 +286,7 @@ test_plain_note_search (void)
   GnNote *note;
   GnItem *item;
 
-  plain_note = gn_plain_note_new_from_data ("Some Randomly\nlong test 😊");
+  plain_note = gn_plain_note_new_from_data ("Some Randomly\nlong test 😊", -1);
   g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
 
   item = GN_ITEM (plain_note);
@@ -317,7 +317,7 @@ test_plain_note_time (void)
   g_autoptr(GnPlainNote) plain_note = NULL;
   GnItem *item;
 
-  plain_note = gn_plain_note_new_from_data (NULL);
+  plain_note = gn_plain_note_new_from_data (NULL, 0);
   g_assert_true (GN_IS_PLAIN_NOTE (plain_note));
 
   item = GN_ITEM (plain_note);

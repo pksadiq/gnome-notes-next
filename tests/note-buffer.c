@@ -49,7 +49,7 @@ test_note_buffer_plain (void)
   GtkTextTag *title_tag;
   GtkTextIter start, end;
 
-  plain_note = gn_plain_note_new_from_data ("Test\nContent");
+  plain_note = gn_plain_note_new_from_data ("Test\nContent", -1);
   note = GN_NOTE (plain_note);
 
   buffer = GTK_TEXT_BUFFER (gn_note_buffer_new ());

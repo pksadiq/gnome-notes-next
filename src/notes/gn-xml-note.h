@@ -30,6 +30,7 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GnXmlNote, gn_xml_note, GN, XML_NOTE, GnNote)
 
-GnXmlNote *gn_xml_note_new_from_data (const gchar *text);
+GnXmlNote *gn_xml_note_new_from_data (const gchar *text,
+                                      gsize        length);
 
 G_END_DECLS

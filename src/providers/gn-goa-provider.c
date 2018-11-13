@@ -225,7 +225,7 @@ gn_goa_provider_load_items (GnGoaProvider *self,
       file = g_file_get_child (self->note_dir, name);
       g_file_load_contents (file, cancellable, &contents, NULL, NULL, NULL);
 
-      note = gn_plain_note_new_from_data (contents);
+      note = gn_plain_note_new_from_data (contents, -1);
 
       if (note == NULL)
         continue;

@@ -977,16 +977,20 @@ gn_xml_note_parse_xml (GnXmlNote *self)
  * GMarkupParser is an overkill here.
  */
 static GnXmlNote *
-gn_xml_note_create_from_data (const gchar *data)
+gn_xml_note_create_from_data (const gchar *data,
+                              gsize        length)
 {
   xmlNode *root_node;
   g_autoptr(GnXmlNote) self = NULL;
 
   g_assert (data != NULL);
 
+  if (length == -1)
+    length = strlen (data);
+
   self = g_object_new (GN_TYPE_XML_NOTE, NULL);
 
-  self->xml_reader = xml_reader_new (data, strlen (data));
+  self->xml_reader = xml_reader_new (data, length);
 
   g_return_val_if_fail (self->xml_reader != NULL, NULL);
 
@@ -994,7 +998,7 @@ gn_xml_note_create_from_data (const gchar *data)
    * TODO: Profile this.  May be we can avoid xml_doc_new()
    * because we only use xml_reader_new()
    */
-  self->xml_doc = xml_doc_new (data, strlen (data));
+  self->xml_doc = xml_doc_new (data, length);
 
   g_return_val_if_fail (self->xml_doc != NULL, NULL);
 
@@ -1014,6 +1018,7 @@ gn_xml_note_create_from_data (const gchar *data)
 /**
  * gn_xml_note_new_from_data:
  * @data (nullable): The raw note content
+ * @length: The length of @data, or -1
  *
  * Create a new XML note from the given data.
  *
@@ -1021,10 +1026,11 @@ gn_xml_note_create_from_data (const gchar *data)
  * with given content.
  */
 GnXmlNote *
-gn_xml_note_new_from_data (const gchar *data)
+gn_xml_note_new_from_data (const gchar *data,
+                           gsize        length)
 {
   if (data == NULL)
     return g_object_new (GN_TYPE_XML_NOTE, NULL);
 
-  return gn_xml_note_create_from_data (data);
+  return gn_xml_note_create_from_data (data, length);
 }
