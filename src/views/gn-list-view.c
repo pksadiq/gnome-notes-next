@@ -41,6 +41,17 @@ struct _GnListView
 G_DEFINE_TYPE (GnListView, gn_list_view, GTK_TYPE_LIST_BOX)
 
 static void
+gn_list_view_set_header (GtkListBoxRow *row,
+                         GtkListBoxRow *before,
+                         gpointer       user_data)
+{
+  if (before == NULL)
+    gtk_list_box_row_set_header (row, NULL);
+  else if (gtk_list_box_row_get_header (row) == NULL)
+    gtk_list_box_row_set_header (row, gtk_separator_new (0));
+}
+
+static void
 gn_list_view_select_all (GtkListBox *box)
 {
   GList *children = gtk_container_get_children (GTK_CONTAINER (box));
@@ -64,6 +75,9 @@ gn_list_view_class_init (GnListViewClass *klass)
 static void
 gn_list_view_init (GnListView *self)
 {
+  gtk_list_box_set_header_func (GTK_LIST_BOX (self),
+                                gn_list_view_set_header,
+                                self, NULL);
 }
 
 GnListView *

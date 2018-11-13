@@ -2,7 +2,12 @@
 <interface>
   <template class="GnMainView" parent="GtkStack">
     <property name="homogeneous">0</property>
+    <property name="margin-top">18</property>
 
+    <child>
+      <object class="GtkFrame">
+        <property name="halign">center</property>
+        <property name="valign">start</property>
     <child>
       <object class="GnListView" id="list_view">
         <property name="halign">center</property>
@@ -10,6 +15,8 @@
         <property name="expand">1</property>
         <property name="selection-mode">none</property>
         <signal name="row-activated" handler="gn_main_view_list_item_activated" swapped="1"/>
+      </object>
+    </child>
       </object>
       <packing>
         <property name="name">list</property>

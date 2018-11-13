@@ -1,21 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="GnListViewItem" parent="GtkListBoxRow">
-    <child>
-      <object class="GtkFrame">
         <child>
           <object class="GtkOverlay">
             <property name="halign">fill</property>
             <property name="valign">fill</property>
+            <property name="margin">12</property>
             <property name="width-request">450</property>
-            <property name="height-request">120</property>
+            <property name="height-request">110</property>
 
             <child type="overlay">
               <object class="GtkBox">
                 <child>
                   <object class="GnItemThumbnail" id="preview_label">
-                    <property name="width-request">600</property>
-                    <property name="height-request">120</property>
+                    <property name="width-request">450</property>
+                    <property name="height-request">110</property>
                   </object>
                 </child>
               </object>
@@ -34,7 +33,5 @@
 
           </object> <!-- ./GtkOverlay -->
         </child>
-      </object>
-    </child>
   </template>
 </interface>
