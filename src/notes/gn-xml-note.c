@@ -447,7 +447,8 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
   g_clear_pointer (&self->raw_inner_xml, g_free);
   if (raw_content->str)
-    self->raw_inner_xml = g_strdup (raw_content->str);
+    self->raw_inner_xml = g_strconcat (gn_item_get_title (GN_ITEM (self)),
+                                       "\n", raw_content->str, NULL);
 
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
