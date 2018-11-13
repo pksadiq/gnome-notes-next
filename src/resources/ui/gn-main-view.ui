@@ -34,9 +34,5 @@
       </packing>
     </child>
 
-    <child>
-      <object class="GnEmptyView" id="empty_view" />
-    </child>
-
   </template>
 </interface>

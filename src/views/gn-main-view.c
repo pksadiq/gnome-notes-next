@@ -44,7 +44,6 @@ struct _GnMainView
 
   GtkWidget *grid_view;
   GtkWidget *list_view;
-  GtkWidget *empty_view;
   GtkWidget *current_view; /* list or grid only */
 
   gboolean selection_mode;
@@ -77,9 +76,7 @@ gn_main_view_model_changed (GListModel *model,
   g_assert (GN_IS_MAIN_VIEW (self));
   g_assert (G_IS_LIST_MODEL (model));
 
-  if (g_list_model_get_item (self->model, 0) == NULL)
-    gtk_stack_set_visible_child (GTK_STACK (self), self->empty_view);
-  else if (self->current_view != NULL)
+  if (self->current_view != NULL)
     gtk_stack_set_visible_child (GTK_STACK (self), self->current_view);
 }
 
@@ -218,7 +215,6 @@ gn_main_view_class_init (GnMainViewClass *klass)
 
   gtk_widget_class_bind_template_child (widget_class, GnMainView, grid_view);
   gtk_widget_class_bind_template_child (widget_class, GnMainView, list_view);
-  gtk_widget_class_bind_template_child (widget_class, GnMainView, empty_view);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_main_view_grid_item_activated);
   gtk_widget_class_bind_template_callback (widget_class, gn_main_view_list_item_activated);
