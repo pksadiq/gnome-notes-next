@@ -1,54 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <interface>
   <template class="GnListViewItem" parent="GtkListBoxRow">
-    <style>
-     <class name="transparent"/>
-    </style>
     <child>
-      <object class="GtkGrid">
-        <property name="margin">3</property>
-        <property name="orientation">horizontal</property>
-
+      <object class="GtkFrame">
         <child>
-          <object class="GtkCheckButton" id="check_box">
-            <property name="margin-start">12</property>
-            <property name="margin-end">12</property>
-            <property name="halign">center</property>
-            <property name="valign">center</property>
-            <signal name="toggled" handler="gn_list_view_item_toggled" swapped="1"/>
-          </object>
-        </child>
+          <object class="GtkOverlay">
+            <property name="halign">fill</property>
+            <property name="valign">fill</property>
+            <property name="width-request">450</property>
+            <property name="height-request">120</property>
 
-        <!-- Note content preview -->
-        <child>
-          <object class="GtkFrame">
-            <child>
-              <object class="GtkOverlay">
-                <property name="halign">start</property>
-                <property name="valign">start</property>
-                <property name="width-request">32</property>
-                <property name="height-request">32</property>
-                <child type="overlay">
-                  <object class="GnItemThumbnail" id="color_box"/>
+            <child type="overlay">
+              <object class="GtkBox">
+                <child>
+                  <object class="GnItemThumbnail" id="preview_label">
+                    <property name="width-request">600</property>
+                    <property name="height-request">120</property>
+                  </object>
                 </child>
-              </object> <!-- ./GtkOverlay -->
+              </object>
+              <packing>
+                <property name="clip-overlay">1</property>
+              </packing>
             </child>
-          </object>
-        </child>
 
-        <!-- Note Label -->
-        <child>
-          <object class="GtkLabel" id="title_label">
-            <property name="margin-start">12</property>
-            <property name="lines">1</property>
-            <property name="ellipsize">end</property>
-            <style>
-             <class name="transparent"/>
-            </style>
-          </object>
-        </child>
+            <child type="overlay">
+              <object class="GtkCheckButton" id="check_box">
+                <property name="halign">end</property>
+                <property name="valign">end</property>
+                <signal name="toggled" handler="gn_list_view_item_toggled" swapped="1"/>
+              </object>
+            </child>
 
+          </object> <!-- ./GtkOverlay -->
+        </child>
       </object>
-    </child> <!-- ./GtkGrid -->
+    </child>
   </template>
 </interface>

@@ -42,8 +42,7 @@ struct _GnListViewItem
 
   GnItem *item;
 
-  GtkWidget *color_box;
-  GtkWidget *title_label;
+  GtkWidget *preview_label;
   GtkWidget *check_box;
 
   gboolean selected;
@@ -75,9 +74,8 @@ gn_list_view_item_class_init (GnListViewItemClass *klass)
                                                "/org/sadiqpk/notes/"
                                                "ui/gn-list-view-item.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, GnListViewItem, color_box);
+  gtk_widget_class_bind_template_child (widget_class, GnListViewItem, preview_label);
   gtk_widget_class_bind_template_child (widget_class, GnListViewItem, check_box);
-  gtk_widget_class_bind_template_child (widget_class, GnListViewItem, title_label);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_list_view_item_toggled);
 }
@@ -95,7 +93,7 @@ gn_list_view_item_new (gpointer data,
   GnListViewItem *self;
   GnItem *item = data;
   GObject *object = user_data;
-  const gchar *title;
+  g_autofree gchar *markup = NULL;
   GdkRGBA rgba;
 
   GN_ENTRY;
@@ -103,8 +101,8 @@ gn_list_view_item_new (gpointer data,
   g_return_val_if_fail (GN_IS_ITEM (item), NULL);
 
   self = g_object_new (GN_TYPE_LIST_VIEW_ITEM, NULL);
-  title = gn_item_get_title (item);
   self->item = item;
+  markup = gn_note_get_markup (GN_NOTE (item));
 
   g_object_bind_property (object, "selection-mode",
                           self->check_box, "visible",
@@ -114,10 +112,9 @@ gn_list_view_item_new (gpointer data,
     gn_settings_get_rgba (gn_manager_get_settings (gn_manager_get_default ()),
                           &rgba);
 
-  gtk_label_set_label (GTK_LABEL (self->title_label), title);
-
-  g_object_set (G_OBJECT (self->color_box),
+  g_object_set (G_OBJECT (self->preview_label),
                 "rgba", &rgba,
+                "label", markup,
                 NULL);
 
   GN_RETURN (GTK_WIDGET (self));

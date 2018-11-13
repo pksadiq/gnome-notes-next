@@ -163,7 +163,7 @@ gn_item_thumbnail_class_init (GnItemThumbnailClass *klass)
   object_class->set_property = gn_item_thumbnail_set_property;
   object_class->finalize = gn_item_thumbnail_finalize;
 
-  widget_class->snapshot = gn_item_thumbnail_snapshot;
+  /* widget_class->snapshot = gn_item_thumbnail_snapshot; */
 
   properties[PROP_RGBA] =
     g_param_spec_boxed ("rgba",

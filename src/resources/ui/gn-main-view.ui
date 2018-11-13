@@ -23,14 +23,11 @@
 
     <child>
       <object class="GnListView" id="list_view">
-        <property name="halign">fill</property>
+        <property name="halign">center</property>
         <property name="valign">start</property>
         <property name="expand">1</property>
         <property name="selection-mode">none</property>
         <signal name="row-activated" handler="gn_main_view_list_item_activated" swapped="1"/>
-        <style>
-         <class name="transparent"/>
-        </style>
       </object>
       <packing>
         <property name="name">list</property>
