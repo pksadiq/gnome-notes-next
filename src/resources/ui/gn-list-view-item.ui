@@ -7,14 +7,14 @@
             <property name="valign">fill</property>
             <property name="margin">12</property>
             <property name="width-request">450</property>
-            <property name="height-request">110</property>
+            <property name="height-request">96</property>
 
             <child type="overlay">
               <object class="GtkBox">
                 <child>
                   <object class="GnItemThumbnail" id="preview_label">
                     <property name="width-request">450</property>
-                    <property name="height-request">110</property>
+                    <property name="height-request">96</property>
                   </object>
                 </child>
               </object>
