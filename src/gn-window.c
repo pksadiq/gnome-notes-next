@@ -50,8 +50,6 @@ struct _GnWindow
   GtkWidget *view_button_stack;
   GtkWidget *menu_button;
   GtkWidget *main_menu;
-  /* GtkWidget *editor_menu; */
-  /* GtkWidget *new_editor_button; */
   GtkWidget *undo_revealer;
 
   GtkWidget *select_button;
@@ -633,8 +631,6 @@ gn_window_class_init (GnWindowClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnWindow, view_button_stack);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, menu_button);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, main_menu);
-  /* gtk_widget_class_bind_template_child (widget_class, GnWindow, editor_menu); */
-  /* gtk_widget_class_bind_template_child (widget_class, GnWindow, new_editor_button); */
 
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_bar);
   gtk_widget_class_bind_template_child (widget_class, GnWindow, search_entry);
