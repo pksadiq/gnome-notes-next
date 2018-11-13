@@ -590,7 +590,7 @@ gn_xml_note_update_markup (GnXmlNote *self)
   self->markup = g_string_new ("<markup>");
 
   g_string_append_printf (self->markup, "<b>%s</b>\n\n",
-                          gn_item_get_title (GN_ITEM (item)));
+                          gn_item_get_title (GN_ITEM (self)));
 
   g_string_append (self->markup, self->raw_inner_xml);
   g_string_append (self->markup, "</markup>");
