@@ -4,24 +4,6 @@
     <property name="homogeneous">0</property>
 
     <child>
-      <object class="GnGridView" id="grid_view">
-        <property name="halign">start</property>
-        <property name="valign">start</property>
-        <property name="hexpand">1</property>
-        <property name="margin-start">12</property>
-        <property name="margin-top">18</property>
-        <property name="homogeneous">1</property>
-        <property name="row-spacing">12</property>
-        <property name="column-spacing">18</property>
-        <property name="selection-mode">none</property>
-        <signal name="child-activated" handler="gn_main_view_grid_item_activated" swapped="1"/>
-      </object>
-      <packing>
-        <property name="name">grid</property>
-      </packing>
-    </child>
-
-    <child>
       <object class="GnListView" id="list_view">
         <property name="halign">center</property>
         <property name="valign">start</property>

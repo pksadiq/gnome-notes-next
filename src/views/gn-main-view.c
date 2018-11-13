@@ -22,9 +22,7 @@
 
 #include "config.h"
 
-#include "gn-grid-view-item.h"
 #include "gn-list-view-item.h"
-#include "gn-grid-view.h"
 #include "gn-list-view.h"
 #include "gn-main-view.h"
 #include "gn-trace.h"
@@ -42,7 +40,6 @@ struct _GnMainView
 
   GListModel *model;
 
-  GtkWidget *grid_view;
   GtkWidget *list_view;
   GtkWidget *current_view; /* list or grid only */
 
@@ -78,24 +75,6 @@ gn_main_view_model_changed (GListModel *model,
 
   if (self->current_view != NULL)
     gtk_stack_set_visible_child (GTK_STACK (self), self->current_view);
-}
-
-static void
-gn_main_view_grid_item_activated (GnMainView      *self,
-                                  GtkFlowBoxChild *child,
-                                  GtkFlowBox      *box)
-{
-  GnGridViewItem *item = GN_GRID_VIEW_ITEM (child);
-
-  g_assert (GN_IS_MAIN_VIEW (self));
-  g_assert (GTK_IS_FLOW_BOX (box));
-  g_assert (GTK_IS_FLOW_BOX_CHILD (child));
-
-  if (gtk_flow_box_get_selection_mode (box) != GTK_SELECTION_MULTIPLE)
-    g_signal_emit (self, signals[ITEM_ACTIVATED], 0,
-                   gn_grid_view_item_get_item (item));
-  else
-    gn_grid_view_item_toggle_selection (item);
 }
 
 static void
@@ -171,7 +150,6 @@ gn_main_view_class_init (GnMainViewClass *klass)
   object_class->get_property = gn_main_view_get_property;
   object_class->set_property = gn_main_view_set_property;
 
-  g_type_ensure (GN_TYPE_GRID_VIEW);
   g_type_ensure (GN_TYPE_LIST_VIEW);
 
   properties[PROP_SELECTION_MODE] =
@@ -213,10 +191,8 @@ gn_main_view_class_init (GnMainViewClass *klass)
                                                "/org/sadiqpk/notes/"
                                                "ui/gn-main-view.ui");
 
-  gtk_widget_class_bind_template_child (widget_class, GnMainView, grid_view);
   gtk_widget_class_bind_template_child (widget_class, GnMainView, list_view);
 
-  gtk_widget_class_bind_template_callback (widget_class, gn_main_view_grid_item_activated);
   gtk_widget_class_bind_template_callback (widget_class, gn_main_view_list_item_activated);
 }
 
@@ -232,12 +208,9 @@ gn_main_view_set_child_selection_mode (GnMainView       *self,
 {
   if (selection_mode == GTK_SELECTION_NONE)
     {
-      gn_grid_view_unselect_all (GTK_FLOW_BOX (self->grid_view));
       gn_list_view_unselect_all (GTK_LIST_BOX (self->list_view));
     }
 
-  gtk_flow_box_set_selection_mode (GTK_FLOW_BOX (self->grid_view),
-                                   selection_mode);
   gtk_list_box_set_selection_mode (GTK_LIST_BOX (self->list_view),
                                    selection_mode);
 }
@@ -311,10 +284,7 @@ gn_main_view_get_selected_items (GnMainView *self)
   if (!self->selection_mode)
     return NULL;
 
-  if (self->current_view == self->grid_view)
-    return gn_grid_view_get_selected_items (GN_GRID_VIEW (self->grid_view));
-  else
-    return gn_list_view_get_selected_items (GN_LIST_VIEW (self->list_view));
+  return gn_list_view_get_selected_items (GN_LIST_VIEW (self->list_view));
 }
 
 /**
@@ -335,11 +305,6 @@ gn_main_view_set_model (GnMainView *self,
 
   if (g_set_object (&self->model, model))
     {
-      gtk_flow_box_bind_model (GTK_FLOW_BOX (self->grid_view),
-                               model,
-                               gn_grid_view_item_new,
-                               G_OBJECT (self), NULL);
-
       gtk_list_box_bind_model (GTK_LIST_BOX (self->list_view),
                                model,
                                gn_list_view_item_new,
