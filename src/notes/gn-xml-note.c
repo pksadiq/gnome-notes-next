@@ -75,8 +75,6 @@ struct _GnXmlNote
 {
   GnNote parent_instance;
 
-  xmlBuffer *xml_buffer;
-  xmlTextWriter *xml_writer;
   GString *raw_data;    /* The raw data used to parse, NULL if raw_xml set */
   GString *raw_xml;     /* full XML data to be saved to file */
   gchar   *raw_inner_xml; /* xml data of the <text> tag */
@@ -801,13 +799,13 @@ gn_xml_note_get_raw_content (GnNote *note)
 
       if (content)
         {
-          xml_writer_write_raw (self->xml_writer, "\n");
-          xml_writer_write_string (self->xml_writer, content);
+          g_string_append_c (self->raw_xml, '\n');
+          gn_xml_note_append_escaped (self->raw_xml, content);
         }
 
-      xml_writer_end_doc (self->xml_writer);
+      g_string_append (self->raw_xml, "</note-content></text></note>");
 
-      self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
+      self->raw_content = g_strdup (self->raw_xml->str);
       g_clear_pointer (&self->raw_inner_xml, g_free);
     }
 
