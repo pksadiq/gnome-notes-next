@@ -22,6 +22,7 @@
 
 #include "config.h"
 
+#include "gn-utils.h"
 #include "gn-note.h"
 #include "gn-item-thumbnail.h"
 #include "gn-manager.h"
@@ -42,6 +43,8 @@ struct _GnListViewItem
 
   GnItem *item;
 
+  GtkWidget *title_label;
+  GtkWidget *time_label;
   GtkWidget *preview_label;
   GtkWidget *check_box;
 
@@ -74,6 +77,8 @@ gn_list_view_item_class_init (GnListViewItemClass *klass)
                                                "/org/sadiqpk/notes/"
                                                "ui/gn-list-view-item.ui");
 
+  gtk_widget_class_bind_template_child (widget_class, GnListViewItem, title_label);
+  gtk_widget_class_bind_template_child (widget_class, GnListViewItem, time_label);
   gtk_widget_class_bind_template_child (widget_class, GnListViewItem, preview_label);
   gtk_widget_class_bind_template_child (widget_class, GnListViewItem, check_box);
 
@@ -94,7 +99,10 @@ gn_list_view_item_new (gpointer data,
   GnItem *item = data;
   GObject *object = user_data;
   g_autofree gchar *markup = NULL;
+  g_autofree gchar *title_markup = NULL;
+  g_autofree gchar *time_label = NULL;
   GdkRGBA rgba;
+  gint64 modification_time;
 
   GN_ENTRY;
 
@@ -103,6 +111,15 @@ gn_list_view_item_new (gpointer data,
   self = g_object_new (GN_TYPE_LIST_VIEW_ITEM, NULL);
   self->item = item;
   markup = gn_note_get_markup (GN_NOTE (item));
+  modification_time = gn_item_get_modification_time (item);
+  time_label = gn_utils_get_human_time (modification_time);
+
+  /* A space is appended to title so as to keep height on empty title */
+  title_markup = g_strconcat ("<span font='Cantarell' size='large'>",
+                              gn_item_get_title (item), " </span>",
+                              NULL);
+  g_object_set (self->title_label, "label", title_markup, NULL);
+  gtk_label_set_label (GTK_LABEL (self->time_label), time_label);
 
   g_object_bind_property (object, "selection-mode",
                           self->check_box, "visible",
