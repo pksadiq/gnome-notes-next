@@ -78,6 +78,7 @@ struct _GnXmlNote
   xmlTextReader *xml_reader;
   xmlBuffer *xml_buffer;
   xmlTextWriter *xml_writer;
+  GString *raw_xml;     /* full XML data to be saved to file */
   gchar   *raw_inner_xml; /* xml data of the <text> tag */
   gchar   *raw_content;   /* full xml data that will be saved as file */
   GString *text_content;
@@ -372,83 +373,104 @@ gn_xml_note_close_tag (GnXmlNote   *self,
   g_queue_delete_link (tags_queue, last_tag);
 }
 
+void
+gn_xml_note_append_escaped (GString     *xml,
+                            const gchar *content)
+{
+  g_autofree gchar *escaped = NULL;
+
+  g_return_if_fail (xml != NULL);
+
+  if (!content || !*content)
+    return;
+
+  escaped = g_markup_escape_text (content, -1);
+  g_string_append_printf (xml, "%s", escaped);
+}
+
+void
+gn_xml_note_add_tag (GString     *xml,
+                     const gchar *tag,
+                     const gchar *content)
+{
+  g_autofree gchar *escaped = NULL;
+
+  g_return_if_fail (xml != NULL);
+  g_return_if_fail (tag != NULL);
+  g_return_if_fail (*tag);
+  g_return_if_fail (content != NULL);
+  g_return_if_fail (*content);
+
+  escaped = g_markup_escape_text (content, -1);
+  g_string_append_printf (xml, "<%s>%s</%s>\n", tag, escaped, tag);
+}
+
+void
+gn_xml_note_add_time_tag (GString     *xml,
+                          const gchar *tag,
+                          gint64       unix_time)
+{
+  g_autofree gchar *iso_time = NULL;
+
+  g_return_if_fail (xml != NULL);
+  g_return_if_fail (tag != NULL);
+  g_return_if_fail (*tag);
+
+  iso_time = gn_utils_unix_time_to_iso (unix_time);
+  g_string_append_printf (xml, "<%s>%s</%s>\n", tag, iso_time, tag);
+}
+
 static void
 gn_xml_note_update_raw_xml (GnXmlNote *self)
 {
-  xmlTextWriter *writer;
   GnItem *item;
   gchar *str;
   GdkRGBA rgba;
-  gint64 unix_time;
 
   g_assert (GN_IS_XML_NOTE (self));
 
-  self->xml_buffer = xml_buffer_new ();
-  self->xml_writer = xml_writer_new (self->xml_buffer);
-  writer = self->xml_writer;
   item = GN_ITEM (self);
 
-  xml_writer_start_doc (writer);
-  xml_writer_start_tag (writer, "note");
-  xml_writer_write_attribute (writer, NULL, "version", "1");
-  xml_writer_write_attribute (writer, "xmlns", "link",
-                              BIJIBEN_XML_NS "/link");
-  xml_writer_write_attribute (writer, "xmlns", "size",
-                              BIJIBEN_XML_NS "/size");
-  xml_writer_write_attribute (writer, NULL, "xmlns",
-                              BIJIBEN_XML_NS);
+  if (self->raw_xml)
+    g_string_free (self->raw_xml, TRUE);
 
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "title",
-                      gn_item_get_title (GN_ITEM (self)));
+  self->raw_xml = g_string_new (COMMON_XML_HEAD "\n" "<note version=\"1\" "
+                                "xmlns:link=\"" BIJIBEN_XML_NS "/link\" "
+                                "xmlns:size=\"" BIJIBEN_XML_NS "/size\" "
+                                "xmlns=\"" BIJIBEN_XML_NS "\">\n");
 
-  unix_time = gn_item_get_modification_time (item);
-  str = gn_utils_unix_time_to_iso (unix_time);
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "last-change-date", str);
-  g_free (str);
+  gn_xml_note_add_tag (self->raw_xml, "title",
+                       gn_item_get_title (item));
 
-  unix_time = gn_item_get_meta_modification_time (item);
-  str = gn_utils_unix_time_to_iso (unix_time);
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "last-metadata-change-date", str);
-  g_free (str);
-
-  unix_time = gn_item_get_creation_time (item);
-  str = gn_utils_unix_time_to_iso (unix_time);
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_add_tag (writer, "create-date", str);
-  g_free (str);
+  gn_xml_note_add_time_tag (self->raw_xml, "last-change-date",
+                            gn_item_get_modification_time (item));
+  gn_xml_note_add_time_tag (self->raw_xml, "last-metadata-change-date",
+                            gn_item_get_meta_modification_time (item));
+  gn_xml_note_add_time_tag (self->raw_xml, "create-date",
+                            gn_item_get_creation_time (item));
 
   if (gn_item_get_rgba (item, &rgba))
     {
       str = gdk_rgba_to_string (&rgba);
-      xml_writer_write_raw (writer, "\n");
-      xml_writer_add_tag (writer, "color", str);
+      gn_xml_note_add_tag (self->raw_xml, "color", str);
+      g_free (str);
     }
 
   if (g_hash_table_size (self->labels) > 0)
     {
       GList *labels = g_hash_table_get_keys (self->labels);
 
-      xml_writer_write_raw (writer, "\n");
-      xml_writer_start_tag (writer, "tags");
+      g_string_append (self->raw_xml, "<tags>");
+      g_string_append_c (self->raw_xml, '\n');
 
       for (GList *node = labels; node != NULL; node = node->next)
-        {
-          g_autofree gchar *label = g_strconcat ("system:notebook:",
-                                                 node->data, NULL);
-          xml_writer_write_raw (writer, "\n");
-          xml_writer_add_tag (writer, "tag", label);
-        }
+        gn_xml_note_add_tag (self->raw_xml, "tag", node->data);
     }
 
-  xml_writer_write_raw (writer, "\n");
-  xml_writer_start_tag (writer, "text");
-  xml_writer_write_attribute (writer, "xml", "space", "preserve");
-
-  xml_writer_start_tag (writer, "note-content");
-  xml_writer_write_string (writer, gn_item_get_title (item));
+  g_string_append (self->raw_xml, "<text xml:space=\"preserve\">"
+                   "<note-content>");
+  gn_xml_note_append_escaped (self->raw_xml,
+                              gn_item_get_title (item));
 }
 
 static void
@@ -485,7 +507,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   if (gtk_text_iter_get_line (&iter) == 0)
     goto end;
   else
-    xml_writer_write_raw (self->xml_writer, "\n");
+    g_string_append_c (self->raw_xml, '\n');
 
   while (gtk_text_iter_forward_to_tag_toggle (&iter, NULL))
     {
@@ -550,12 +572,12 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
 
   if (raw_content && raw_content->str)
-    xml_writer_write_raw (self->xml_writer, raw_content->str);
+    g_string_append (self->raw_xml, raw_content->str);
 
  end:
-  xml_writer_end_doc (self->xml_writer);
+  g_string_append (self->raw_xml, "</note-content></text></note>\n");
 
-  self->raw_content = g_strdup ((gchar *)self->xml_buffer->content);
+  self->raw_content = g_strdup (self->raw_xml->str);
   g_clear_pointer (&self->raw_inner_xml, g_free);
   if (raw_content->str)
     self->raw_inner_xml = g_strconcat (raw_content->str, NULL);
