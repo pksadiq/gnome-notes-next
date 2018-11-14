@@ -78,6 +78,7 @@ struct _GnXmlNote
   xmlTextReader *xml_reader;
   xmlBuffer *xml_buffer;
   xmlTextWriter *xml_writer;
+  GString *raw_data;    /* The raw data used to parse, NULL if raw_xml set */
   GString *raw_xml;     /* full XML data to be saved to file */
   gchar   *raw_inner_xml; /* xml data of the <text> tag */
   gchar   *raw_content;   /* full xml data that will be saved as file */
@@ -950,9 +951,13 @@ gn_xml_note_create_from_data (const gchar *data,
 
   g_return_val_if_fail (self->xml_reader != NULL, NULL);
 
-  /* self->raw_xml_data = g_strdup (data); */
+  if (self->is_bijiben)
+    self->raw_xml = g_string_new_len (data, length);
+  else
+    self->raw_data = g_string_new_len (data, length);
 
-  gn_xml_note_parse_xml (self);
+  if (self->is_bijiben)
+    gn_xml_note_parse_xml (self);
 
   return g_steal_pointer (&self);
 }
