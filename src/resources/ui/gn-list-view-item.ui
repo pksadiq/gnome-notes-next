@@ -6,6 +6,7 @@
             <property name="halign">fill</property>
             <property name="valign">fill</property>
             <property name="margin">12</property>
+            <property name="margin-bottom">6</property>
             <property name="width-request">450</property>
             <property name="height-request">96</property>
 
@@ -34,11 +35,41 @@
                 </child>
 
                 <child>
-                  <object class="GnItemThumbnail" id="preview_label">
-                    <property name="width-request">450</property>
-                    <property name="height-request">96</property>
+                  <object class="GtkOverlay">
+                    <property name="height-request">52</property>
+                    <child type="overlay">
+                      <object class="GnItemThumbnail" id="preview_label">
+                        <property name="width-request">450</property>
+                        <property name="height-request">52</property>
+                      </object>
+                      <packing>
+                        <property name="clip-overlay">1</property>
+                      </packing>
+                    </child>
                   </object>
                 </child>
+
+                <child>
+                  <object class="GtkBox">
+
+                    <child>
+                      <object class="GtkBox">
+                        <property name="hexpand">1</property>
+                      </object>
+                    </child>
+
+                    <child>
+                      <object class="GtkBox" id="tags_box">
+                        <property name="spacing">12</property>
+                        <style>
+                         <class name="dim-label"/>
+                        </style>
+                      </object>
+                    </child>
+
+                  </object> <!-- ./GtkBox -->
+                </child>
+
               </object>
               <packing>
                 <property name="clip-overlay">1</property>

@@ -46,12 +46,31 @@ struct _GnListViewItem
   GtkWidget *title_label;
   GtkWidget *time_label;
   GtkWidget *preview_label;
+  GtkWidget *tags_box;
   GtkWidget *check_box;
 
   gboolean selected;
 };
 
 G_DEFINE_TYPE (GnListViewItem, gn_list_view_item, GTK_TYPE_LIST_BOX_ROW)
+
+static GtkWidget *
+gn_list_view_item_get_tag (const gchar *tag)
+{
+  GtkWidget *container, *label, *tag_image;
+
+  g_assert (tag != NULL);
+  g_assert (*tag != '\0');
+
+  label = gtk_label_new (tag);
+  tag_image = gtk_image_new_from_icon_name ("document-edit-symbolic");
+  container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
+
+  gtk_container_add (GTK_CONTAINER (container), tag_image);
+  gtk_container_add (GTK_CONTAINER (container), label);
+
+  return container;
+}
 
 static void
 gn_list_view_item_toggled (GnListViewItem  *self,
@@ -80,6 +99,7 @@ gn_list_view_item_class_init (GnListViewItemClass *klass)
   gtk_widget_class_bind_template_child (widget_class, GnListViewItem, title_label);
   gtk_widget_class_bind_template_child (widget_class, GnListViewItem, time_label);
   gtk_widget_class_bind_template_child (widget_class, GnListViewItem, preview_label);
+  gtk_widget_class_bind_template_child (widget_class, GnListViewItem, tags_box);
   gtk_widget_class_bind_template_child (widget_class, GnListViewItem, check_box);
 
   gtk_widget_class_bind_template_callback (widget_class, gn_list_view_item_toggled);
@@ -101,6 +121,7 @@ gn_list_view_item_new (gpointer data,
   g_autofree gchar *markup = NULL;
   g_autofree gchar *title_markup = NULL;
   g_autofree gchar *time_label = NULL;
+  g_autoptr(GList) tags = NULL;
   GdkRGBA rgba;
   gint64 modification_time;
 
@@ -113,6 +134,7 @@ gn_list_view_item_new (gpointer data,
   markup = gn_note_get_markup (GN_NOTE (item));
   modification_time = gn_item_get_modification_time (item);
   time_label = gn_utils_get_human_time (modification_time);
+  tags = gn_note_get_tags (GN_NOTE (item));
 
   /* A space is appended to title so as to keep height on empty title */
   title_markup = g_strconcat ("<span font='Cantarell' size='large'>",
@@ -128,6 +150,14 @@ gn_list_view_item_new (gpointer data,
   if (!gn_item_get_rgba (item, &rgba))
     gn_settings_get_rgba (gn_manager_get_settings (gn_manager_get_default ()),
                           &rgba);
+
+  for (GList *node = tags; node != NULL; node = node->next)
+    {
+      GtkWidget *tag;
+
+      tag = gn_list_view_item_get_tag (node->data);
+      gtk_container_add (GTK_CONTAINER (self->tags_box), tag);
+    }
 
   g_object_set (G_OBJECT (self->preview_label),
                 "rgba", &rgba,
