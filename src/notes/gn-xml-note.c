@@ -87,8 +87,6 @@ struct _GnXmlNote
   gchar   *title;
   GHashTable *labels;
 
-  /* TRUE: Bijiben XML.  FALSE: Tomboy XML */
-  gboolean is_bijiben;
   NoteFormat note_format;
 };
 
@@ -435,7 +433,7 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
   if (self->raw_xml)
     g_string_free (self->raw_xml, TRUE);
 
-  self->raw_xml = g_string_new (COMMON_XML_HEAD "\n" "<note version=\"1\" "
+  self->raw_xml = g_string_new (COMMON_XML_HEAD "\n" "<note version=\"2\" "
                                 "xmlns:link=\"" BIJIBEN_XML_NS "/link\" "
                                 "xmlns:size=\"" BIJIBEN_XML_NS "/size\" "
                                 "xmlns=\"" BIJIBEN_XML_NS "\">\n");
@@ -803,7 +801,7 @@ gn_xml_note_init (GnXmlNote *self)
   self->text_content = g_string_new ("");
   self->labels = g_hash_table_new_full (g_str_hash, g_str_equal,
                                         g_free, NULL);
-  self->is_bijiben = TRUE;
+  self->note_format = NOTE_FORMAT_BIJIBEN_2;
 }
 
 static void
@@ -898,7 +896,8 @@ gn_xml_note_parse_xml (GnXmlNote *self)
                 g_hash_table_add (self->labels, g_strdup (label));
               }
           }
-        else if (self->is_bijiben && g_strcmp0 (tag, "note-content") == 0)
+        else if (self->note_format == NOTE_FORMAT_BIJIBEN_2 &&
+                 g_strcmp0 (tag, "note-content") == 0)
           {
             g_autofree gchar *inner_xml = NULL;
             gchar *content;
@@ -941,23 +940,17 @@ gn_xml_note_create_from_data (const gchar *data,
   self = g_object_new (GN_TYPE_XML_NOTE, NULL);
   self->note_format = note_format;
 
-  if (note_format == NOTE_FORMAT_BIJIBEN_2 ||
-      note_format == NOTE_FORMAT_BIJIBEN_1)
-    self->is_bijiben = TRUE;
-  else
-    self->is_bijiben = FALSE;
-
   self->xml_reader = xml_reader_new (data, length);
 
   g_return_val_if_fail (self->xml_reader != NULL, NULL);
 
-  if (self->is_bijiben)
-    self->raw_xml = g_string_new_len (data, length);
+  if (note_format == NOTE_FORMAT_BIJIBEN_2)
+    {
+      self->raw_xml = g_string_new_len (data, length);
+      gn_xml_note_parse_xml (self);
+    }
   else
     self->raw_data = g_string_new_len (data, length);
-
-  if (self->is_bijiben)
-    gn_xml_note_parse_xml (self);
 
   return g_steal_pointer (&self);
 }
