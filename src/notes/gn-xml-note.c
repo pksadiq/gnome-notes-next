@@ -75,7 +75,6 @@ struct _GnXmlNote
 {
   GnNote parent_instance;
 
-  xmlTextReader *xml_reader;
   xmlBuffer *xml_buffer;
   xmlTextWriter *xml_writer;
   GString *raw_data;    /* The raw data used to parse, NULL if raw_xml set */
@@ -88,6 +87,7 @@ struct _GnXmlNote
   GHashTable *labels;
 
   NoteFormat note_format;
+  guint      parse_complete : 1;
 };
 
 G_DEFINE_TYPE (GnXmlNote, gn_xml_note, GN_TYPE_NOTE)
@@ -168,6 +168,127 @@ gn_xml_note_get_format (const gchar *data,
     }
 
   return NOTE_FORMAT_UNKNOWN;
+}
+
+static void
+gn_xml_note_parse (GnXmlNote *self)
+{
+  xmlTextReader *xml_reader;
+
+  g_assert (GN_IS_XML_NOTE (self));
+
+  if (self->parse_complete)
+    return;
+
+  /* Only new bijiben format should be parsed */
+  g_return_if_fail (self->note_format == NOTE_FORMAT_BIJIBEN_2);
+  g_return_if_fail (self->raw_xml != NULL);
+
+  self->parse_complete = 1;
+
+  xml_reader = xml_reader_new (self->raw_xml->str,
+                               self->raw_xml->len);
+
+  while (xml_reader_read (xml_reader) == 1)
+    if (xml_reader_get_node_type (xml_reader) == XML_ELEMENT_NODE)
+      {
+        const gchar *tag;
+        g_autofree gchar *content = NULL;
+
+        tag = xml_reader_get_name (xml_reader);
+        g_return_if_fail (tag != NULL);
+
+        if (g_str_equal (tag, "title"))
+          {
+            content = xml_reader_dup_string (xml_reader);
+            gn_item_set_title (GN_ITEM (self), content);
+          }
+        else if (g_str_equal (tag, "create-date"))
+          {
+            g_autoptr(GDateTime) date_time = NULL;
+            gint64 creation_time;
+
+            content = xml_reader_dup_string (xml_reader);
+            if (content == NULL)
+              continue;
+
+            date_time = g_date_time_new_from_iso8601 (content, NULL);
+            creation_time = g_date_time_to_unix (date_time);
+            g_object_set (G_OBJECT (self), "creation-time",
+                          creation_time, NULL);
+          }
+        else if (g_str_equal (tag, "last-change-date"))
+          {
+            g_autoptr(GDateTime) date_time = NULL;
+            gint64 modification_time;
+
+            content = xml_reader_dup_string (xml_reader);
+            if (content == NULL)
+              continue;
+
+            date_time = g_date_time_new_from_iso8601 (content, NULL);
+            modification_time = g_date_time_to_unix (date_time);
+            g_object_set (G_OBJECT (self), "modification-time",
+                          modification_time, NULL);
+          }
+        else if (g_str_equal (tag, "last-metadata-change-date"))
+          {
+            g_autoptr(GDateTime) date_time = NULL;
+            gint64 modification_time;
+
+            content = xml_reader_dup_string (xml_reader);
+            if (content == NULL)
+              continue;
+
+            date_time = g_date_time_new_from_iso8601 (content, NULL);
+            modification_time = g_date_time_to_unix (date_time);
+            g_object_set (G_OBJECT (self), "meta-modification-time",
+                          modification_time, NULL);
+          }
+        else if (g_str_equal (tag, "color"))
+          {
+            GdkRGBA rgba;
+
+            content = xml_reader_dup_string (xml_reader);
+            if (content == NULL)
+              continue;
+
+            if (!gdk_rgba_parse (&rgba, content))
+              {
+                g_warning ("Failed to parse color: %s", content);
+                continue;
+              }
+
+            gn_item_set_rgba (GN_ITEM (self), &rgba);
+          }
+        else if (g_str_equal (tag, "tag"))
+          {
+            content = xml_reader_dup_string (xml_reader);
+
+            if (content == NULL)
+              continue;
+
+            g_hash_table_add (self->labels, g_strdup (content));
+          }
+        else if (g_str_equal (tag, "note-content"))
+          {
+            g_autofree gchar *inner_xml = NULL;
+            gchar *content;
+
+            inner_xml = xml_reader_dup_inner_xml (xml_reader);
+            g_return_if_fail (inner_xml != NULL);
+
+            /* Skip the title */
+            content = strchr (inner_xml, '\n');
+
+            if (content)
+              content++;
+
+            self->raw_inner_xml = g_strdup (content);
+          }
+      }
+
+  xml_reader_free (xml_reader);
 }
 
 static void
@@ -604,8 +725,6 @@ gn_xml_note_finalize (GObject *object)
   if (self->markup)
     g_string_free (self->markup, TRUE);
 
-  xml_reader_free (self->xml_reader);
-
   G_OBJECT_CLASS (gn_xml_note_parent_class)->finalize (object);
 
   GN_EXIT;
@@ -804,118 +923,6 @@ gn_xml_note_init (GnXmlNote *self)
   self->note_format = NOTE_FORMAT_BIJIBEN_2;
 }
 
-static void
-gn_xml_note_parse_xml (GnXmlNote *self)
-{
-  g_assert (GN_IS_XML_NOTE (self));
-
-  while (xml_reader_read (self->xml_reader) == 1)
-    if (xml_reader_get_node_type (self->xml_reader) == XML_ELEMENT_NODE)
-      {
-        const gchar *tag;
-        g_autofree gchar *content = NULL;
-
-        tag = xml_reader_get_name (self->xml_reader);
-        g_return_if_fail (tag != NULL);
-
-        if (g_strcmp0 (tag, "title") == 0)
-          {
-            content = xml_reader_dup_string (self->xml_reader);
-            gn_item_set_title (GN_ITEM (self), content);
-          }
-        else if (g_strcmp0 (tag, "create-date") == 0)
-          {
-            GDateTime *date_time;
-            gint64 creation_time;
-
-            content = xml_reader_dup_string (self->xml_reader);
-            if (content == NULL)
-              continue;
-
-            date_time = g_date_time_new_from_iso8601 (content, NULL);
-            creation_time = g_date_time_to_unix (date_time);
-            g_object_set (G_OBJECT (self), "creation-time",
-                          creation_time, NULL);
-          }
-        else if (g_strcmp0 (tag, "last-change-date") == 0)
-          {
-            GDateTime *date_time;
-            gint64 modification_time;
-
-            content = xml_reader_dup_string (self->xml_reader);
-            if (content == NULL)
-              continue;
-
-            date_time = g_date_time_new_from_iso8601 (content, NULL);
-            modification_time = g_date_time_to_unix (date_time);
-            g_object_set (G_OBJECT (self), "modification-time",
-                          modification_time, NULL);
-          }
-        else if (g_strcmp0 (tag, "last-metadata-change-date") == 0)
-          {
-            GDateTime *date_time;
-            gint64 modification_time;
-
-            content = xml_reader_dup_string (self->xml_reader);
-            if (content == NULL)
-              continue;
-
-            date_time = g_date_time_new_from_iso8601 (content, NULL);
-            modification_time = g_date_time_to_unix (date_time);
-            g_object_set (G_OBJECT (self), "meta-modification-time",
-                          modification_time, NULL);
-          }
-        else if (g_strcmp0 (tag, "color") == 0)
-          {
-            GdkRGBA rgba;
-
-            content = xml_reader_dup_string (self->xml_reader);
-            if (content == NULL)
-              continue;
-
-            if (!gdk_rgba_parse (&rgba, content))
-              {
-                g_warning ("Failed to parse color: %s", content);
-                continue;
-              }
-
-            gn_item_set_rgba (GN_ITEM (self), &rgba);
-          }
-        else if (g_strcmp0 (tag, "tag") == 0)
-          {
-            content = xml_reader_dup_string (self->xml_reader);
-
-            if (content == NULL ||
-                g_str_has_prefix (content, "system:template"))
-              continue;
-
-            if (g_str_has_prefix (content, "system:notebook:"))
-              {
-                gchar *label = content + strlen ("system:notebook:");
-
-                g_hash_table_add (self->labels, g_strdup (label));
-              }
-          }
-        else if (self->note_format == NOTE_FORMAT_BIJIBEN_2 &&
-                 g_strcmp0 (tag, "note-content") == 0)
-          {
-            g_autofree gchar *inner_xml = NULL;
-            gchar *content;
-
-            inner_xml = xml_reader_dup_inner_xml (self->xml_reader);
-            g_return_if_fail (inner_xml != NULL);
-
-            /* Skip the title */
-            content = strchr (inner_xml, '\n');
-
-            if (content)
-              content++;
-
-            self->raw_inner_xml = g_strdup (content);
-          }
-      }
-}
-
 /*
  * This is a stupid parser.  All we need to get is the
  * title, and the boundaries of note content.
@@ -940,14 +947,10 @@ gn_xml_note_create_from_data (const gchar *data,
   self = g_object_new (GN_TYPE_XML_NOTE, NULL);
   self->note_format = note_format;
 
-  self->xml_reader = xml_reader_new (data, length);
-
-  g_return_val_if_fail (self->xml_reader != NULL, NULL);
-
   if (note_format == NOTE_FORMAT_BIJIBEN_2)
     {
       self->raw_xml = g_string_new_len (data, length);
-      gn_xml_note_parse_xml (self);
+      gn_xml_note_parse (self);
     }
   else
     self->raw_data = g_string_new_len (data, length);
