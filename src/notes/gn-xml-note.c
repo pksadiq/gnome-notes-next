@@ -806,119 +806,6 @@ gn_xml_note_init (GnXmlNote *self)
 }
 
 static void
-gn_xml_note_parse_as_bijiben (GnXmlNote     *self,
-                              xmlTextReader *xml_reader)
-{
-  g_assert (GN_IS_XML_NOTE (self));
-
-  /*
-   * The text until the first <div> tag is the title
-   * of the note.  We don't need that, so simply skip.
-   */
-  while (xml_reader_read (xml_reader) == 1)
-    {
-      const gchar *tag;
-      int type;
-
-      type = xml_reader_get_node_type (xml_reader);
-      tag = xml_reader_get_name (xml_reader);
-
-      if (tag == NULL ||
-          g_str_equal (tag, "div") ||
-          g_str_equal (tag, "br"))
-        break;
-
-      /*
-       * If the value of the tag contain a '\n', the title
-       * ends there, the rest of the value is the part of
-       * the content.
-       */
-      if (type == XML_TEXT_NODE)
-        {
-          const gchar *content;
-
-          content = xml_reader_get_value (xml_reader);
-          if (content)
-            content = strchr (content, '\n');
-
-          if (content == NULL)
-            continue;
-
-          g_string_append (self->text_content, content);
-        }
-    }
-
-  while (xml_reader_read (xml_reader) == 1)
-    {
-      const gchar *tag;
-      const gchar *content;
-      int type;
-
-      type = xml_reader_get_node_type (xml_reader);
-      tag = xml_reader_get_name (xml_reader);
-
-      if (tag == NULL)
-        continue;
-
-      switch (type)
-        {
-        case XML_TEXT_NODE:
-          content = xml_reader_get_value (xml_reader);
-
-          if (content)
-            g_string_append (self->text_content, content);
-          break;
-
-        default:
-          break;
-        }
-    }
-}
-
-static void
-gn_xml_note_parse_as_tomboy (GnXmlNote     *self,
-                             xmlTextReader *xml_reader)
-{
-  g_assert (GN_IS_XML_NOTE (self));
-
-  while (xml_reader_read (xml_reader) == 1)
-    {
-      const gchar *tag;
-      const gchar *content;
-      int type;
-
-      type = xml_reader_get_node_type (xml_reader);
-      tag = xml_reader_get_name (xml_reader);
-
-      if (tag == NULL)
-        continue;
-
-      switch (type)
-        {
-        case XML_TEXT_NODE:
-          content = xml_reader_get_value (xml_reader);
-          /* The first line is the note title, skip that */
-          content = strchr (content, '\n');
-          if (content)
-            content++;
-
-          if (content && *content)
-            {
-              g_string_append (self->text_content, content);
-              /*
-               * Remove that last \n
-               *
-               * XXX: It shouldn't be a problem to end the content with \n
-               * Remove this?
-               */
-              self->text_content->len--;
-              self->text_content->str[self->text_content->len] = '\0';
-            }
-        }
-    }
-}
-
-static void
 gn_xml_note_parse_xml (GnXmlNote *self)
 {
   g_assert (GN_IS_XML_NOTE (self));
@@ -1010,25 +897,7 @@ gn_xml_note_parse_xml (GnXmlNote *self)
                 g_hash_table_add (self->labels, g_strdup (label));
               }
           }
-        else if (g_strcmp0 (tag, "text") == 0)
-          {
-            g_autofree gchar *inner_xml = NULL;
-            xmlTextReader *xml_reader;
-
-            inner_xml = xml_reader_dup_inner_xml (self->xml_reader);
-            g_return_if_fail (inner_xml != NULL);
-
-            xml_reader = xml_reader_new (inner_xml, strlen (inner_xml));
-            g_return_if_fail (xml_reader != NULL);
-
-            if (self->is_bijiben)
-              gn_xml_note_parse_as_bijiben (self, xml_reader);
-            else
-              gn_xml_note_parse_as_tomboy (self, xml_reader);
-
-            xml_reader_free (xml_reader);
-          }
-        else if (g_strcmp0 (tag, "note-content") == 0)
+        else if (self->is_bijiben && g_strcmp0 (tag, "note-content") == 0)
           {
             g_autofree gchar *inner_xml = NULL;
             gchar *content;
