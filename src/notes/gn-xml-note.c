@@ -577,11 +577,12 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
     {
       GList *labels = g_hash_table_get_keys (self->labels);
 
-      g_string_append (self->raw_xml, "<tags>");
-      g_string_append_c (self->raw_xml, '\n');
+      g_string_append (self->raw_xml, "<tags>\n");
 
       for (GList *node = labels; node != NULL; node = node->next)
         gn_xml_note_add_tag (self->raw_xml, "tag", node->data);
+
+      g_string_append (self->raw_xml, "</tags>\n");
     }
 
   g_string_append (self->raw_xml, "<text xml:space=\"preserve\">"
