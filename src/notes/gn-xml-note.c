@@ -696,11 +696,6 @@ gn_xml_note_update_markup (GnXmlNote *self)
 
   self->markup = g_string_new ("<markup>");
 
-  g_string_append_printf (self->markup, "<span font='Cantarell' "
-                          "size='large'>%s</span>\n"
-                          "<span font='4'>\n</span>",
-                          gn_item_get_title (GN_ITEM (self)));
-
   if (self->raw_inner_xml)
     g_string_append_printf (self->markup, "<span font='Cantarell'>"
                             "%s</span>\n\n",
