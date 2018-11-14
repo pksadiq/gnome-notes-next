@@ -551,20 +551,24 @@ gn_utils_get_human_time (gint64 unix_time)
   if (year == year_now &&
       month == month_now)
     {
+      /* Time in the format HH:MM */
       if (day == day_now)
         return g_date_time_format (local_time, "%R");
 
       if (day_now - day == 1)
         return g_strdup (_("Yesterday"));
 
+      /* Localized day name */
       if (day_now - day <= 7)
         return g_date_time_format (local_time, "%A");
 
       return g_strdup (_("This month"));
     }
 
+  /* Localized month name */
   if (year == year_now)
     return g_date_time_format (local_time, "%B");
 
+  /* Year */
   return g_date_time_format (local_time, "%Y");
 }
