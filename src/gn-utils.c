@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+
+#include <glib/gi18n.h>
 #include <stdio.h>
 
 #include "gn-utils.h"
@@ -511,4 +513,58 @@ gn_utils_unix_time_to_iso (gint64 unix_time)
   date_time = g_date_time_new_from_unix_utc (unix_time);
 
   return g_date_time_format (date_time, "%FT%TZ");
+}
+
+/**
+ * gn_utils_get_human_time:
+ * @unix_time: seconds since Epoch
+ *
+ * Get a human readable representation of the time
+ * @unix_time.
+ *
+ * The time returned isn't always in the same format.
+ * Say if @unix_time represents the current day,
+ * a string with time like "07:30" is returned.
+ * Else if @unix_time represents a preceding day from
+ * the same week the week name is returned, and so on.
+ *
+ * Returns: A new string.  Free with g_free().
+ */
+gchar *
+gn_utils_get_human_time (gint64 unix_time)
+{
+  g_autoptr(GDateTime) now = NULL;
+  g_autoptr(GDateTime) utc_time = NULL;
+  g_autoptr(GDateTime) local_time = NULL;
+  gint year_now, month_now, day_now;
+  gint year, month, day;
+
+  g_return_val_if_fail (unix_time >= 0, g_strdup (_("Unknown")));
+
+  now = g_date_time_new_now_local ();
+  utc_time = g_date_time_new_from_unix_utc (unix_time);
+  local_time = g_date_time_to_local (utc_time);
+
+  g_date_time_get_ymd (now, &year_now, &month_now, &day_now);
+  g_date_time_get_ymd (local_time, &year, &month, &day);
+
+  if (year == year_now &&
+      month == month_now)
+    {
+      if (day == day_now)
+        return g_date_time_format (local_time, "%R");
+
+      if (day_now - day == 1)
+        return g_strdup (_("Yesterday"));
+
+      if (day_now - day <= 7)
+        return g_date_time_format (local_time, "%A");
+
+      return g_strdup (_("This month"));
+    }
+
+  if (year == year_now)
+    return g_date_time_format (local_time, "%B");
+
+  return g_date_time_format (local_time, "%Y");
 }
