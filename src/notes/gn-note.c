@@ -71,6 +71,13 @@ gn_note_get_property (GObject    *object,
     }
 }
 
+static GList *
+gn_note_real_get_tags (GnNote *self)
+{
+  g_assert (GN_IS_NOTE (self));
+
+  return NULL;
+}
 static void
 gn_note_real_set_content_to_buffer (GnNote       *self,
                                     GnNoteBuffer *buffer)
@@ -111,6 +118,7 @@ gn_note_class_init (GnNoteClass *klass)
 
   object_class->get_property = gn_note_get_property;
 
+  klass->get_tags = gn_note_real_get_tags;
   klass->set_content_to_buffer = gn_note_real_set_content_to_buffer;
   klass->get_extension = gn_note_real_get_extension;
 
@@ -241,6 +249,29 @@ gn_note_get_markup (GnNote *self)
   markup = GN_NOTE_GET_CLASS (self)->get_markup (self);
 
   GN_RETURN (markup);
+}
+
+/**
+ * gn_note_get_tags:
+ * @self: a #GnNote
+ *
+ * Get the list of tags (labels) of @self, if any.
+ *
+ * Returns: (transfer container): A list of strings, or %NULL
+ * if not supported.  Free with g_list_free().
+ */
+GList *
+gn_note_get_tags (GnNote *self)
+{
+  GList *tags;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_NOTE (self), NULL);
+
+  tags = GN_NOTE_GET_CLASS (self)->get_tags (self);
+
+  GN_RETURN (tags);
 }
 
 /**

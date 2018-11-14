@@ -42,6 +42,8 @@ struct _GnNoteClass
 
   gchar *(*get_raw_content)         (GnNote        *self);
   gchar *(*get_markup)              (GnNote        *self);
+  GList *(*get_tags)                (GnNote        *self);
+
   void   (*set_content_from_buffer) (GnNote        *self,
                                      GtkTextBuffer *buffer);
   void   (*set_content_to_buffer)   (GnNote        *self,
@@ -55,6 +57,7 @@ void   gn_note_set_text_content        (GnNote        *self,
 
 gchar *gn_note_get_raw_content         (GnNote        *self);
 gchar *gn_note_get_markup              (GnNote        *self);
+GList *gn_note_get_tags                (GnNote        *self);
 
 void   gn_note_set_content_from_buffer (GnNote        *self,
                                         GtkTextBuffer *buffer);
