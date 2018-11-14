@@ -855,6 +855,14 @@ gn_xml_note_get_markup (GnNote *note)
   return g_strdup (self->markup->str);
 }
 
+static GList *
+gn_xml_note_get_tags (GnNote *note)
+{
+  GnXmlNote *self = GN_XML_NOTE (note);
+
+  return g_hash_table_get_keys (self->labels);
+}
+
 static const gchar *
 gn_xml_note_get_extension (GnNote *note)
 {
@@ -903,6 +911,7 @@ gn_xml_note_class_init (GnXmlNoteClass *klass)
   note_class->get_text_content = gn_xml_note_get_text_content;
   note_class->set_text_content = gn_xml_note_set_text_content;
   note_class->get_markup = gn_xml_note_get_markup;
+  note_class->get_tags = gn_xml_note_get_tags;
   note_class->get_extension = gn_xml_note_get_extension;
 
   note_class->set_content_to_buffer = gn_xml_note_set_content_to_buffer;
