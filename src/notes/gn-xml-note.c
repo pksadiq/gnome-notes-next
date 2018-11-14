@@ -78,7 +78,6 @@ struct _GnXmlNote
   GString *raw_data;    /* The raw data used to parse, NULL if raw_xml set */
   GString *raw_xml;     /* full XML data to be saved to file */
   gchar   *raw_inner_xml; /* xml data of the <text> tag */
-  gchar   *raw_content;   /* full xml data that will be saved as file */
   GString *text_content;
   GString *markup;
   gchar   *title;
@@ -695,7 +694,6 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
  end:
   g_string_append (self->raw_xml, "</note-content></text></note>\n");
 
-  self->raw_content = g_strdup (self->raw_xml->str);
   g_clear_pointer (&self->raw_inner_xml, g_free);
   if (raw_content->str)
     self->raw_inner_xml = g_strconcat (raw_content->str, NULL);
@@ -716,7 +714,6 @@ gn_xml_note_finalize (GObject *object)
   GN_ENTRY;
 
   g_free (self->title);
-  g_free (self->raw_content);
   g_hash_table_destroy (self->labels);
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
@@ -742,10 +739,7 @@ gn_xml_note_update_text_content (GnXmlNote *self)
     g_string_free (self->text_content, TRUE);
   self->text_content = NULL;
 
-  if (self->raw_content == NULL)
-    return;
-
-  content_start = strchr (self->raw_content, '\n');
+  content_start = strchr (self->raw_xml->str, '\n');
   if (content_start == NULL)
     return;
 
@@ -785,8 +779,7 @@ gn_xml_note_get_raw_content (GnNote *note)
 
   g_assert (GN_IS_NOTE (note));
 
-
-  if (self->raw_content == NULL)
+  if (self->raw_xml == NULL)
     {
       g_autofree gchar *content = NULL;
 
@@ -805,11 +798,10 @@ gn_xml_note_get_raw_content (GnNote *note)
 
       g_string_append (self->raw_xml, "</note-content></text></note>");
 
-      self->raw_content = g_strdup (self->raw_xml->str);
       g_clear_pointer (&self->raw_inner_xml, g_free);
     }
 
-  return g_strdup (self->raw_content);
+  return g_strdup (self->raw_xml->str);
 }
 
 static void
