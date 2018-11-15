@@ -32,6 +32,7 @@
 #include "gn-provider.h"
 #include "gn-settings.h"
 #include "gn-settings-dialog.h"
+#include "gn-tag-editor.h"
 #include "gn-editor.h"
 #include "gn-main-view.h"
 #include "gn-action-bar.h"
@@ -61,6 +62,7 @@ struct _GnWindow
   GtkWidget *notes_view;
   GtkWidget *trash_view;
   GtkWidget *editor_view;
+  GtkWidget *tag_editor;
 
   GQueue    *view_stack;
   GtkWidget *current_view;
@@ -496,6 +498,32 @@ gn_window_delete_items_cb (GnWindow  *self,
 }
 
 static void
+gn_window_show_tag_editor (GSimpleAction *action,
+                           GVariant      *parameter,
+                           gpointer       user_data)
+{
+  GnWindow *self = user_data;
+  g_autoptr(GList) notes = NULL;
+
+  g_assert (GN_IS_WINDOW (self));
+
+  if (self->tag_editor == NULL)
+    self->tag_editor = gn_tag_editor_new (GTK_WINDOW (self));
+
+  if (self->current_view == self->editor_view)
+    {
+      notes = g_list_prepend (notes,
+                              gn_editor_get_note (GN_EDITOR (self->editor_view)));
+    }
+  else
+    notes = gn_main_view_get_selected_items (GN_MAIN_VIEW (self->current_view));
+
+  g_return_if_fail (notes != NULL);
+
+  gtk_dialog_run (GTK_DIALOG (self->tag_editor));
+}
+
+static void
 gn_window_delete_items (GSimpleAction *action,
                         GVariant      *parameter,
                         gpointer       user_data)
@@ -633,6 +661,7 @@ gn_window_add_actions (GnWindow *self)
 {
   static const GActionEntry win_entries[] = {
     { "delete-items", gn_window_delete_items },
+    { "show-tag-editor", gn_window_show_tag_editor },
   };
 
   g_assert (GN_IS_WINDOW (self));

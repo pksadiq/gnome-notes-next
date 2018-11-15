@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <template class="GnTagEditor" parent="GtkDialog">
+    <property name="title" translatable="yes">Select Labels</property>
+    <property name="resizable">0</property>
+    <property name="modal">1</property>
+    <property name="hide-on-close">1</property>
+    <property name="width-request">300</property>
+    <property name="height-request">400</property>
+    <property name="type-hint">dialog</property>
+
+    <child internal-child="vbox">
+      <object class="GtkBox">
+        <property name="orientation">vertical</property>
+
+        <!-- New tag add entry -->
+        <child>
+          <object class="GtkBox">
+            <property name="margin">12</property>
+            <style>
+             <class name="linked"/>
+            </style>
+            <child>
+              <object class="GtkEntry" id="tag_entry">
+                <property name="hexpand">1</property>
+                <property name="placeholder-text">New Label...</property>
+                <signal name="notify::text" handler="gn_tag_editor_text_changed" swapped="1" />
+              </object>
+            </child>
+            <child>
+              <object class="GtkButton" id="add_button">
+                <property name="label" translatable="yes">Add</property>
+                <property name="sensitive">0</property>
+              </object>
+            </child>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkFrame">
+            <child>
+              <object class="GtkListBox" id="tags_list">
+
+                <!-- XXX: Test item -->
+                <child>
+                  <object class="GtkListBoxRow">
+                    <property name="activatable">0</property>
+                    <property name="selectable">0</property>
+                    <child>
+                      <object class="GtkBox" id="property">
+                        <child>
+                          <object class="GtkCheckButton">
+                            <property name="hexpand">1</property>
+                            <property name="vexpand">1</property>
+                            <property name="margin">12</property>
+                            <property name="margin-start">6</property>
+                            <property name="label">Personal</property>
+                          </object>
+                        </child>
+                      </object> <!-- ./GtkBox -->
+                    </child>
+                  </object>
+                </child>
+
+              </object>
+            </child>
+          </object> <!-- ./GtkFrame -->
+        </child>
+
+      </object> <!-- ./GtkBox -->
+    </child>
+  </template>
+</interface>

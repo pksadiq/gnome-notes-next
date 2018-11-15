@@ -25,6 +25,7 @@ src += [
   'gn-window.c',
   'gn-action-bar.c',
   'gn-settings-dialog.c',
+  'gn-tag-editor.c',
   'gn-provider-row.c',
   'notes/gn-item.c',
   'notes/gn-note.c',
