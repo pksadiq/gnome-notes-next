@@ -163,6 +163,28 @@ gn_editor_buffer_modified_cb (GnEditor      *self,
 }
 
 static void
+gn_editor_block_buffer_signals (GnEditor *self)
+{
+  g_assert (GN_IS_EDITOR (self));
+
+  g_object_freeze_notify (G_OBJECT (self->note_buffer));
+  gn_text_view_freeze_undo_redo (GN_TEXT_VIEW (self->editor_view));
+  g_signal_handlers_block_by_func (self->note_buffer,
+                                   gn_editor_buffer_modified_cb, self);
+}
+
+static void
+gn_editor_unblock_buffer_signals (GnEditor *self)
+{
+  g_assert (GN_IS_EDITOR (self));
+
+  g_object_thaw_notify (G_OBJECT (self->note_buffer));
+  gn_text_view_thaw_undo_redo (GN_TEXT_VIEW (self->editor_view));
+  g_signal_handlers_unblock_by_func (self->note_buffer,
+                                   gn_editor_buffer_modified_cb, self);
+}
+
+static void
 gn_editor_dispose (GObject *object)
 {
   GnEditor *self = (GnEditor *)object;
@@ -270,8 +292,7 @@ gn_editor_set_item (GnEditor   *self,
   self->item = item;
   self->model = model;
 
-  g_object_freeze_notify (G_OBJECT (self->note_buffer));
-  gn_text_view_freeze_undo_redo (GN_TEXT_VIEW (self->editor_view));
+  gn_editor_block_buffer_signals (self);
 
   if (item == NULL)
     gtk_text_buffer_set_text (GTK_TEXT_BUFFER (self->note_buffer), "", 0);
@@ -279,8 +300,8 @@ gn_editor_set_item (GnEditor   *self,
     gn_note_set_content_to_buffer (GN_NOTE (item),
                                    GN_NOTE_BUFFER (self->note_buffer));
 
-  gn_text_view_thaw_undo_redo (GN_TEXT_VIEW (self->editor_view));
-  g_object_thaw_notify (G_OBJECT (self->note_buffer));
+  gtk_text_buffer_set_modified (self->note_buffer, FALSE);
+  gn_editor_unblock_buffer_signals (self);
 
   GN_EXIT;
 }
