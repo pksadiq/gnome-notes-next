@@ -136,7 +136,8 @@ gn_editor_save_note (gpointer user_data)
 
   g_assert (GN_IS_EDITOR (self));
 
-  self->save_timeout_id = 0;
+  g_clear_handle_id (&self->save_timeout_id,
+                     g_source_remove);
   manager = gn_manager_get_default ();
 
   gn_note_set_content_from_buffer (GN_NOTE (self->item), self->note_buffer);
@@ -284,9 +285,6 @@ gn_editor_set_item (GnEditor   *self,
     GN_EXIT;
 
   if (self->save_timeout_id != 0)
-    g_source_remove (self->save_timeout_id);
-
-  if (self->item)
     gn_editor_save_note (self);
 
   self->item = item;
