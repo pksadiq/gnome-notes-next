@@ -234,7 +234,6 @@ gn_editor_init (GnEditor *self)
   GnManager *manager;
   GtkTextTag *font_tag;
   GtkTextTagTable *tag_table;
-  GtkTextIter start, end;
 
   gtk_widget_init_template (GTK_WIDGET (self));
 
@@ -257,10 +256,6 @@ gn_editor_init (GnEditor *self)
   g_object_bind_property (self->settings, "font",
                           font_tag, "font",
                           G_BINDING_DEFAULT | G_BINDING_SYNC_CREATE);
-
-  gtk_text_buffer_get_bounds (self->note_buffer, &start, &end);
-  gtk_text_buffer_apply_tag (self->note_buffer, font_tag, &start, &end);
-
 }
 
 GtkWidget *
