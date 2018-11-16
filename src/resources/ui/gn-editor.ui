@@ -7,12 +7,40 @@
       <object class="GtkScrolledWindow">
         <property name="expand">1</property>
         <property name="hscrollbar-policy">never</property>
+        <style>
+         <class name="view"/>
+        </style>
         <child>
-          <object class="GnTextView" id="editor_view">
-            <property name="has-focus">1</property>
-            <property name="wrap-mode">word-char</property>
-          </object>
+          <object class="GtkBox">
+            <property name="halign">center</property>
+
+            <child>
+              <object class="GtkSeparator">
+                <property name="orientation">vertical</property>
+              </object>
+            </child>
+
+            <child>
+              <object class="GnTextView" id="editor_view">
+                <property name="halign">center</property>
+                <property name="left-margin">12</property>
+                <property name="right-margin">12</property>
+                <property name="top-margin">27</property>
+                <property name="width-request">480</property>
+                <property name="has-focus">1</property>
+                <property name="wrap-mode">word-char</property>
+              </object>
+            </child>
+
+            <child>
+              <object class="GtkSeparator">
+                <property name="orientation">vertical</property>
+              </object>
+            </child>
+
+          </object> <!-- ./GtkBox -->
         </child>
+
       </object>
     </child>
 
