@@ -38,6 +38,7 @@ GnProvider *gn_manager_get_default_provider   (GnManager *self,
                                                gboolean   show_disconnected);
 
 GListModel *gn_manager_get_notes_store        (GnManager *self);
+GListModel *gn_manager_get_tag_store          (GnManager *self);
 GListModel *gn_manager_get_trash_notes_store  (GnManager *self);
 GListModel *gn_manager_get_search_store       (GnManager *self);
 

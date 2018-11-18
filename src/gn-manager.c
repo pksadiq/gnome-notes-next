@@ -28,6 +28,7 @@
 #include "gn-memo-provider.h"
 #include "gn-local-provider.h"
 #include "gn-settings.h"
+#include "gn-tag-store.h"
 #include "gn-utils.h"
 #include "gn-manager.h"
 #include "gn-trace.h"
@@ -64,6 +65,7 @@ struct _GnManager
   GtkSliceListModel *notes_store;
   GtkSliceListModel *trash_store;
   GtkFilterListModel *search_store;
+  GnTagStore *tag_store;
 
   GList       *delete_queue;
 
@@ -411,6 +413,7 @@ gn_manager_init (GnManager *self)
 
   self->providers = g_hash_table_new_full (g_str_hash, g_str_equal,
                                            g_free, NULL);
+  self->tag_store = gn_tag_store_new ();
   self->list_of_notes_store = g_list_store_new (G_TYPE_LIST_MODEL);
   self->list_of_trash_store = g_list_store_new (G_TYPE_LIST_MODEL);
   model = gtk_flatten_list_model_new (GN_TYPE_ITEM,
@@ -506,6 +509,20 @@ GListModel *
 gn_manager_get_notes_store (GnManager *self)
 {
   return G_LIST_MODEL (self->notes_store);
+}
+
+/**
+ * gn_manager_get_tag_store:
+ * @self: A #GnManager
+ *
+ * Get a sorted list of tags/labels for local notes.
+ *
+ * Returns: (transfer none): a #GListStore
+ */
+GListModel *
+gn_manager_get_tag_store (GnManager *self)
+{
+  return gn_tag_store_get_model (self->tag_store);
 }
 
 /**
