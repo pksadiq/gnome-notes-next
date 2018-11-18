@@ -29,6 +29,8 @@ G_BEGIN_DECLS
 
 G_DECLARE_FINAL_TYPE (GnTagEditor, gn_tag_editor, GN, TAG_EDITOR, GtkDialog)
 
-GtkWidget *gn_tag_editor_new (GtkWindow *window);
+GtkWidget  *gn_tag_editor_new       (GtkWindow   *window);
+void        gn_tag_editor_set_model (GnTagEditor *self,
+                                     GListModel  *model);
 
 G_END_DECLS
