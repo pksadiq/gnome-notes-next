@@ -508,7 +508,14 @@ gn_window_show_tag_editor (GSimpleAction *action,
   g_assert (GN_IS_WINDOW (self));
 
   if (self->tag_editor == NULL)
-    self->tag_editor = gn_tag_editor_new (GTK_WINDOW (self));
+    {
+      GnManager *manager;
+
+      manager = gn_manager_get_default ();
+      self->tag_editor = gn_tag_editor_new (GTK_WINDOW (self));
+      gn_tag_editor_set_model (GN_TAG_EDITOR (self->tag_editor),
+                               gn_manager_get_tag_store (manager));
+    }
 
   if (self->current_view == self->editor_view)
     {
