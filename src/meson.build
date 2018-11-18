@@ -32,6 +32,7 @@ src += [
   'notes/gn-note-buffer.c',
   'notes/gn-plain-note.c',
   'notes/gn-xml-note.c',
+  'notes/gn-tag-store.c',
   'providers/gn-provider.c',
   'providers/gn-goa-provider.c',
   'providers/gn-memo-provider.c',
