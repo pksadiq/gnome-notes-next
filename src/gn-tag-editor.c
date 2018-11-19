@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include "gn-tag-store.h"
+#include "gn-tag-row.h"
 #include "gn-tag-editor.h"
 #include "gn-trace.h"
 
@@ -45,20 +46,6 @@ struct _GnTagEditor
 };
 
 G_DEFINE_TYPE (GnTagEditor, gn_tag_editor, GTK_TYPE_DIALOG)
-
-static GtkWidget *
-gn_tag_item_new (gpointer item,
-                 gpointer user_data)
-{
-  GtkWidget *row, *label;
-  GnTag *tag = item;
-
-  row = gtk_list_box_row_new ();
-  label = gtk_label_new (gn_tag_get_name (tag));
-  gtk_container_add (GTK_CONTAINER (row), label);
-
-  return row;
-}
 
 static void
 gn_tag_editor_text_changed (GnTagEditor *self,
@@ -115,6 +102,6 @@ gn_tag_editor_set_model (GnTagEditor *self,
     return;
 
   gtk_list_box_bind_model (GTK_LIST_BOX (self->tags_list), model,
-                           gn_tag_item_new,
+                           gn_tag_row_new,
                            self, NULL);
 }

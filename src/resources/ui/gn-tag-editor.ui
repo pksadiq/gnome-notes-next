@@ -41,27 +41,6 @@
             <child>
               <object class="GtkListBox" id="tags_list">
 
-                <!-- XXX: Test item -->
-                <child>
-                  <object class="GtkListBoxRow">
-                    <property name="activatable">0</property>
-                    <property name="selectable">0</property>
-                    <child>
-                      <object class="GtkBox" id="property">
-                        <child>
-                          <object class="GtkCheckButton">
-                            <property name="hexpand">1</property>
-                            <property name="vexpand">1</property>
-                            <property name="margin">12</property>
-                            <property name="margin-start">6</property>
-                            <property name="label">Personal</property>
-                          </object>
-                        </child>
-                      </object> <!-- ./GtkBox -->
-                    </child>
-                  </object>
-                </child>
-
               </object>
             </child>
           </object> <!-- ./GtkFrame -->
