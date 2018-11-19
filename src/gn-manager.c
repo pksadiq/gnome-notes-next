@@ -65,7 +65,7 @@ struct _GnManager
   GtkSliceListModel *notes_store;
   GtkSliceListModel *trash_store;
   GtkFilterListModel *search_store;
-  GnTagStore *tag_store;
+  GListStore *tag_store;
 
   GList       *delete_queue;
 
@@ -267,6 +267,7 @@ gn_manager_load_providers (GnManager *self)
   g_assert (GN_IS_MANAGER (self));
 
   provider = gn_local_provider_new ();
+  self->tag_store = gn_provider_get_tags (provider);
   gn_manager_load_and_save_provider (self, provider);
 
   /* TODO: Enable once the new design is ready */
@@ -413,7 +414,6 @@ gn_manager_init (GnManager *self)
 
   self->providers = g_hash_table_new_full (g_str_hash, g_str_equal,
                                            g_free, NULL);
-  self->tag_store = gn_tag_store_new ();
   self->list_of_notes_store = g_list_store_new (G_TYPE_LIST_MODEL);
   self->list_of_trash_store = g_list_store_new (G_TYPE_LIST_MODEL);
   model = gtk_flatten_list_model_new (GN_TYPE_ITEM,
@@ -522,7 +522,7 @@ gn_manager_get_notes_store (GnManager *self)
 GListModel *
 gn_manager_get_tag_store (GnManager *self)
 {
-  return gn_tag_store_get_model (self->tag_store);
+  return G_LIST_MODEL (self->tag_store);
 }
 
 /**
@@ -575,7 +575,7 @@ gn_manager_new_note (GnManager *self)
   provider = gn_manager_get_default_provider (self, FALSE);
 
   if (GN_IS_LOCAL_PROVIDER (provider))
-    item = GN_ITEM (gn_xml_note_new_from_data (NULL, 0));
+    item = GN_ITEM (gn_xml_note_new_from_data (NULL, 0, NULL));
   else
     item = GN_ITEM (gn_plain_note_new_from_data (NULL, 0));
 

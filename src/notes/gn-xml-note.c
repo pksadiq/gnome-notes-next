@@ -81,6 +81,7 @@ struct _GnXmlNote
   GString *text_content;
   GString *markup;
   gchar   *title;
+  GList   *tags;        /* List of GnTag */
   GHashTable *labels;
 
   NoteFormat note_format;
@@ -168,7 +169,8 @@ gn_xml_note_get_format (const gchar *data,
 }
 
 static void
-gn_xml_note_parse (GnXmlNote *self)
+gn_xml_note_parse (GnXmlNote  *self,
+                   GnTagStore *tag_store)
 {
   xmlTextReader *xml_reader;
 
@@ -266,6 +268,16 @@ gn_xml_note_parse (GnXmlNote *self)
               continue;
 
             g_hash_table_add (self->labels, g_strdup (content));
+            g_assert (tag_store != NULL);
+
+            if (tag_store != NULL)
+              {
+                GnTag *tag;
+
+                tag = gn_tag_store_insert (tag_store,
+                                           g_intern_string (content), NULL);
+                self->tags = g_list_prepend (self->tags, tag);
+              }
           }
         else if (g_str_equal (tag, "note-content"))
           {
@@ -937,7 +949,8 @@ gn_xml_note_init (GnXmlNote *self)
  */
 static GnXmlNote *
 gn_xml_note_create_from_data (const gchar *data,
-                              gsize        length)
+                              gsize        length,
+                              GnTagStore  *tag_store)
 {
   g_autoptr(GnXmlNote) self = NULL;
   NoteFormat note_format;
@@ -957,7 +970,7 @@ gn_xml_note_create_from_data (const gchar *data,
   if (note_format == NOTE_FORMAT_BIJIBEN_2)
     {
       self->raw_xml = g_string_new_len (data, length);
-      gn_xml_note_parse (self);
+      gn_xml_note_parse (self, tag_store);
     }
   else
     self->raw_data = g_string_new_len (data, length);
@@ -969,6 +982,7 @@ gn_xml_note_create_from_data (const gchar *data,
  * gn_xml_note_new_from_data:
  * @data (nullable): The raw note content
  * @length: The length of @data, or -1
+ * @tag_store: A #GnTagStore
  *
  * Create a new XML note from the given data.
  *
@@ -977,10 +991,11 @@ gn_xml_note_create_from_data (const gchar *data,
  */
 GnXmlNote *
 gn_xml_note_new_from_data (const gchar *data,
-                           gsize        length)
+                           gsize        length,
+                           GnTagStore  *tag_store)
 {
   if (data == NULL)
     return g_object_new (GN_TYPE_XML_NOTE, NULL);
 
-  return gn_xml_note_create_from_data (data, length);
+  return gn_xml_note_create_from_data (data, length, tag_store);
 }

@@ -24,6 +24,7 @@
 
 #include <glib/gi18n.h>
 
+#include "gn-tag-store.h"
 #include "gn-xml-note.h"
 #include "gn-plain-note.h"
 #include "gn-local-provider.h"
@@ -62,6 +63,7 @@ struct _GnLocalProvider
   gchar *trash_location;
 
   GListStore *notes_store;
+  GnTagStore *tag_store;
   GListStore *trash_store;
   /* GList *notes; */
   /* GList *trash_notes; */
@@ -91,6 +93,7 @@ gn_local_provider_finalize (GObject *object)
   g_clear_pointer (&self->location, g_free);
 
   g_clear_object (&self->notes_store);
+  gn_tag_store_free (self->tag_store);
   g_clear_object (&self->trash_store);
   /* g_list_free_full (self->notes, g_object_unref); */
 
@@ -186,7 +189,7 @@ gn_local_provider_load_path (GnLocalProvider  *self,
       file = g_file_get_child (location, name);
       g_file_load_contents (file, cancellable, &contents, NULL, NULL, NULL);
 
-      note = gn_xml_note_new_from_data (contents, -1);
+      note = gn_xml_note_new_from_data (contents, -1, self->tag_store);
 
       if (note == NULL)
         continue;
@@ -437,6 +440,20 @@ gn_local_provider_get_notes (GnProvider *provider)
 }
 
 static GListStore *
+gn_local_provider_get_tags (GnProvider *provider)
+{
+  GnTagStore *tag_store;
+
+  GN_ENTRY;
+
+  g_assert (GN_IS_PROVIDER (provider));
+
+  tag_store = GN_LOCAL_PROVIDER (provider)->tag_store;
+
+  GN_RETURN (G_LIST_STORE (gn_tag_store_get_model (tag_store)));
+}
+
+static GListStore *
 gn_local_provider_get_trash_notes (GnProvider *provider)
 {
   GN_ENTRY;
@@ -462,6 +479,7 @@ gn_local_provider_class_init (GnLocalProviderClass *klass)
   provider_class->get_user_name = gn_local_provider_get_user_name;
   provider_class->get_location_name = gn_local_provider_get_location_name;
   provider_class->get_notes = gn_local_provider_get_notes;
+  provider_class->get_tags = gn_local_provider_get_tags;
   provider_class->get_trash_notes = gn_local_provider_get_trash_notes;
 
   provider_class->load_items_async = gn_local_provider_load_items_async;
@@ -475,6 +493,7 @@ gn_local_provider_init (GnLocalProvider *self)
 {
   self->notes_store = g_list_store_new (GN_TYPE_ITEM);
   self->trash_store = g_list_store_new (GN_TYPE_ITEM);
+  self->tag_store = gn_tag_store_new ();
 
   if (self->location == NULL)
     {
