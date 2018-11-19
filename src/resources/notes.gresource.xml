@@ -13,6 +13,7 @@
     <file preprocess="xml-stripblanks">ui/gn-item-thumbnail.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-settings-dialog.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-tag-editor.ui</file>
+    <file preprocess="xml-stripblanks">ui/gn-tag-row.ui</file>
     <file preprocess="xml-stripblanks">ui/gn-provider-row.ui</file>
   </gresource>
 </gresources>
