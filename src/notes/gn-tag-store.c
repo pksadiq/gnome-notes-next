@@ -44,12 +44,39 @@ struct _GnTag
 {
   GObject parent_instance;
 
-  const gchar *name;
+  gchar       *name;
+  const gchar *intern_name; /* A casefold intern string */
   GdkRGBA     *rgba;
 };
 
 G_DEFINE_TYPE (GnTag, gn_tag, G_TYPE_OBJECT)
 
+
+static gboolean
+gn_tag_store_find (GnTagStore  *self,
+                   const gchar *name, /* interned */
+                   guint       *position)
+{
+  gpointer object;
+  guint i = 0;
+
+  g_assert (self != NULL);
+
+  while ((object = g_list_model_get_item (G_LIST_MODEL (self->store), i)))
+    {
+      if (name == GN_TAG (object)->intern_name)
+        {
+          *position = i;
+          g_object_unref (object);
+
+          return TRUE;
+        }
+      g_object_unref (object);
+      i++;
+    }
+
+  return FALSE;
+}
 
 /**
  * gn_tag_store_new:
@@ -104,7 +131,7 @@ gn_tag_store_get_model (GnTagStore *self)
 /**
  * gn_tag_store_insert:
  * @self: A #GnListStore
- * @name: A non-empty interned string
+ * @name: A non-empty string
  * @rgba: (nullable): A #GdkRGBA
  *
  * Insert A tag with name @name and color @rgba.
@@ -117,14 +144,23 @@ gn_tag_store_insert (GnTagStore  *self,
                      GdkRGBA     *rgba)
 {
   GnTag *tag;
+  g_autofree gchar *casefold = NULL;
+  const gchar *str_intern;
   guint position;
 
   g_return_val_if_fail (self != NULL, NULL);
   g_return_val_if_fail (name != NULL, NULL);
   g_return_val_if_fail (*name != '\0', NULL);
 
+  casefold = g_utf8_casefold (name, -1);
+  str_intern = g_intern_string (casefold);
+
+  if (gn_tag_store_find (self, str_intern, &position))
+    return g_list_model_get_item (G_LIST_MODEL (self->store), position);
+
   tag = g_object_new (GN_TYPE_TAG, NULL);
-  tag->name = name;
+  tag->name = g_strdup (name);
+  tag->intern_name = str_intern;
 
   if (rgba)
     tag->rgba = gdk_rgba_copy (rgba);
@@ -142,6 +178,7 @@ gn_tag_finalize (GObject *object)
   GnTag *tag = (GnTag *)object;
 
   gdk_rgba_free (tag->rgba);
+  g_free (self->name);
 
   G_OBJECT_CLASS (gn_tag_parent_class)->finalize (object);
 }
