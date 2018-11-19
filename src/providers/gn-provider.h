@@ -87,6 +87,7 @@ struct _GnProviderClass
                                         GError              **error);
 
   GListStore  *(*get_notes)            (GnProvider           *self);
+  GListStore  *(*get_tags)             (GnProvider           *self);
   GListStore  *(*get_trash_notes)      (GnProvider           *self);
   GListStore  *(*get_notebooks)        (GnProvider           *self);
 
@@ -165,6 +166,7 @@ gboolean     gn_provider_delete_item_finish   (GnProvider           *self,
                                                GError              **error);
 
 GListStore  *gn_provider_get_notes            (GnProvider           *self);
+GListStore  *gn_provider_get_tags             (GnProvider           *self);
 GListStore  *gn_provider_get_trash_notes      (GnProvider           *self);
 GListStore  *gn_provider_get_notebooks        (GnProvider           *self);
 gboolean     gn_provider_has_loaded           (GnProvider           *self);

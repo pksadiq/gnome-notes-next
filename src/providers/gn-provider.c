@@ -154,6 +154,15 @@ gn_provider_real_get_notes (GnProvider *self)
 }
 
 static GListStore *
+gn_provider_real_get_tags (GnProvider *self)
+{
+  g_assert (GN_IS_PROVIDER (self));
+
+  /* Derived classes should implement this, if supported */
+  return NULL;
+}
+
+static GListStore *
 gn_provider_real_get_trash_notes (GnProvider *self)
 {
   g_assert (GN_IS_PROVIDER (self));
@@ -318,6 +327,7 @@ gn_provider_class_init (GnProviderClass *klass)
   klass->get_rgba = gn_provider_real_get_rgba;
   klass->get_location_name = gn_provider_real_get_location_name;
   klass->get_notes = gn_provider_real_get_notes;
+  klass->get_tags = gn_provider_real_get_tags;
   klass->get_trash_notes = gn_provider_real_get_trash_notes;
   klass->get_notebooks = gn_provider_real_get_notebooks;
 
@@ -1017,6 +1027,31 @@ gn_provider_get_notes (GnProvider *self)
   notes = GN_PROVIDER_GET_CLASS (self)->get_notes (self);
 
   GN_RETURN (notes);
+}
+
+/**
+ * gn_provider_get_tags:
+ * @self: a #GnProvider
+ *
+ * Get the list of tags/labels loaded by the provider. This
+ * should be called only after gn_provider_load_items()
+ * or gn_provider_load_items_async() is called.
+ *
+ * Returns: (transfer none) (nullable): A #GListStore of
+ * #GnTag.
+ */
+GListStore *
+gn_provider_get_tags (GnProvider *self)
+{
+  GListStore *tags;
+
+  GN_ENTRY;
+
+  g_return_val_if_fail (GN_IS_PROVIDER (self), NULL);
+
+  tags = GN_PROVIDER_GET_CLASS (self)->get_tags (self);
+
+  GN_RETURN (tags);
 }
 
 /**
