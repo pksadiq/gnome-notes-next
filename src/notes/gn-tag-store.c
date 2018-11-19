@@ -63,14 +63,9 @@ GnTagStore *
 gn_tag_store_new (void)
 {
   GnTagStore *self;
-  GdkRGBA rgba;
 
   self = g_slice_new (GnTagStore);
   self->store = g_list_store_new (GN_TYPE_TAG);
-
-  /* Dummy data for testing */
-  gdk_rgba_parse (&rgba, "#aabbcc");
-  gn_tag_store_insert (self, g_intern_string ("Personal"), &rgba);
 
   return self;
 }
