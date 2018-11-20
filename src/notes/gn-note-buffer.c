@@ -157,6 +157,45 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
 }
 
 static void
+gn_note_buffer_real_apply_tag (GtkTextBuffer     *buffer,
+                               GtkTextTag        *tag,
+                               const GtkTextIter *start,
+                               const GtkTextIter *end)
+{
+  GnNoteBuffer *self = (GnNoteBuffer *)buffer;
+
+  GTK_TEXT_BUFFER_CLASS (gn_note_buffer_parent_class)->apply_tag (buffer, tag,
+                                                                  start, end);
+
+  /* We don't need anything other this tag handled by text-view undo */
+  if (tag != self->tag_bold &&
+      tag != self->tag_italic &&
+      tag != self->tag_underline &&
+      tag != self->tag_strike)
+    g_signal_stop_emission_by_name (buffer, "apply-tag");
+}
+
+static void
+gn_note_buffer_real_remove_tag (GtkTextBuffer     *buffer,
+                                GtkTextTag        *tag,
+                                const GtkTextIter *start,
+                                const GtkTextIter *end)
+{
+  GnNoteBuffer *self = (GnNoteBuffer *)buffer;
+
+  GTK_TEXT_BUFFER_CLASS (gn_note_buffer_parent_class)->remove_tag (buffer, tag,
+                                                                   start, end);
+
+  /* We don't need anything other this tag handled by text-view undo */
+  if (tag != self->tag_bold &&
+      tag != self->tag_italic &&
+      tag != self->tag_underline &&
+      tag != self->tag_strike)
+    g_signal_stop_emission_by_name (buffer, "apply-tag");
+
+}
+
+static void
 gn_note_buffer_constructed (GObject *object)
 {
   GnNoteBuffer *self = (GnNoteBuffer *)object;
@@ -204,6 +243,8 @@ gn_note_buffer_class_init (GnNoteBufferClass *klass)
   object_class->constructed = gn_note_buffer_constructed;
 
   text_buffer_class->insert_text = gn_note_buffer_insert_text;
+  text_buffer_class->apply_tag = gn_note_buffer_real_apply_tag;
+  text_buffer_class->remove_tag = gn_note_buffer_real_remove_tag;
 }
 
 static void
