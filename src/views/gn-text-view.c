@@ -383,8 +383,6 @@ gn_text_view_text_add (GnTextView *self,
   g_assert (GN_IS_TEXT_VIEW (self));
   g_assert (action != NULL);
 
-  length = ABS (action->end - action->start);
-
   gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
                                       &start, action->start);
 
