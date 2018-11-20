@@ -55,6 +55,8 @@ G_DEFINE_TYPE (GnTextView, gn_text_view, GTK_TYPE_TEXT_VIEW)
 typedef enum ActionType {
   ACTION_TYPE_TEXT_ADD,
   ACTION_TYPE_TEXT_REMOVE,
+  ACTION_TYPE_TAG_ADD,
+  ACTION_TYPE_TAG_REMOVE,
 } ActionType;
 
 typedef struct _Action
@@ -63,6 +65,7 @@ typedef struct _Action
 
   union {
     gchar *text;
+    GtkTextTag *tag;
   };
 
   gint start;
@@ -304,6 +307,50 @@ gn_text_view_delete_range_cb (GnTextView  *self,
   gn_text_view_add_undo_action (self, action);
 }
 
+static void
+gn_text_view_apply_tag_cb (GtkTextBuffer *buffer,
+                           GtkTextTag    *tag,
+                           GtkTextIter   *start,
+                           GtkTextIter   *end,
+                           GnTextView    *self)
+{
+  Action *action;
+
+  g_assert (GTK_IS_TEXT_BUFFER (buffer));
+  g_assert (GTK_IS_TEXT_TAG (tag));
+
+  action = g_slice_new (Action);
+  action->type = ACTION_TYPE_TAG_ADD;
+  action->tag = tag;
+  action->start = gtk_text_iter_get_offset (start);
+  action->end = gtk_text_iter_get_offset (end);
+  action->can_merge = FALSE;
+
+  gn_text_view_add_undo_action (self, action);
+}
+
+static void
+gn_text_view_remove_tag_cb (GtkTextBuffer *buffer,
+                            GtkTextTag    *tag,
+                            GtkTextIter   *start,
+                            GtkTextIter   *end,
+                            GnTextView    *self)
+{
+  Action *action;
+
+  g_assert (GTK_IS_TEXT_BUFFER (buffer));
+  g_assert (GTK_IS_TEXT_TAG (tag));
+
+  action = g_slice_new (Action);
+  action->type = ACTION_TYPE_TAG_REMOVE;
+  action->tag = tag;
+  action->start = gtk_text_iter_get_offset (start);
+  action->end = gtk_text_iter_get_offset (end);
+  action->can_merge = FALSE;
+
+  gn_text_view_add_undo_action (self, action);
+}
+
 /* undo/redo actions */
 static void   gn_text_view_text_remove (GnTextView *self,
                                        Action     *action);
@@ -357,6 +404,43 @@ gn_text_view_text_remove (GnTextView *self,
   mark = gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (self->buffer));
   gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (self), mark);
 }
+
+static void
+gn_text_view_remove_tag (GnTextView *self,
+                         Action     *action)
+{
+  GtkTextIter start, end;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+  g_assert (action != NULL);
+
+  gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
+                                      &start, action->start);
+  gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
+                                      &end, action->end);
+
+  gtk_text_buffer_remove_tag (GTK_TEXT_BUFFER (self->buffer),
+                              action->tag, &start, &end);
+}
+
+static void
+gn_text_view_add_tag (GnTextView *self,
+                      Action     *action)
+{
+  GtkTextIter start, end;
+
+  g_assert (GN_IS_TEXT_VIEW (self));
+  g_assert (action != NULL);
+
+  gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
+                                      &start, action->start);
+  gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
+                                      &end, action->end);
+
+  gtk_text_buffer_apply_tag (GTK_TEXT_BUFFER (self->buffer),
+                             action->tag, &start, &end);
+}
+
 static void
 gn_text_view_get_property (GObject    *object,
                            guint       prop_id,
@@ -396,6 +480,13 @@ gn_text_view_constructed (GObject *object)
   g_signal_connect_object (self->buffer, "delete-range",
                            G_CALLBACK (gn_text_view_delete_range_cb),
                            self, G_CONNECT_SWAPPED);
+
+  g_signal_connect_object (self->buffer, "apply-tag",
+                           G_CALLBACK (gn_text_view_apply_tag_cb),
+                           self, G_CONNECT_AFTER);
+  g_signal_connect_object (self->buffer, "remove-tag",
+                           G_CALLBACK (gn_text_view_remove_tag_cb),
+                           self, G_CONNECT_AFTER);
 
   G_OBJECT_CLASS (gn_text_view_parent_class)->constructed (object);
 }
@@ -492,6 +583,10 @@ gn_text_view_freeze_undo_redo (GnTextView *self)
                                    gn_text_view_insert_text_cb, self);
   g_signal_handlers_block_by_func (self->buffer,
                                    gn_text_view_delete_range_cb, self);
+  g_signal_handlers_block_by_func (self->buffer,
+                                   gn_text_view_apply_tag_cb, self);
+  g_signal_handlers_block_by_func (self->buffer,
+                                   gn_text_view_remove_tag_cb, self);
 }
 
 void
@@ -506,6 +601,10 @@ gn_text_view_thaw_undo_redo (GnTextView *self)
                                      gn_text_view_insert_text_cb, self);
   g_signal_handlers_unblock_by_func (self->buffer,
                                      gn_text_view_delete_range_cb, self);
+  g_signal_handlers_unblock_by_func (self->buffer,
+                                     gn_text_view_apply_tag_cb, self);
+  g_signal_handlers_unblock_by_func (self->buffer,
+                                     gn_text_view_remove_tag_cb, self);
 }
 
 void
@@ -537,6 +636,10 @@ gn_text_view_undo (GnTextView *self)
     }
   if (action->type == ACTION_TYPE_TEXT_REMOVE)
     gn_text_view_text_add (self, action);
+  else if (action->type == ACTION_TYPE_TAG_ADD)
+    gn_text_view_remove_tag (self, action);
+  else if (action->type == ACTION_TYPE_TAG_REMOVE)
+    gn_text_view_add_tag (self, action);
 
   gn_text_view_thaw_undo_redo (self);
 
@@ -569,6 +672,10 @@ gn_text_view_redo (GnTextView *self)
           gn_text_view_text_add (self, self->current_undo->data);
         }
     }
+  else if (action->type == ACTION_TYPE_TAG_ADD)
+    gn_text_view_add_tag (self, action);
+  else if (action->type == ACTION_TYPE_TAG_REMOVE)
+    gn_text_view_remove_tag (self, action);
 
   gn_text_view_thaw_undo_redo (self);
   self->current_undo = self->current_undo->prev;
