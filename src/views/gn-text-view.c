@@ -66,6 +66,7 @@ typedef struct _Action
   union {
     gchar *text;
     GtkTextTag *tag;
+    GtkTextBuffer *buffer;
   };
 
   gint start;
@@ -91,6 +92,8 @@ gn_text_view_undo_action_free (Action *action)
 
   if (action->type == ACTION_TYPE_TEXT_ADD)
     g_free (action->text);
+  else if (action->type == ACTION_TYPE_TEXT_REMOVE)
+    g_object_unref (action->buffer);
 
   g_slice_free (Action, action);
 }
@@ -161,10 +164,20 @@ gn_text_view_action_can_merge (GnTextView *self,
        g_ascii_isspace(*action->text))) /* If begins with space */
     return FALSE;
 
-  if (action->type == ACTION_TYPE_TEXT_REMOVE &&
-      (last_action->start != action->end ||
-       g_ascii_isspace(*last_action->text)))
-    return FALSE;
+  if (action->type == ACTION_TYPE_TEXT_REMOVE)
+    {
+      GtkTextIter start;
+      gunichar c;
+
+      if (last_action->start != action->end)
+        return FALSE;
+
+      gtk_text_buffer_get_start_iter (last_action->buffer, &start);
+      c = gtk_text_iter_get_char (&start);
+
+      if (c == ' ')
+        return FALSE;
+    }
 
   return TRUE;
 }
@@ -292,17 +305,24 @@ gn_text_view_delete_range_cb (GnTextView  *self,
                               GtkTextIter *start,
                               GtkTextIter *end)
 {
+  GtkTextBuffer *buffer;
+  GtkTextTagTable *tag_table;
   Action *action;
+  GtkTextIter start_iter;
 
   g_assert (GN_IS_TEXT_VIEW (self));
 
+  tag_table = gtk_text_buffer_get_tag_table (GTK_TEXT_BUFFER (self->buffer));
+  buffer = gtk_text_buffer_new (tag_table);
   action = g_slice_new (Action);
   action->type = ACTION_TYPE_TEXT_REMOVE;
-  action->text = gtk_text_buffer_get_text (GTK_TEXT_BUFFER (self->buffer),
-                                           start, end, FALSE);
+  action->buffer = buffer;
   action->start = gtk_text_iter_get_offset (start);
   action->end = gtk_text_iter_get_offset (end);
   action->can_merge = TRUE;
+
+  gtk_text_buffer_get_start_iter (buffer, &start_iter);
+  gtk_text_buffer_insert_range (buffer, &start_iter, start, end);
 
   gn_text_view_add_undo_action (self, action);
 }
@@ -358,9 +378,7 @@ static void
 gn_text_view_text_add (GnTextView *self,
                        Action     *action)
 {
-  GtkTextMark *mark;
   GtkTextIter start;
-  gint length;
 
   g_assert (GN_IS_TEXT_VIEW (self));
   g_assert (action != NULL);
@@ -370,15 +388,18 @@ gn_text_view_text_add (GnTextView *self,
   gtk_text_buffer_get_iter_at_offset (GTK_TEXT_BUFFER (self->buffer),
                                       &start, action->start);
 
-  gtk_text_buffer_insert (GTK_TEXT_BUFFER (self->buffer),
-                          &start, action->text,
-                          ABS (action->end - action->start));
+  if (action->type == ACTION_TYPE_TEXT_ADD)
+    gtk_text_buffer_insert (GTK_TEXT_BUFFER (self->buffer),
+                            &start, action->text,
+                            ABS (action->end - action->start));
+  else  /* ACTION_TYPE_TEXT_REMOVE */
+    {
+      GtkTextIter start_iter, end_iter;
 
-  gtk_text_iter_forward_chars (&start, length);
-  gtk_text_buffer_place_cursor (GTK_TEXT_BUFFER (self->buffer), &start);
-
-  mark = gtk_text_buffer_get_insert (GTK_TEXT_BUFFER (self->buffer));
-  gtk_text_view_scroll_mark_onscreen (GTK_TEXT_VIEW (self), mark);
+      gtk_text_buffer_get_bounds (action->buffer, &start_iter, &end_iter);
+      gtk_text_buffer_insert_range (GTK_TEXT_BUFFER (self->buffer),
+                                    &start, &start_iter, &end_iter);
+    }
 }
 
 static void
