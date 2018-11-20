@@ -202,14 +202,15 @@ static void
 gn_text_view_merge_text_remove (Action *last_action,
                                 Action *action)
 {
-  gchar *text;
+  GtkTextIter iter, start, end;
 
   g_assert (last_action->start - last_action->end != 0);
   g_assert (action->start - action->end != 0);
 
-  text = g_strconcat (action->text, last_action->text, NULL);
-  g_free (last_action->text);
-  last_action->text = text;
+  gtk_text_buffer_get_bounds (action->buffer, &start, &end);
+  gtk_text_buffer_get_start_iter (last_action->buffer, &iter);
+  gtk_text_buffer_insert_range (last_action->buffer,
+                                &iter, &start, &end);
 
   last_action->start = action->start;
 }
