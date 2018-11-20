@@ -191,7 +191,7 @@ gn_note_buffer_real_remove_tag (GtkTextBuffer     *buffer,
       tag != self->tag_italic &&
       tag != self->tag_underline &&
       tag != self->tag_strike)
-    g_signal_stop_emission_by_name (buffer, "apply-tag");
+    g_signal_stop_emission_by_name (buffer, "remove-tag");
 
 }
 
