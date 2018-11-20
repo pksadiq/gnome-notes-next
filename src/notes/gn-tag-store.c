@@ -178,7 +178,7 @@ gn_tag_finalize (GObject *object)
   GnTag *tag = (GnTag *)object;
 
   gdk_rgba_free (tag->rgba);
-  g_free (self->name);
+  g_free (tag->name);
 
   G_OBJECT_CLASS (gn_tag_parent_class)->finalize (object);
 }
