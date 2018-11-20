@@ -295,6 +295,7 @@ gn_editor_set_item (GnEditor   *self,
 
   gtk_text_buffer_set_modified (self->note_buffer, FALSE);
   gn_editor_unblock_buffer_signals (self);
+  gn_text_view_clear_undo_history (GN_TEXT_VIEW (self->editor_view));
 
   GN_EXIT;
 }

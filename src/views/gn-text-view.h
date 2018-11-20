@@ -35,4 +35,7 @@ void           gn_text_view_redo     (GnTextView *self);
 
 void           gn_text_view_freeze_undo_redo (GnTextView *self);
 void           gn_text_view_thaw_undo_redo   (GnTextView *self);
+
+void           gn_text_view_clear_undo_history (GnTextView *self);
+
 G_END_DECLS

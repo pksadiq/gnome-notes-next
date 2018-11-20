@@ -628,6 +628,17 @@ gn_text_view_thaw_undo_redo (GnTextView *self)
 }
 
 void
+gn_text_view_clear_undo_history (GnTextView *self)
+{
+  g_return_if_fail (GN_IS_TEXT_VIEW (self));
+
+  g_queue_free_full (self->undo_queue,
+                     (GDestroyNotify)gn_text_view_undo_action_free);
+  self->undo_queue = g_queue_new ();
+  gn_text_view_update_can_undo_redo (self);
+}
+
+void
 gn_text_view_undo (GnTextView *self)
 {
   Action *action;
