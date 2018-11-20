@@ -48,6 +48,17 @@ struct _GnTagEditor
 G_DEFINE_TYPE (GnTagEditor, gn_tag_editor, GTK_TYPE_DIALOG)
 
 static void
+gn_tag_editor_set_header (GtkListBoxRow *row,
+                          GtkListBoxRow *before,
+                          gpointer       user_data)
+{
+  if (before == NULL)
+    gtk_list_box_row_set_header (row, NULL);
+  else if (gtk_list_box_row_get_header (row) == NULL)
+    gtk_list_box_row_set_header (row, gtk_separator_new (0));
+}
+
+static void
 gn_tag_editor_text_changed (GnTagEditor *self,
                             GParamSpec  *pspec,
                             GtkStack    *main_view)
@@ -80,6 +91,10 @@ static void
 gn_tag_editor_init (GnTagEditor *self)
 {
   gtk_widget_init_template (GTK_WIDGET (self));
+
+  gtk_list_box_set_header_func (GTK_LIST_BOX (self->tags_list),
+                                gn_tag_editor_set_header,
+                                self, NULL);
 }
 
 GtkWidget *
