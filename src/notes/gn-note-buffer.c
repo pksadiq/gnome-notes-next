@@ -204,14 +204,16 @@ gn_note_buffer_constructed (GObject *object)
 
   G_OBJECT_CLASS (gn_note_buffer_parent_class)->constructed (object);
 
-  gtk_text_buffer_create_tag (buffer, "title",
-                              "weight", PANGO_WEIGHT_BOLD,
-                              "pixels-below-lines", TITLE_SPACING,
-                              "scale", TITLE_SCALE,
-                              NULL);
-
   tag = gtk_text_buffer_create_tag (buffer, "font", NULL);
   self->tag_font = tag;
+
+  tag = gtk_text_buffer_create_tag (buffer, "title",
+                                    "weight", PANGO_WEIGHT_BOLD,
+                                    "pixels-below-lines", TITLE_SPACING,
+                                    "scale", TITLE_SCALE,
+                                    NULL);
+
+  gtk_text_tag_set_priority (tag, 1);
 
   tag = gtk_text_buffer_create_tag (buffer, "b",
                                     "weight", PANGO_WEIGHT_BOLD,
