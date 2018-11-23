@@ -601,6 +601,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   GString *raw_content;
   g_autofree gchar *content = NULL;
   GtkTextIter start, end, iter;
+  gboolean has_content;
 
   g_assert (GN_IS_XML_NOTE (self));
   g_assert (GTK_IS_TEXT_BUFFER (buffer));
@@ -616,22 +617,18 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   g_object_set (self, "modification-time", time (NULL), NULL);
 
   gtk_text_buffer_get_start_iter (buffer, &start);
-  gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
+  end = start;
+  has_content = gtk_text_iter_forward_to_line_end (&end);
   content = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
   gn_item_set_title (GN_ITEM (note), content);
 
   gn_xml_note_update_raw_xml (self);
 
-  gtk_text_iter_forward_char (&end);
-  iter = start = end;
-
-  /*
-   * We moved one character past the last character in the title.
-   * And if we are still at line 0 (first line), it means we have
-   * no more content
-   */
-  if (gtk_text_iter_get_line (&iter) == 0)
+  if (!has_content)
     goto end;
+
+  gtk_text_iter_set_line (&end, 1);
+  iter = start = end;
 
   while (gtk_text_iter_forward_to_tag_toggle (&iter, NULL))
     {
