@@ -287,7 +287,7 @@ gn_editor_set_item (GnEditor   *self,
 
   gn_editor_block_buffer_signals (self);
 
-  if (item == NULL)
+  if (item == NULL || gn_item_is_new (item))
     gtk_text_buffer_set_text (GTK_TEXT_BUFFER (self->note_buffer), "", 0);
   else
     gn_note_set_content_to_buffer (GN_NOTE (item),
