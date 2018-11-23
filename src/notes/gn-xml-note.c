@@ -281,19 +281,10 @@ gn_xml_note_parse (GnXmlNote  *self,
           }
         else if (g_str_equal (tag, "note-content"))
           {
-            g_autofree gchar *inner_xml = NULL;
-            gchar *content;
+            gchar *inner_xml;
 
             inner_xml = xml_reader_dup_inner_xml (xml_reader);
-            g_return_if_fail (inner_xml != NULL);
-
-            /* Skip the title */
-            content = strchr (inner_xml, '\n');
-
-            if (content)
-              content++;
-
-            self->raw_inner_xml = g_strdup (content);
+            self->raw_inner_xml = inner_xml;
           }
       }
 
@@ -599,8 +590,6 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
 
   g_string_append (self->raw_xml, "<text xml:space=\"preserve\">"
                    "<note-content>");
-  gn_xml_note_append_escaped (self->raw_xml,
-                              gn_item_get_title (item));
 }
 
 static void
@@ -643,8 +632,6 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
    */
   if (gtk_text_iter_get_line (&iter) == 0)
     goto end;
-  else
-    g_string_append_c (self->raw_xml, '\n');
 
   while (gtk_text_iter_forward_to_tag_toggle (&iter, NULL))
     {
@@ -751,22 +738,13 @@ gn_xml_note_update_text_content (GnXmlNote *self)
   g_autofree gchar *content = NULL;
   g_autofree gchar *casefold_content = NULL;
 
-  gchar *content_start;
-
   g_assert (GN_IS_XML_NOTE (self));
 
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
   self->text_content = NULL;
 
-  content_start = strchr (self->raw_xml->str, '\n');
-  if (content_start == NULL)
-    return;
-
-  /* Skip '\n' */
-  content_start++;
-
-  content = gn_utils_get_text_from_xml (content_start);
+  content = gn_utils_get_text_from_xml (self->raw_xml->str);
   casefold_content = g_utf8_casefold (content, -1);
   self->text_content = g_string_new (casefold_content);
 }
