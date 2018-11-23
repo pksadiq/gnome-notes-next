@@ -469,9 +469,9 @@ gn_xml_note_close_tag (GnXmlNote   *self,
 
   /*
    * First, we have to close the tags in the reverse order it is opened.
-   * Eg: If the @tags_queue has "i" as head and "s" as next, and "b"
-   * next element, and if the @tag represents "b", we have to close "i"
-   * tag first, then "s".  And then close "b" tag.  That is, the result
+   * Eg: If the @tags_queue has "i" as head, then "s" and then "b", and
+   * if the @tag_name represents "b", we have to close "i"  tag first,
+   * then "s", and then close "b" tag.  That is, the result
    * should be the following:
    * <b><s><i>some text</i></s></b> and not <b><s><i>some text</b>...
    */
@@ -481,15 +481,16 @@ gn_xml_note_close_tag (GnXmlNote   *self,
   /* From the previous example: we are now closing </b> */
   g_string_append_printf (raw_content, "</%s>", tag_name);
 
-    /*
-     * To make the XML valid, we have to open the closed tags that aren't
-     * supposed to be closed.  Again, from the previous example: We
-     * have closed "s" and "i" tags.  We have to open them in reverse
-     * order. This results in: <b><s><i>some text</i></s></b><s><i>
-     */
+  /*
+   * To make the XML valid, we have to open the closed tags that aren't
+   * supposed to be closed.  Again, from the previous example: We
+   * have closed "s" and "i" tags.  We have to open them in reverse
+   * order. This results in: <b><s><i>some text</i></s></b><s><i>
+   */
   for (node = node->prev; node != NULL; node = node->prev)
     g_string_append_printf (raw_content, "<%s>", (gchar *)node->data);
 
+  /* Remove the tag we closed from the queue */
   g_queue_delete_link (tags_queue, last_tag);
 }
 
