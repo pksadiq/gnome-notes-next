@@ -663,19 +663,6 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   g_queue_free (tags_queue);
 
-  gtk_text_buffer_get_end_iter (buffer, &end);
-
-  if (!gtk_text_iter_equal (&iter, &end))
-    {
-      g_autofree gchar *content = NULL;
-      g_autofree gchar *markup = NULL;
-
-      content = gtk_text_buffer_get_text (buffer, &iter, &end, FALSE);
-      markup = g_markup_escape_text (content, -1);
-      g_string_append (raw_content, markup);
-    }
-
-
   if (raw_content && raw_content->str)
     g_string_append (self->raw_xml, raw_content->str);
 
