@@ -27,6 +27,7 @@
 #include "gn-tag-store.h"
 #include "gn-xml-note.h"
 #include "gn-plain-note.h"
+#include "gn-utils.h"
 #include "gn-local-provider.h"
 #include "gn-trace.h"
 
@@ -361,7 +362,6 @@ gn_local_provider_save_item_finish (GnProvider    *provider,
   item = g_task_get_task_data (G_TASK (result));
   g_signal_emit_by_name (self, "item-added", item);
 
-  /* TODO: Emit changed signal if item isn't new */
   if (gn_item_is_new (item))
     {
       GFile *file;
@@ -383,6 +383,15 @@ gn_local_provider_save_item_finish (GnProvider    *provider,
           g_list_store_insert_sorted (self->notes_store, item,
                                       gn_item_compare, NULL);
         }
+    }
+  else
+    {
+      guint position;
+
+      if (gn_utils_get_item_position (G_LIST_MODEL (self->notes_store), item, &position))
+        g_list_model_items_changed (G_LIST_MODEL (self->notes_store), position, 1, 1);
+      else if (gn_utils_get_item_position (G_LIST_MODEL (self->trash_store), item, &position))
+        g_list_model_items_changed (G_LIST_MODEL (self->trash_store), position, 1, 1);
     }
 
   return ret;
