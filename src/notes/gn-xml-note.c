@@ -583,6 +583,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   g_autofree gchar *content = NULL;
   GtkTextIter start, end, iter;
   gboolean has_content;
+  gint content_start;
 
   g_assert (GN_IS_XML_NOTE (self));
   g_assert (GTK_IS_TEXT_BUFFER (buffer));
@@ -605,7 +606,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
   gn_xml_note_update_raw_xml (self);
   /* Point to end of <note-content> */
-  self->content_xml = self->raw_xml->str + self->raw_xml->len;
+  content_start = self->raw_xml->len;
 
   if (!has_content)
     goto end;
@@ -680,6 +681,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
  end:
   g_string_append (self->raw_xml, "</note-content></text></note>\n");
+  self->content_xml = self->raw_xml->str + content_start;
 
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
