@@ -500,7 +500,6 @@ gn_xml_note_add_tag (GString     *xml,
   g_return_if_fail (tag != NULL);
   g_return_if_fail (*tag);
   g_return_if_fail (content != NULL);
-  g_return_if_fail (*content);
 
   escaped = g_markup_escape_text (content, -1);
   g_string_append_printf (xml, "<%s>%s</%s>\n", tag, escaped, tag);
