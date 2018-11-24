@@ -182,11 +182,12 @@ gn_window_load_more_items (GnWindow          *self,
   g_assert (GN_IS_WINDOW (self));
   g_assert (GTK_IS_SCROLLED_WINDOW (scrolled_window));
 
-  /* We load more items only if bottom edge is hit */
-  if (pos != GTK_POS_BOTTOM)
+  current_view = gtk_stack_get_visible_child (GTK_STACK (self->main_view));
+
+  /* We load more items only if bottom edge is hit in main view */
+  if (pos != GTK_POS_BOTTOM || !GN_IS_MAIN_VIEW (current_view))
     return;
 
-  current_view = gtk_stack_get_visible_child (GTK_STACK (self->main_view));
   model = gn_main_view_get_model (GN_MAIN_VIEW (current_view));
 
   size = gtk_slice_list_model_get_size (GTK_SLICE_LIST_MODEL (model));
