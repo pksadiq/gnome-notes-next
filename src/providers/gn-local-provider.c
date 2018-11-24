@@ -143,6 +143,70 @@ gn_local_provider_get_location_name (GnProvider *provider)
 }
 
 static void
+gn_local_provider_load_tags (GnLocalProvider *self,
+                             GCancellable    *cancellable)
+{
+  g_autofree gchar *contents = NULL;
+  g_autoptr(GFile) tag_file = NULL;
+  gint tag_count = 0;
+
+  GN_ENTRY;
+
+  g_assert (GN_IS_LOCAL_PROVIDER (self));
+  g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
+
+  tag_file = g_file_new_build_filename (self->location, "tags.txt", NULL);
+
+  if (g_file_load_contents (tag_file, cancellable, &contents, NULL, NULL, NULL)
+      && *contents != '\0')
+    {
+      gchar *start = contents;
+      gchar *end = strtok (contents, "\n");
+
+      /*
+       * The tag file shall contain utf-8 encoded 0+ tags, each separated by a newline,
+       * Every line shall have a color, followed by an ASCII unit separator (0x1F)
+       * followed by the tag name. color and ASCII unit separator are optional.
+       */
+      do
+        {
+          gchar *tag_name = strchr (start, GN_ASCII_UNIT_SEPARATOR);
+          gchar *color = NULL;
+          GdkRGBA rgba;
+
+          if (tag_name)
+            {
+              *tag_name = '\0';
+              tag_name++;
+
+              color = start;
+              gdk_rgba_parse (&rgba, color);
+            }
+          else
+            tag_name = start;
+
+          if (color)
+            gn_tag_store_insert (self->tag_store, tag_name, &rgba);
+          else
+            gn_tag_store_insert (self->tag_store, tag_name, NULL);
+          tag_count++;
+          start = end;
+        } while (strtok (NULL, "\n"));
+    }
+
+  if (tag_count == 0)
+    {
+      GdkRGBA rgba;
+
+      /* TODO: use a good color */
+      gdk_rgba_parse (&rgba, "#458CE4");
+      gn_tag_store_insert (self->tag_store, _("Personal"), &rgba);
+    }
+
+  GN_EXIT;
+}
+
+static void
 gn_local_provider_load_path (GnLocalProvider  *self,
                              const gchar      *path,
                              GListStore       *store,
@@ -218,6 +282,7 @@ gn_local_provider_load_notes (GTask        *task,
   g_assert (GN_IS_LOCAL_PROVIDER (self));
   g_assert (!cancellable || G_IS_CANCELLABLE (cancellable));
 
+  gn_local_provider_load_tags (self, cancellable);
   gn_local_provider_load_path (self, self->location,
                                self->notes_store,
                                cancellable, &error);
