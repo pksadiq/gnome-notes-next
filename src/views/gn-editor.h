@@ -31,6 +31,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE (GnEditor, gn_editor, GN, EDITOR, GtkGrid)
 
 GtkWidget *gn_editor_new      (void);
+void       gn_editor_save_item  (GnEditor *self);
 void       gn_editor_set_item (GnEditor   *self,
                                GListModel *model,
                                GnItem     *item);

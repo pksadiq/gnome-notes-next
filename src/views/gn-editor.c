@@ -266,6 +266,18 @@ gn_editor_new (void)
 }
 
 void
+gn_editor_save_item (GnEditor *self)
+{
+  g_return_if_fail (GN_IS_EDITOR (self));
+
+  if (self->item == NULL)
+    return;
+
+  if (self->save_timeout_id != 0)
+    gn_editor_save_note (self);
+}
+
+void
 gn_editor_set_item (GnEditor   *self,
                     GListModel *model,
                     GnItem     *item)
@@ -279,9 +291,7 @@ gn_editor_set_item (GnEditor   *self,
   if (self->item == item)
     GN_EXIT;
 
-  if (self->save_timeout_id != 0)
-    gn_editor_save_note (self);
-
+  gn_editor_save_item (self);
   self->item = item;
   self->model = model;
 

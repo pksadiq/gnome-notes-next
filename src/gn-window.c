@@ -267,6 +267,9 @@ gn_window_show_previous_view (GnWindow *self)
 
   last_view = g_queue_pop_head (self->view_stack);
 
+  if (self->current_view == self->editor_view)
+    gn_editor_save_item (GN_EDITOR (self->editor_view));
+
   /*
    * This helps us to check if the main view was changed by
    * the user pressing the back button.
