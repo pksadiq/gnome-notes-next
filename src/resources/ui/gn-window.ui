@@ -169,6 +169,7 @@
                 <child>
                   <object class="GtkScrolledWindow">
                     <signal name="edge-reached" handler="gn_window_load_more_items" swapped="1"/>
+                    <property name="hscrollbar-policy">never</property>
                     <child>
                       <object class="GtkFrame">
                         <style>
