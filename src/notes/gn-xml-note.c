@@ -77,6 +77,7 @@ struct _GnXmlNote
 
   GString *raw_data;    /* The raw data used to parse, NULL if raw_xml set */
   GString *raw_xml;     /* full XML data to be saved to file */
+  gchar   *content_xml; /* pointer to the beginning of content */
   gchar   *raw_inner_xml; /* xml data of the <text> tag */
   GString *text_content;
   GString *markup;
@@ -624,6 +625,8 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   gn_item_set_title (GN_ITEM (note), content);
 
   gn_xml_note_update_raw_xml (self);
+  /* Point to end of <note-content> */
+  self->content_xml = self->raw_xml->str + self->raw_xml->len;
 
   if (!has_content)
     goto end;
@@ -813,20 +816,86 @@ gn_xml_note_set_text_content (GnNote      *note,
 }
 
 static void
+gn_xml_add_pending (GString     *string,
+                    const gchar *start,
+                    const gchar *end)
+{
+  if (!(end > start))
+    return;
+
+  g_string_append_len (string, start, end - start);
+}
+
+static void
 gn_xml_note_update_markup (GnXmlNote *self)
 {
+  GQueue *tags_queue;
+  gchar *tag_start, *start, *tag_end;
+
   g_assert (GN_IS_XML_NOTE (self));
 
   if (self->markup)
     g_string_free (self->markup, TRUE);
 
-  self->markup = g_string_new ("<markup>");
+  /* Exit early if empty note contentn */
+  if (g_str_has_prefix (self->content_xml, "</note-content>"))
+    {
+      self->markup = g_string_new ("");
+      return;
+    }
 
-  if (self->raw_inner_xml)
-    g_string_append_printf (self->markup, "<span font='Cantarell'>"
-                            "%s</span>\n\n",
-                            self->raw_inner_xml);
-  g_string_append (self->markup, "</markup>");
+  tags_queue = g_queue_new ();
+  start = tag_start = self->content_xml;
+  self->markup = g_string_new ("<markup>"
+                               "<span font='Cantarell'>");
+
+  while ((tag_start = strchr (tag_start, '<')))
+    {
+      g_autofree gchar *tag = NULL;
+      const gchar *interned_tag;
+      gboolean is_close_tag = FALSE;
+
+      gn_xml_add_pending (self->markup, start, tag_start);
+
+      /* Skip '<' */
+      tag_start++;
+
+      if (g_str_has_prefix (tag_start, "/"))
+        {
+          is_close_tag = TRUE;
+          tag_start++;
+        }
+
+      tag_end = strchr (tag_start, '>');
+      if (G_UNLIKELY (!tag_end))
+        break;
+
+      tag = g_strndup (tag_start, tag_end - tag_start);
+      interned_tag = g_intern_string (tag);
+
+      if (interned_tag == g_intern_static_string ("note-content"))
+        break;
+
+      if (interned_tag == g_intern_static_string ("b") ||
+          interned_tag == g_intern_static_string ("i") ||
+          interned_tag == g_intern_static_string ("s") ||
+          interned_tag == g_intern_static_string ("u"))
+        {
+          if (is_close_tag)
+            gn_xml_note_close_tag (self, self->markup, interned_tag, tags_queue);
+          else
+            {
+              g_queue_push_head (tags_queue, (gchar *)interned_tag);
+              g_string_append_printf (self->markup, "<%s>", interned_tag);
+            }
+        }
+      tag_start = start = tag_end + 1;
+    }
+
+  for (GList *node = tags_queue->head; node != NULL; node = node->next)
+    g_string_append_printf (self->markup, "</%s>", (gchar *)node->data);
+
+  g_string_append (self->markup, "</span></markup>");
 }
 
 static gchar *
@@ -946,6 +1015,12 @@ gn_xml_note_create_from_data (const gchar *data,
   if (note_format == NOTE_FORMAT_BIJIBEN_2)
     {
       self->raw_xml = g_string_new_len (data, length);
+      self->content_xml = strstr (self->raw_xml->str, "<note-content>");
+
+      if (self->content_xml == NULL)
+        return NULL;
+
+      self->content_xml = self->content_xml + strlen ("<note-content>");
       gn_xml_note_parse (self, tag_store);
     }
   else
