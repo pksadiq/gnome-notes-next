@@ -69,6 +69,7 @@ GtkWidget *
 gn_tag_row_new (gpointer item,
                 gpointer user_data)
 {
+  GdkRGBA rgba;
   GnTagRow *self;
   GnTag *tag = item;
 
@@ -79,6 +80,9 @@ gn_tag_row_new (gpointer item,
 
   gtk_label_set_label (GTK_LABEL (self->tag_name),
                        gn_tag_get_name (tag));
+
+  if (gn_tag_get_rgba (tag, &rgba))
+    gtk_color_chooser_set_rgba (GTK_COLOR_CHOOSER (self->color_button), &rgba);
 
   return GTK_WIDGET (self);
 }

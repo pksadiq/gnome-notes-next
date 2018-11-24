@@ -205,8 +205,8 @@ gn_tag_get_name (GnTag *tag)
 }
 
 gboolean
-gn_tag_get_color (GnTag   *tag,
-                  GdkRGBA *rgba)
+gn_tag_get_rgba (GnTag   *tag,
+                 GdkRGBA *rgba)
 {
   g_return_val_if_fail (GN_IS_TAG (tag), FALSE);
 
