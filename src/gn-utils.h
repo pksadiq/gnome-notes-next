@@ -25,6 +25,8 @@
 
 G_BEGIN_DECLS
 
+#define GN_ASCII_UNIT_SEPARATOR '\x1F'
+
 #define GN_IS_MAIN_THREAD() (g_thread_self () == gn_utils_get_main_thread ())
 
 GThread    *gn_utils_get_main_thread    (void);
