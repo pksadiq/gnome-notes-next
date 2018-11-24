@@ -78,7 +78,6 @@ struct _GnXmlNote
   GString *raw_data;    /* The raw data used to parse, NULL if raw_xml set */
   GString *raw_xml;     /* full XML data to be saved to file */
   gchar   *content_xml; /* pointer to the beginning of content */
-  gchar   *raw_inner_xml; /* xml data of the <text> tag */
   GString *text_content;
   GString *markup;
   gchar   *title;
@@ -280,13 +279,6 @@ gn_xml_note_parse (GnXmlNote  *self,
                 self->tags = g_list_prepend (self->tags, tag);
               }
           }
-        else if (g_str_equal (tag, "note-content"))
-          {
-            gchar *inner_xml;
-
-            inner_xml = xml_reader_dup_inner_xml (xml_reader);
-            self->raw_inner_xml = inner_xml;
-          }
       }
 
   xml_reader_free (xml_reader);
@@ -346,16 +338,12 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
   title = gn_item_get_title (GN_ITEM (self));
   gtk_text_buffer_set_text (text_buffer, title, -1);
 
-  if (title && self->raw_inner_xml && *self->raw_inner_xml)
-    {
-      gtk_text_buffer_get_end_iter (text_buffer, &end_iter);
-      gtk_text_buffer_insert (text_buffer, &end_iter, "\n", 1);
-    }
-
-  start = end = self->raw_inner_xml;
-
-  if (start == NULL)
+  if (g_str_has_prefix (self->content_xml, "</note-content>"))
     return;
+
+  start = end = self->content_xml;
+  gtk_text_buffer_get_end_iter (text_buffer, &end_iter);
+  gtk_text_buffer_insert (text_buffer, &end_iter, "\n", 1);
 
   mark_bold = gtk_text_mark_new ("b", TRUE);
   mark_italic = gtk_text_mark_new ("i", TRUE);
@@ -407,6 +395,13 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
           else if (g_str_has_prefix (end, "/s>"))
             {
               gn_xml_note_apply_tag_at_mark (text_buffer, mark_strike, "s");
+            }
+          else if (g_str_has_prefix (end, "/note-content>"))
+            {
+              /* Skip '<' backwards */
+              end--;
+
+              break;
             }
 
           end = strchr (end, '>');
@@ -702,10 +697,6 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
  end:
   g_string_append (self->raw_xml, "</note-content></text></note>\n");
 
-  g_clear_pointer (&self->raw_inner_xml, g_free);
-  if (raw_content->str)
-    self->raw_inner_xml = g_strconcat (raw_content->str, NULL);
-
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
   self->text_content = NULL;
@@ -778,13 +769,10 @@ gn_xml_note_get_raw_content (GnNote *note)
 
   g_assert (GN_IS_NOTE (note));
 
+  /* TODO: only for notes being imported */
   if (self->raw_xml == NULL)
     {
       g_autofree gchar *content = NULL;
-
-      if (self->raw_inner_xml == NULL ||
-          *self->raw_inner_xml == '\0')
-        return NULL;
 
       gn_xml_note_update_raw_xml (self);
       content = gn_note_get_text_content (GN_NOTE (self));
@@ -796,8 +784,6 @@ gn_xml_note_get_raw_content (GnNote *note)
         }
 
       g_string_append (self->raw_xml, "</note-content></text></note>");
-
-      g_clear_pointer (&self->raw_inner_xml, g_free);
     }
 
   return g_strdup (self->raw_xml->str);
