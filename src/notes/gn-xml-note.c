@@ -306,10 +306,14 @@ gn_xml_note_update_buffer (GnXmlNote     *self,
 
 static void
 gn_xml_note_apply_tag_at_mark (GtkTextBuffer *buffer,
-                               GtkTextMark   *mark,
+                               const gchar   *mark_name,
                                const gchar   *tag_name)
 {
+  GtkTextMark *mark;
   GtkTextIter start, end;
+
+  mark = gtk_text_buffer_get_mark (buffer, mark_name);
+  g_return_if_fail (mark != NULL);
 
   gtk_text_buffer_get_end_iter (buffer, &end);
   gtk_text_buffer_get_iter_at_mark (buffer, &start, mark);
@@ -321,8 +325,6 @@ static void
 gn_xml_note_set_content_to_buffer (GnNote       *note,
                                    GnNoteBuffer *buffer)
 {
-  GtkTextMark *mark_bold, *mark_italic;
-  GtkTextMark *mark_underline, *mark_strike;
   GtkTextBuffer *text_buffer;
   gchar *start, *end;
   const gchar *title;
@@ -345,64 +347,45 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
   gtk_text_buffer_get_end_iter (text_buffer, &end_iter);
   gtk_text_buffer_insert (text_buffer, &end_iter, "\n", 1);
 
-  mark_bold = gtk_text_mark_new ("b", TRUE);
-  mark_italic = gtk_text_mark_new ("i", TRUE);
-  mark_underline = gtk_text_mark_new ("u", TRUE);
-  mark_strike = gtk_text_mark_new ("s", TRUE);
-
   while ((c = *end))
     {
       if (c == '<')
         {
+          const gchar *tag = NULL;
+          gboolean is_close_tag = FALSE;
+
           gn_xml_note_update_buffer (self, text_buffer, start, end);
           gtk_text_buffer_get_end_iter (text_buffer, &end_iter);
 
           /* Skip '<' */
           end++;
 
-          if (g_str_has_prefix (end, "b>"))
+          if (*end == '/')
             {
-              if (!gtk_text_buffer_get_mark (text_buffer, "b"))
-                gtk_text_buffer_add_mark (text_buffer, mark_bold, &end_iter);
+              is_close_tag = TRUE;
+              end++;
             }
-          else if (g_str_has_prefix (end, "i>"))
-            {
-              if (!gtk_text_buffer_get_mark (text_buffer, "i"))
-                gtk_text_buffer_add_mark (text_buffer, mark_italic, &end_iter);
-            }
-          else if (g_str_has_prefix (end, "u>"))
-            {
-              if (!gtk_text_buffer_get_mark (text_buffer, "u"))
-                gtk_text_buffer_add_mark (text_buffer, mark_underline, &end_iter);
-            }
-          else if (g_str_has_prefix (end, "s>"))
-            {
-              if (!gtk_text_buffer_get_mark (text_buffer, "s"))
-                gtk_text_buffer_add_mark (text_buffer, mark_strike, &end_iter);
-            }
-          else if (g_str_has_prefix (end, "/b>"))
-            {
-              gn_xml_note_apply_tag_at_mark (text_buffer, mark_bold, "b");
-            }
-          else if (g_str_has_prefix (end, "/i>"))
-            {
-              gn_xml_note_apply_tag_at_mark (text_buffer, mark_italic, "i");
-            }
-          else if (g_str_has_prefix (end, "/u>"))
-            {
-              gn_xml_note_apply_tag_at_mark (text_buffer, mark_underline, "u");
-            }
-          else if (g_str_has_prefix (end, "/s>"))
-            {
-              gn_xml_note_apply_tag_at_mark (text_buffer, mark_strike, "s");
-            }
-          else if (g_str_has_prefix (end, "/note-content>"))
-            {
-              /* Skip '<' backwards */
-              end--;
 
-              break;
+          if (g_str_has_prefix (end, "b"))
+            tag = g_intern_static_string ("b");
+          else if (g_str_has_prefix (end, "i"))
+            tag = g_intern_static_string ("i");
+          else if (g_str_has_prefix (end, "s"))
+            tag = g_intern_static_string ("s");
+          else if (g_str_has_prefix (end, "u"))
+            tag = g_intern_static_string ("u");
+          else if (g_str_has_prefix (end, "note-content>"))
+            break;
+
+          if (tag)
+            {
+              if (is_close_tag)
+                gn_xml_note_apply_tag_at_mark (text_buffer, tag, tag);
+              else if (!gtk_text_buffer_get_mark (text_buffer, tag))
+                gtk_text_buffer_create_mark (text_buffer, tag, &end_iter, TRUE);
             }
+          else
+            g_warn_if_reached ();
 
           end = strchr (end, '>');
           g_return_if_fail (end != NULL);
@@ -442,7 +425,6 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
         end++;
     }
 
-  gn_xml_note_update_buffer (self, text_buffer, start, end);
   gtk_text_buffer_set_modified (text_buffer, FALSE);
 }
 
