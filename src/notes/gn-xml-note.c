@@ -639,7 +639,8 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
           tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
                                                       tag);
-          gn_xml_note_close_tag (self, raw_content, tag_name, tags_queue);
+          if (*tag_name != '\0')
+            gn_xml_note_close_tag (self, raw_content, tag_name, tags_queue);
         }
       g_slist_free (tags);
 
@@ -651,8 +652,11 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
           tag_name = gn_note_buffer_get_name_for_tag (GN_NOTE_BUFFER (buffer),
                                                       tag);
-          g_string_append_printf (raw_content, "<%s>", tag_name);
-          g_queue_push_head (tags_queue, (gchar *)g_intern_string (tag_name));
+          if (*tag_name != '\0')
+            {
+              g_string_append_printf (raw_content, "<%s>", tag_name);
+              g_queue_push_head (tags_queue, (gchar *)g_intern_string (tag_name));
+            }
         }
 
       g_slist_free (tags);

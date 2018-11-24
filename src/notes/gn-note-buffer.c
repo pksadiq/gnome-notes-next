@@ -335,6 +335,8 @@ gn_note_buffer_get_name_for_tag (GnNoteBuffer *self,
     return "u";
   else if (tag == self->tag_strike)
     return "s";
+  else if (tag == self->tag_font)
+    return "";
   else
     g_return_val_if_reached ("span");
 }
