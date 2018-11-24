@@ -425,6 +425,8 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
             str = "&";
           else if (g_str_has_prefix (end, "&quote;"))
             str = "\"";
+          else if (g_str_has_prefix (end, "&apos;"))
+            str = "'";
           else
             g_warn_if_reached ();
 
