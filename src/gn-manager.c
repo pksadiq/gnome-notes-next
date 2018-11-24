@@ -99,6 +99,9 @@ gn_manager_search_filter (gpointer item,
 {
   gchar *search_string = *(gchar **)pp;
 
+  if (search_string == NULL)
+    return FALSE;
+
   return gn_item_match (GN_ITEM (item), search_string);
 }
 
