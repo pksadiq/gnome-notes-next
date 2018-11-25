@@ -557,14 +557,13 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
       g_free (str);
     }
 
-  if (g_hash_table_size (self->labels) > 0)
+  if (self->tags != NULL)
     {
-      GList *labels = g_hash_table_get_keys (self->labels);
-
       g_string_append (self->raw_xml, "<tags>\n");
 
-      for (GList *node = labels; node != NULL; node = node->next)
-        gn_xml_note_add_tag (self->raw_xml, "tag", node->data);
+      for (GList *node = self->tags; node != NULL; node = node->next)
+        gn_xml_note_add_tag (self->raw_xml, "tag",
+                             gn_tag_get_name (node->data));
 
       g_string_append (self->raw_xml, "</tags>\n");
     }
