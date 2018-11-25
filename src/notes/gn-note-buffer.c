@@ -128,7 +128,7 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
 
   if (is_title)
     {
-      gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
+      gtk_text_buffer_get_iter_at_line (buffer, &end, 1);
       gtk_text_buffer_remove_tag_by_name (buffer, "title", pos, &end);
     }
 
@@ -139,12 +139,12 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
   if (is_title)
     {
       gtk_text_buffer_get_start_iter (buffer, &start);
-      gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
+      gtk_text_buffer_get_iter_at_line (buffer, &end, 1);
       gtk_text_buffer_apply_tag_by_name (buffer, "title", &start, &end);
       gtk_text_buffer_apply_tag_by_name (buffer, "font", &start, &end);
     }
 
-  if (reset_font && !is_title)
+  if (reset_font)
     {
       gtk_text_buffer_get_end_iter (buffer, &end);
       start = end;
