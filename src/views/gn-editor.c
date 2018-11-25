@@ -22,6 +22,8 @@
 
 #include "config.h"
 
+#include <glib/gi18n.h>
+
 #include "gn-enums.h"
 #include "gn-note.h"
 #include "gn-note-buffer.h"
@@ -180,9 +182,12 @@ gn_editor_update_window_title (GnEditor      *self,
 
   gtk_text_buffer_get_start_iter (buffer, &start);
   gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
-
   title = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
-  gtk_window_set_title (GTK_WINDOW (window), title);
+
+  if (*title == '\0')
+    gtk_window_set_title (GTK_WINDOW (window), _("Untitled"));
+  else
+    gtk_window_set_title (GTK_WINDOW (window), title);
 }
 
 static void
