@@ -358,14 +358,18 @@ gn_editor_set_item (GnEditor   *self,
   self->item = item;
   self->model = model;
 
+  if (item == NULL)
+    return;
+
   gn_editor_block_buffer_signals (self);
 
-  if (item == NULL || gn_item_is_new (item))
+  if (gn_item_is_new (item))
     gtk_text_buffer_set_text (GTK_TEXT_BUFFER (self->note_buffer), "", 0);
   else
     gn_note_set_content_to_buffer (GN_NOTE (item),
                                    GN_NOTE_BUFFER (self->note_buffer));
 
+  gn_editor_update_window_title (self, GTK_TEXT_BUFFER (self->note_buffer));
   gtk_text_buffer_set_modified (self->note_buffer, FALSE);
   gn_editor_unblock_buffer_signals (self);
   gn_text_view_clear_undo_history (GN_TEXT_VIEW (self->editor_view));
