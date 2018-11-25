@@ -281,6 +281,7 @@ gn_xml_note_parse (GnXmlNote  *self,
           }
       }
 
+  self->tags = g_list_sort (self->tags, (GCompareFunc)gn_tag_compare);
   xml_reader_free (xml_reader);
 }
 
