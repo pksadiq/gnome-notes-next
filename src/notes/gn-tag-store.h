@@ -41,4 +41,8 @@ GnTag       *gn_tag_store_insert        (GnTagStore  *self,
 const gchar *gn_tag_get_name            (GnTag       *tag);
 gboolean     gn_tag_get_rgba            (GnTag       *tag,
                                          GdkRGBA     *rgba);
+gint         gn_tag_compare             (gconstpointer a,
+                                         gconstpointer b,
+                                         gpointer      user_data);
+
 G_END_DECLS

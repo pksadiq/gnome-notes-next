@@ -218,3 +218,14 @@ gn_tag_get_rgba (GnTag   *tag,
 
   return TRUE;
 }
+
+gint
+gn_tag_compare (gconstpointer a,
+                gconstpointer b,
+                gpointer      user_data)
+{
+  GnTag *tag_a = (GnTag *)a;
+  GnTag *tag_b = (GnTag *)b;
+
+  return strcmp (tag_a->intern_name, tag_b->intern_name);
+}
