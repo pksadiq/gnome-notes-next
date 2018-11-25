@@ -156,6 +156,25 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
   GN_EXIT;
 }
 
+static
+void
+gn_note_buffer_delete_range (GtkTextBuffer *buffer,
+                             GtkTextIter   *start,
+                             GtkTextIter   *end)
+{
+  GtkTextIter start_iter, end_iter;
+
+  GTK_TEXT_BUFFER_CLASS (gn_note_buffer_parent_class)->delete_range (buffer, start, end);
+
+  if (gtk_text_iter_get_line (start) == 0)
+    {
+      gtk_text_buffer_get_start_iter (buffer, &start_iter);
+      gtk_text_buffer_get_iter_at_line (buffer, &end_iter, 1);
+      gtk_text_buffer_apply_tag_by_name (buffer, "title", &start_iter, &end_iter);
+      gtk_text_buffer_apply_tag_by_name (buffer, "font", &start_iter, &end_iter);
+    }
+}
+
 static void
 gn_note_buffer_real_apply_tag (GtkTextBuffer     *buffer,
                                GtkTextTag        *tag,
@@ -245,6 +264,7 @@ gn_note_buffer_class_init (GnNoteBufferClass *klass)
   object_class->constructed = gn_note_buffer_constructed;
 
   text_buffer_class->insert_text = gn_note_buffer_insert_text;
+  text_buffer_class->delete_range = gn_note_buffer_delete_range;
   text_buffer_class->apply_tag = gn_note_buffer_real_apply_tag;
   text_buffer_class->remove_tag = gn_note_buffer_real_remove_tag;
 }
