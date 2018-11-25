@@ -598,10 +598,10 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
   g_object_set (self, "modification-time", time (NULL), NULL);
 
   gtk_text_buffer_get_start_iter (buffer, &start);
-  end = start;
-  has_content = gtk_text_iter_forward_to_line_end (&end);
+  gtk_text_buffer_get_iter_at_line_offset (buffer, &end, 0, G_MAXINT);
   content = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
   gn_item_set_title (GN_ITEM (note), content);
+  has_content = gtk_text_iter_forward_char (&end);
 
   gn_xml_note_update_raw_xml (self);
   /* Point to end of <note-content> */
