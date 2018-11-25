@@ -8,7 +8,7 @@
             <property name="margin">12</property>
             <property name="margin-bottom">6</property>
             <property name="width-request">450</property>
-            <property name="height-request">96</property>
+            <property name="height-request">100</property>
 
             <child type="overlay">
               <object class="GtkBox">
@@ -61,9 +61,6 @@
                     <child>
                       <object class="GtkBox" id="tags_box">
                         <property name="spacing">12</property>
-                        <style>
-                         <class name="dim-label"/>
-                        </style>
                       </object>
                     </child>
 
