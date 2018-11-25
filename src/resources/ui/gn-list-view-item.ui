@@ -6,6 +6,7 @@
             <property name="halign">fill</property>
             <property name="valign">fill</property>
             <property name="margin">12</property>
+            <property name="margin-end">6</property>
             <property name="margin-bottom">6</property>
             <property name="width-request">450</property>
             <property name="height-request">100</property>
@@ -18,6 +19,7 @@
                 <child>
                   <object class="GtkBox">
                     <property name="margin-bottom">6</property>
+                    <property name="margin-end">6</property>
                     <child>
                       <object class="GnItemThumbnail" id="title_label">
                         <property name="hexpand">1</property>
@@ -27,6 +29,7 @@
                       <object class="GtkLabel" id="time_label">
                         <property name="valign">end</property>
                         <style>
+                         <class name="preview"/>
                          <class name="dim-label"/>
                         </style>
                       </object>
@@ -36,10 +39,11 @@
 
                 <child>
                   <object class="GtkOverlay">
+                    <property name="margin-end">15</property>
                     <property name="height-request">52</property>
                     <child type="overlay">
                       <object class="GnItemThumbnail" id="preview_label">
-                        <property name="width-request">450</property>
+                        <property name="width-request">430</property>
                         <property name="height-request">52</property>
                       </object>
                       <packing>
@@ -60,7 +64,11 @@
 
                     <child>
                       <object class="GtkBox" id="tags_box">
-                        <property name="spacing">12</property>
+                        <property name="spacing">6</property>
+                        <style>
+                         <class name="preview"/>
+                         <class name="tag"/>
+                        </style>
                       </object>
                     </child>
 

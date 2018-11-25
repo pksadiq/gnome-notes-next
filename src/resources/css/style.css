@@ -15,3 +15,12 @@ label.dark {
 label.light {
   color :#ffffff;
 }
+
+.preview {
+  font: 12px "Cantarell";
+}
+
+.tag label {
+  padding: 3px 16px 4px 16px;
+  border-radius: 4px;
+}
