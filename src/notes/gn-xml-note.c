@@ -82,7 +82,6 @@ struct _GnXmlNote
   GString *markup;
   gchar   *title;
   GList   *tags;        /* List of GnTag */
-  GHashTable *labels;
 
   NoteFormat note_format;
   guint      parse_complete : 1;
@@ -266,9 +265,6 @@ gn_xml_note_parse (GnXmlNote  *self,
 
             if (content == NULL)
               continue;
-
-            g_hash_table_add (self->labels, g_strdup (content));
-            g_assert (tag_store != NULL);
 
             if (tag_store != NULL)
               {
@@ -689,7 +685,6 @@ gn_xml_note_finalize (GObject *object)
   GN_ENTRY;
 
   g_free (self->title);
-  g_hash_table_destroy (self->labels);
   if (self->text_content)
     g_string_free (self->text_content, TRUE);
   if (self->markup)
@@ -944,8 +939,6 @@ static void
 gn_xml_note_init (GnXmlNote *self)
 {
   self->text_content = g_string_new ("");
-  self->labels = g_hash_table_new_full (g_str_hash, g_str_equal,
-                                        g_free, NULL);
   self->note_format = NOTE_FORMAT_BIJIBEN_2;
 }
 
