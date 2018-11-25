@@ -121,7 +121,7 @@ gn_list_view_item_new (gpointer data,
   g_autofree gchar *markup = NULL;
   g_autofree gchar *title_markup = NULL;
   g_autofree gchar *time_label = NULL;
-  g_autoptr(GList) tags = NULL;
+  GList *tags;
   GdkRGBA rgba;
   gint64 modification_time;
 
