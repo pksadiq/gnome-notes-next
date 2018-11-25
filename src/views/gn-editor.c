@@ -164,6 +164,49 @@ gn_editor_buffer_modified_cb (GnEditor      *self,
 }
 
 static void
+gn_editor_update_window_title (GnEditor      *self,
+                               GtkTextBuffer *buffer)
+{
+  g_autofree gchar *title = NULL;
+  GtkWidget *window;
+  GtkTextIter start, end;
+
+  g_assert (GN_IS_EDITOR (self));
+  g_assert (GTK_IS_TEXT_BUFFER (buffer));
+
+  window = gtk_widget_get_toplevel (GTK_WIDGET (self));
+
+  g_return_if_fail (GTK_IS_WINDOW (window));
+
+  gtk_text_buffer_get_start_iter (buffer, &start);
+  gtk_text_buffer_get_iter_at_line_index (buffer, &end, 0, G_MAXINT);
+
+  title = gtk_text_buffer_get_text (buffer, &start, &end, FALSE);
+  gtk_window_set_title (GTK_WINDOW (window), title);
+}
+
+static void
+gn_editor_insert_text_cb (GtkTextBuffer *buffer,
+                          GtkTextIter   *pos,
+                          const gchar   *text,
+                          gint           text_len,
+                          GnEditor      *self)
+{
+  if (gtk_text_iter_get_line (pos) == 0)
+    gn_editor_update_window_title (self, buffer);
+}
+
+static void
+gn_editor_delete_range_cb (GtkTextBuffer *buffer,
+                           GtkTextIter   *start,
+                           GtkTextIter   *end,
+                           GnEditor      *self)
+{
+  if (gtk_text_iter_get_line (start) == 0)
+    gn_editor_update_window_title (self, buffer);
+}
+
+static void
 gn_editor_block_buffer_signals (GnEditor *self)
 {
   g_assert (GN_IS_EDITOR (self));
@@ -172,6 +215,10 @@ gn_editor_block_buffer_signals (GnEditor *self)
   gn_text_view_freeze_undo_redo (GN_TEXT_VIEW (self->editor_view));
   g_signal_handlers_block_by_func (self->note_buffer,
                                    gn_editor_buffer_modified_cb, self);
+  g_signal_handlers_block_by_func (self->note_buffer,
+                                   gn_editor_insert_text_cb, self);
+  g_signal_handlers_block_by_func (self->note_buffer,
+                                   gn_editor_delete_range_cb, self);
 }
 
 static void
@@ -183,6 +230,10 @@ gn_editor_unblock_buffer_signals (GnEditor *self)
   gn_text_view_thaw_undo_redo (GN_TEXT_VIEW (self->editor_view));
   g_signal_handlers_unblock_by_func (self->note_buffer,
                                    gn_editor_buffer_modified_cb, self);
+  g_signal_handlers_unblock_by_func (self->note_buffer,
+                                     gn_editor_insert_text_cb, self);
+  g_signal_handlers_unblock_by_func (self->note_buffer,
+                                     gn_editor_delete_range_cb, self);
 }
 
 static void
@@ -249,6 +300,13 @@ gn_editor_init (GnEditor *self)
   g_signal_connect_object (self->note_buffer, "modified-changed",
                            G_CALLBACK (gn_editor_buffer_modified_cb),
                            self, G_CONNECT_SWAPPED);
+
+  g_signal_connect_object (self->note_buffer, "insert-text",
+                           G_CALLBACK (gn_editor_insert_text_cb),
+                           self, G_CONNECT_AFTER);
+  g_signal_connect_object (self->note_buffer, "delete-range",
+                           G_CALLBACK (gn_editor_delete_range_cb),
+                           self, G_CONNECT_AFTER);
 
   tag_table = gtk_text_buffer_get_tag_table (self->note_buffer);
   font_tag = gtk_text_tag_table_lookup (tag_table, "font");
