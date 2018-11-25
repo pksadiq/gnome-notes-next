@@ -29,6 +29,7 @@
 #include "gn-note-buffer.h"
 #include "gn-manager.h"
 #include "gn-text-view.h"
+#include "gn-tag-store.h"
 #include "gn-editor.h"
 #include "gn-trace.h"
 
@@ -188,6 +189,43 @@ gn_editor_update_window_title (GnEditor      *self,
     gtk_window_set_title (GTK_WINDOW (window), _("Untitled"));
   else
     gtk_window_set_title (GTK_WINDOW (window), title);
+}
+
+static void
+gn_editor_update_window_subtitle (GnEditor *self,
+                                  GnNote   *note)
+{
+  g_autoptr(GString) str = NULL;
+  g_autofree gchar *tags_str = NULL;
+  GtkWidget *header_bar, *window;
+  GList *tags;
+
+  g_assert (GN_IS_EDITOR (self));
+  g_assert (GN_IS_NOTE (note));
+
+  window = gtk_widget_get_toplevel (GTK_WIDGET (self));
+  g_return_if_fail (GTK_IS_WINDOW (window));
+  header_bar = gtk_window_get_titlebar (GTK_WINDOW (window));
+  g_return_if_fail (GTK_IS_HEADER_BAR (header_bar));
+
+  tags = gn_note_get_tags (note);
+
+  if (tags == NULL)
+    {
+      gtk_header_bar_set_subtitle (GTK_HEADER_BAR (header_bar), NULL);
+      return;
+    }
+
+  str = g_string_new (gn_tag_get_name (tags->data));
+
+  /*
+   * FIXME: The string is joined with "," But that may not be
+   * the character to be used for joining in non-Latin language
+   */
+  for (GList *node = tags->next; node != NULL; node = node->next)
+    g_string_append_printf (str, ", %s", gn_tag_get_name (node->data));
+
+  gtk_header_bar_set_subtitle (GTK_HEADER_BAR (header_bar), str->str);
 }
 
 static void
@@ -370,6 +408,7 @@ gn_editor_set_item (GnEditor   *self,
                                    GN_NOTE_BUFFER (self->note_buffer));
 
   gn_editor_update_window_title (self, GTK_TEXT_BUFFER (self->note_buffer));
+  gn_editor_update_window_subtitle (self, GN_NOTE (item));
   gtk_text_buffer_set_modified (self->note_buffer, FALSE);
   gn_editor_unblock_buffer_signals (self);
   gn_text_view_clear_undo_history (GN_TEXT_VIEW (self->editor_view));
