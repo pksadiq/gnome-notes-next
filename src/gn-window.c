@@ -251,8 +251,6 @@ gn_window_open_new_note (GnWindow *self)
                       gn_main_view_get_model (GN_MAIN_VIEW (self->current_view)),
                       item);
 
-  gn_window_set_title (self, _("Untitled"),
-                       gn_provider_get_name (provider));
   gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                self->editor_view);
 }
@@ -415,13 +413,9 @@ gn_window_item_activated (GnWindow   *self,
                           GnItem     *item,
                           GnMainView *main_view)
 {
-  GnProvider *provider;
-
   g_assert (GN_IS_WINDOW (self));
   g_assert (GN_IS_ITEM (item));
   g_assert (GN_IS_MAIN_VIEW (main_view));
-
-  provider = g_object_get_data (G_OBJECT (item), "provider");
 
   if (GN_IS_NOTE (item))
     {
@@ -440,9 +434,6 @@ gn_window_item_activated (GnWindow   *self,
       gn_editor_set_item (GN_EDITOR (self->editor_view),
                           gn_main_view_get_model (GN_MAIN_VIEW (self->current_view)),
                           item);
-
-      gn_window_set_title (self, gn_item_get_title (item),
-                           gn_provider_get_name (provider));
 
       gtk_stack_set_visible_child (GTK_STACK (self->main_view),
                                    self->editor_view);
