@@ -23,6 +23,7 @@
 #include "config.h"
 
 #include "gn-utils.h"
+#include "gn-tag-store.h"
 #include "gn-note.h"
 #include "gn-item-thumbnail.h"
 #include "gn-manager.h"
@@ -55,14 +56,13 @@ struct _GnListViewItem
 G_DEFINE_TYPE (GnListViewItem, gn_list_view_item, GTK_TYPE_LIST_BOX_ROW)
 
 static GtkWidget *
-gn_list_view_item_get_tag (const gchar *tag)
+gn_list_view_item_get_tag (GnTag *tag)
 {
   GtkWidget *container, *label, *tag_image;
 
-  g_assert (tag != NULL);
-  g_assert (*tag != '\0');
+  g_assert (GN_IS_TAG (tag));
 
-  label = gtk_label_new (tag);
+  label = gtk_label_new (gn_tag_get_name (tag));
   tag_image = gtk_image_new_from_icon_name ("document-edit-symbolic");
   container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
 

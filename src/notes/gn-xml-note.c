@@ -879,7 +879,7 @@ gn_xml_note_get_tags (GnNote *note)
 {
   GnXmlNote *self = GN_XML_NOTE (note);
 
-  return g_hash_table_get_keys (self->labels);
+  return self->tags;
 }
 
 static const gchar *

@@ -257,8 +257,8 @@ gn_note_get_markup (GnNote *self)
  *
  * Get the list of tags (labels) of @self, if any.
  *
- * Returns: (transfer container): A list of strings, or %NULL
- * if not supported.  Free with g_list_free().
+ * Returns: (transfer none): A list of #GnTags, or %NULL
+ * if not supported/empty.
  */
 GList *
 gn_note_get_tags (GnNote *self)
