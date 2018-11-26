@@ -46,6 +46,7 @@ src += [
   'views/gn-main-view.c',
   'views/gn-grid-view-item.c',
   'views/gn-list-view-item.c',
+  'views/gn-tag-preview.c',
   'views/gn-item-thumbnail.c',
   resources
 ]

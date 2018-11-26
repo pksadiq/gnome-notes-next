@@ -28,6 +28,7 @@
 #include "gn-item-thumbnail.h"
 #include "gn-manager.h"
 #include "gn-settings.h"
+#include "gn-tag-preview.h"
 #include "gn-list-view-item.h"
 #include "gn-trace.h"
 
@@ -54,23 +55,6 @@ struct _GnListViewItem
 };
 
 G_DEFINE_TYPE (GnListViewItem, gn_list_view_item, GTK_TYPE_LIST_BOX_ROW)
-
-static GtkWidget *
-gn_list_view_item_get_tag (GnTag *tag)
-{
-  GtkWidget *container, *label, *tag_image;
-
-  g_assert (GN_IS_TAG (tag));
-
-  label = gtk_label_new (gn_tag_get_name (tag));
-  tag_image = gtk_image_new_from_icon_name ("document-edit-symbolic");
-  container = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 3);
-
-  gtk_container_add (GTK_CONTAINER (container), tag_image);
-  gtk_container_add (GTK_CONTAINER (container), label);
-
-  return container;
-}
 
 static void
 gn_list_view_item_toggled (GnListViewItem  *self,
@@ -155,7 +139,7 @@ gn_list_view_item_new (gpointer data,
     {
       GtkWidget *tag;
 
-      tag = gn_list_view_item_get_tag (node->data);
+      tag = gn_tag_preview_new (node->data);
       gtk_container_add (GTK_CONTAINER (self->tags_box), tag);
     }
 
