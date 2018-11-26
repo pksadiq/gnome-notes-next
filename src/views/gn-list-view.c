@@ -31,6 +31,8 @@
  * @title: GnListView
  * @short_description: Container whose child are shown as List
  * @include: "gn-list-view.h"
+ *
+ * This is used as the parent container of the note preview items
  */
 
 struct _GnListView
