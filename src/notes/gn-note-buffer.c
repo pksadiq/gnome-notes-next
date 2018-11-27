@@ -107,8 +107,8 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
 {
   GnNoteBuffer *self = (GnNoteBuffer *)buffer;
   GtkTextIter end, start;
-  gboolean is_title;
-  gboolean reset_font;
+  gint start_offset;
+  gboolean is_title, is_buffer_end;
 
   /*
    * TODO: Pasting title to content area may keep the boldness property,
@@ -118,13 +118,8 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
   GN_ENTRY;
 
   is_title = gtk_text_iter_get_line (pos) == 0;
-
-  /*
-   * If @pos doesn't have the tag tag_font, that means the newly
-   * inserted text is either appended or prepended to the buffer.
-   * If that's the case, we have to reapply default font.
-   */
-  reset_font = !gtk_text_iter_has_tag (pos, self->tag_font);
+  start_offset = gtk_text_iter_get_offset (pos);
+  is_buffer_end = gtk_text_iter_is_end (pos);
 
   if (is_title)
     {
@@ -136,21 +131,17 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
                                                                       pos,
                                                                       text,
                                                                       text_len);
+  gtk_text_buffer_get_iter_at_offset (buffer, &start, start_offset);
+  end = *pos;
+
+  if (start_offset == 0 || is_buffer_end)
+    gtk_text_buffer_apply_tag (buffer, self->tag_font, &start, &end);
+
   if (is_title)
     {
       gtk_text_buffer_get_start_iter (buffer, &start);
       gtk_text_buffer_get_iter_at_line (buffer, &end, 1);
       gtk_text_buffer_apply_tag_by_name (buffer, "title", &start, &end);
-      gtk_text_buffer_apply_tag_by_name (buffer, "font", &start, &end);
-    }
-
-  if (reset_font)
-    {
-      gtk_text_buffer_get_end_iter (buffer, &end);
-      start = end;
-
-      if (gtk_text_iter_backward_to_tag_toggle (&start, self->tag_font))
-        gtk_text_buffer_apply_tag_by_name (buffer, "font", &start, &end);
     }
 
   GN_EXIT;
