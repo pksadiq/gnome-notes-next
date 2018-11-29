@@ -256,6 +256,7 @@ gn_editor_block_buffer_signals (GnEditor *self)
 
   g_object_freeze_notify (G_OBJECT (self->note_buffer));
   gn_text_view_freeze_undo_redo (GN_TEXT_VIEW (self->editor_view));
+  gn_note_buffer_freeze (GN_NOTE_BUFFER (self->note_buffer));
   g_signal_handlers_block_by_func (self->note_buffer,
                                    gn_editor_buffer_modified_cb, self);
   g_signal_handlers_block_by_func (self->note_buffer,
@@ -271,6 +272,7 @@ gn_editor_unblock_buffer_signals (GnEditor *self)
 
   g_object_thaw_notify (G_OBJECT (self->note_buffer));
   gn_text_view_thaw_undo_redo (GN_TEXT_VIEW (self->editor_view));
+  gn_note_buffer_thaw (GN_NOTE_BUFFER (self->note_buffer));
   g_signal_handlers_unblock_by_func (self->note_buffer,
                                    gn_editor_buffer_modified_cb, self);
   g_signal_handlers_unblock_by_func (self->note_buffer,

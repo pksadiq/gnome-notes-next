@@ -44,6 +44,8 @@ struct _GnNoteBuffer
   GtkTextTag *tag_italic;
   GtkTextTag *tag_underline;
   GtkTextTag *tag_strike;
+
+  gint freeze_count;
 };
 
 G_DEFINE_TYPE (GnNoteBuffer, gn_note_buffer, GTK_TYPE_TEXT_BUFFER)
@@ -107,8 +109,8 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
 {
   GnNoteBuffer *self = (GnNoteBuffer *)buffer;
   GtkTextIter end, start;
-  gint start_offset;
-  gboolean is_title, is_buffer_end;
+  gint start_offset = G_MAXINT;
+  gboolean is_title = FALSE, is_buffer_end = FALSE;
 
   /*
    * TODO: Pasting title to content area may keep the boldness property,
@@ -117,20 +119,27 @@ gn_note_buffer_insert_text (GtkTextBuffer *buffer,
 
   GN_ENTRY;
 
-  is_title = gtk_text_iter_get_line (pos) == 0;
-  start_offset = gtk_text_iter_get_offset (pos);
-  is_buffer_end = gtk_text_iter_is_end (pos);
-
-  if (is_title)
+  if (self->freeze_count == 0)
     {
-      gtk_text_buffer_get_iter_at_line (buffer, &end, 1);
-      gtk_text_buffer_remove_tag_by_name (buffer, "title", pos, &end);
+      is_title = gtk_text_iter_get_line (pos) == 0;
+      start_offset = gtk_text_iter_get_offset (pos);
+      is_buffer_end = gtk_text_iter_is_end (pos);
+
+      if (is_title)
+        {
+          gtk_text_buffer_get_iter_at_line (buffer, &end, 1);
+          gtk_text_buffer_remove_tag_by_name (buffer, "title", pos, &end);
+        }
     }
 
   GTK_TEXT_BUFFER_CLASS (gn_note_buffer_parent_class)->insert_text (buffer,
                                                                       pos,
                                                                       text,
                                                                       text_len);
+
+  if (self->freeze_count != 0)
+    GN_EXIT;
+
   gtk_text_buffer_get_iter_at_offset (buffer, &start, start_offset);
   end = *pos;
 
@@ -178,10 +187,11 @@ gn_note_buffer_real_apply_tag (GtkTextBuffer     *buffer,
                                                                   start, end);
 
   /* We don't need anything other this tag handled by text-view undo */
-  if (tag != self->tag_bold &&
-      tag != self->tag_italic &&
-      tag != self->tag_underline &&
-      tag != self->tag_strike)
+  if (self->freeze_count > 0 ||
+      (tag != self->tag_bold &&
+       tag != self->tag_italic &&
+       tag != self->tag_underline &&
+       tag != self->tag_strike))
     g_signal_stop_emission_by_name (buffer, "apply-tag");
 }
 
@@ -197,10 +207,11 @@ gn_note_buffer_real_remove_tag (GtkTextBuffer     *buffer,
                                                                    start, end);
 
   /* We don't need anything other this tag handled by text-view undo */
-  if (tag != self->tag_bold &&
-      tag != self->tag_italic &&
-      tag != self->tag_underline &&
-      tag != self->tag_strike)
+  if (self->freeze_count > 0 ||
+      (tag != self->tag_bold &&
+       tag != self->tag_italic &&
+       tag != self->tag_underline &&
+       tag != self->tag_strike))
     g_signal_stop_emission_by_name (buffer, "remove-tag");
 
 }
@@ -350,4 +361,21 @@ gn_note_buffer_get_name_for_tag (GnNoteBuffer *self,
     return "";
   else
     g_return_val_if_reached ("span");
+}
+
+void
+gn_note_buffer_freeze (GnNoteBuffer *self)
+{
+  g_return_if_fail (GN_IS_NOTE_BUFFER (self));
+
+  self->freeze_count++;
+}
+
+void
+gn_note_buffer_thaw (GnNoteBuffer *self)
+{
+  g_return_if_fail (GN_IS_NOTE_BUFFER (self));
+  g_return_if_fail (self->freeze_count > 0);
+
+  self->freeze_count--;
 }

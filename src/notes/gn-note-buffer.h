@@ -34,5 +34,7 @@ void          gn_note_buffer_apply_tag (GnNoteBuffer *self,
 void          gn_note_buffer_remove_all_tags  (GnNoteBuffer *self);
 const gchar  *gn_note_buffer_get_name_for_tag (GnNoteBuffer *self,
                                                GtkTextTag   *tag);
+void          gn_note_buffer_freeze           (GnNoteBuffer *self);
+void          gn_note_buffer_thaw             (GnNoteBuffer *self);
 
 G_END_DECLS

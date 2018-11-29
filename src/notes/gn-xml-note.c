@@ -325,7 +325,7 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
   GtkTextBuffer *text_buffer;
   gchar *start, *end;
   const gchar *title;
-  GtkTextIter end_iter;
+  GtkTextIter start_iter, end_iter;
   gchar c;
 
   GnXmlNote *self = GN_XML_NOTE (note);
@@ -421,6 +421,14 @@ gn_xml_note_set_content_to_buffer (GnNote       *note,
       else
         end++;
     }
+
+  /* Set common font */
+  gtk_text_buffer_get_bounds (text_buffer, &start_iter, &end_iter);
+  gtk_text_buffer_apply_tag_by_name (text_buffer, "font", &start_iter, &end_iter);
+
+  /* Set title font */
+  gtk_text_buffer_get_iter_at_line (text_buffer, &end_iter, 1);
+  gtk_text_buffer_apply_tag_by_name (text_buffer, "title", &start_iter, &end_iter);
 
   gtk_text_buffer_set_modified (text_buffer, FALSE);
 }
