@@ -225,6 +225,12 @@ gn_note_buffer_constructed (GObject *object)
 
   G_OBJECT_CLASS (gn_note_buffer_parent_class)->constructed (object);
 
+  /*
+   * The order of the tags defined here shouldn’t be changed
+   * because when xml is generated (in GnXmlNote), the priority
+   * of tags are taken as the order of tags, and the priority
+   * of tags depend on the order they are defined.
+   */
   tag = gtk_text_buffer_create_tag (buffer, "font", NULL);
   self->tag_font = tag;
 

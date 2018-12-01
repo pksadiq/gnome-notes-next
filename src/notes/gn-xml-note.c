@@ -576,6 +576,28 @@ gn_xml_note_update_raw_xml (GnXmlNote *self)
                    "<note-content>");
 }
 
+static gint
+gn_xml_note_sort_tag (gconstpointer a,
+                      gconstpointer b)
+{
+  GtkTextTag *tag_a = (gpointer)a;
+  GtkTextTag *tag_b = (gpointer)b;
+
+  return gtk_text_tag_get_priority (tag_a) -
+    gtk_text_tag_get_priority (tag_b);
+}
+
+static gint
+gn_xml_note_sort_tag_reverse (gconstpointer a,
+                              gconstpointer b)
+{
+  GtkTextTag *tag_a = (gpointer)a;
+  GtkTextTag *tag_b = (gpointer)b;
+
+  return gtk_text_tag_get_priority (tag_b) -
+    gtk_text_tag_get_priority (tag_a);
+}
+
 static void
 gn_xml_note_set_content_from_buffer (GnNote        *note,
                                      GtkTextBuffer *buffer)
@@ -636,6 +658,12 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
       /* First, we have to handle tags that are closed */
       tags = gtk_text_iter_get_toggled_tags (&iter, FALSE);
+      /*
+       * The order of tags are undefined, let’s make it deterministic.
+       * The sort order of open and close tags should be opposite to
+       * each other.
+       */
+      tags = g_slist_sort (tags, gn_xml_note_sort_tag_reverse);
       for (GSList *node = tags; node != NULL; node = node->next)
         {
           GtkTextTag *tag = node->data;
@@ -649,6 +677,7 @@ gn_xml_note_set_content_from_buffer (GnNote        *note,
 
       /* Now, let's handle open tags */
       tags = gtk_text_iter_get_toggled_tags (&iter, TRUE);
+      tags = g_slist_sort (tags, gn_xml_note_sort_tag);
       for (GSList *node = tags; node != NULL; node = node->next)
         {
           GtkTextTag *tag = node->data;
