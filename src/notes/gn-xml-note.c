@@ -460,11 +460,29 @@ gn_xml_note_close_tag (GnXmlNote   *self,
    * should be the following:
    * <b><s><i>some text</i></s></b> and not <b><s><i>some text</b>...
    */
-  for (node = tags_queue->head; node != last_tag; node = node->next)
-    g_string_append_printf (raw_content, "</%s>", (gchar *)node->data);
+  for (node = tags_queue->head; node != NULL; node = node->next)
+    {
+      g_autofree gchar *tag = g_strconcat ("<", node->data, ">", NULL);
+      gsize length = strlen (tag);
 
-  /* From the previous example: we are now closing </b> */
-  g_string_append_printf (raw_content, "</%s>", tag_name);
+      /*
+       * Remove empty tags.
+       *
+       * In the last step, we may have overdone something, fixit.
+       * Say for example, for "<i>test<u>g" and then if we close <i>
+       * and then <u> it will relsult in "<i>test<u>g</u></i><u>"
+       * and then to "<i>test<u>g</u></i><u></u>".  We can simplify
+       * it further to "<i>test<u>g</u></i>".  Do so if it’s possible.
+       */
+      if (raw_content->len >= length &&
+          g_str_equal (raw_content->str + raw_content->len - length, tag))
+        g_string_truncate (raw_content, raw_content->len - length);
+      else
+        g_string_append_printf (raw_content, "</%s>", (gchar *)node->data);
+
+      if (node == last_tag)
+        break;
+    }
 
   /*
    * To make the XML valid, we have to open the closed tags that aren't
